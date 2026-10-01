@@ -3,17 +3,17 @@
   "installer_contract": "cadence.install-prompt.v1",
   "product": "Cadence",
   "channel": "public",
-  "version": "1.1",
-  "release_id": "cadence-1.1",
-  "archive_url": "https://veeskelad.github.io/cadence/1.1/cadence-1.1.zip",
-  "archive_filename": "cadence-1.1.zip",
-  "sha256": "2df7a2b3e386b20d926247024a185120a399ba7c78201cc2ff668549ddf58f85",
-  "archive_size_bytes": 2336940,
+  "version": "1.2",
+  "release_id": "cadence-1.2",
+  "archive_url": "https://veeskelad.github.io/cadence/1.2/cadence-1.2.zip",
+  "archive_filename": "cadence-1.2.zip",
+  "sha256": "abd3020707f04e84d2b06ce089085f66350199377f67b430fadfd707b39a3ba3",
+  "archive_size_bytes": 2369143,
   "max_expanded_bytes": 33554432,
-  "verified_files": 221,
+  "verified_files": 228,
   "published_at": "2026-10-01",
-  "fresh_install_tested": true,
+  "fresh_install_tested": false,
   "tested_update_from": [
-    "cadence-1.0"
+    "cadence-1.1"
   ]
 }
