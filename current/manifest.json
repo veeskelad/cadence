@@ -12,6 +12,6 @@
   "max_expanded_bytes": 33554432,
   "verified_files": 215,
   "published_at": "2026-10-01",
-  "fresh_install_tested": false,
+  "fresh_install_tested": true,
   "tested_update_from": []
 }
