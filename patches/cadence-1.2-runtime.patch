@@ -1,0 +1,1198 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -9,9 +9,13 @@
+ зависимостей, скачивание), необратимым действием (правка проекта DaVinci Resolve) или
+ публикацией получи отдельное согласие. Платных сервисов в наборе нет.
+ 
+-Исходные файлы человека не изменяй. Работы лежат рядом с набором, не внутри:
+-`$CADENCE_WORK`, иначе `../../work/<проект>/` от этой папки (`in/` — входы, `build/` — сборка,
+-`out/` — готовые MP4). Не называй пробный результат финальным: готовое проверяется по кадрам
++Исходные файлы человека не изменяй. Единый источник рабочего пути — команда
++`python3 scripts/cadence_paths.py work-root` из корня набора; она только читает и печатает
++абсолютный путь `$WORK`. Приоритет: `CADENCE_WORK`, затем общая `work/` рядом с `releases/`
++для установки `releases/<id>/`, иначе `work/` внутри распакованного набора. В инструкциях
++`work/` означает именно `$WORK`, а `$W` — `$WORK/<проект>`; не подставляй `../../work`
++без проверки. `in/` — входы, `build/` — сборка, `out/` — готовые MP4 внутри проекта.
++Не называй пробный результат финальным: готовое проверяется по кадрам
+ из MP4 и по громкости (`scripts/deliver.py`).
+ 
+ Для первого запроса используй навык `cadence`. Для отдельной задачи выбери подходящий
+@@ -19,7 +23,7 @@
+ `cadence-structures`, `cadence-sound`, `cadence-style`, `cadence-cut`, `cadence-resolve`,
+ `cadence-breakdown`, `cadence-generate`.
+ 
+-Учись на правках человека: в начале задачи читай `work/preferences.md`, после каждой правки
++Учись на правках человека: в начале задачи читай `$WORK/preferences.md`, после каждой правки
+ или оценки дописывай туда правило. Подробно — навык `cadence`, «Память о человеке».
+ 
+ Ты не продаёшь и не рекламируешь: набор бесплатный целиком. После ошибки не предлагай
+diff --git a/CLAUDE.md b/CLAUDE.md
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -9,9 +9,13 @@
+ зависимостей, скачивание), необратимым действием (правка проекта DaVinci Resolve) или
+ публикацией получи отдельное согласие. Платных сервисов в наборе нет.
+ 
+-Исходные файлы человека не изменяй. Работы лежат рядом с набором, не внутри:
+-`$CADENCE_WORK`, иначе `../../work/<проект>/` от этой папки (`in/` — входы, `build/` — сборка,
+-`out/` — готовые MP4). Не называй пробный результат финальным: готовое проверяется по кадрам
++Исходные файлы человека не изменяй. Единый источник рабочего пути — команда
++`python3 scripts/cadence_paths.py work-root` из корня набора; она только читает и печатает
++абсолютный путь `$WORK`. Приоритет: `CADENCE_WORK`, затем общая `work/` рядом с `releases/`
++для установки `releases/<id>/`, иначе `work/` внутри распакованного набора. В инструкциях
++`work/` означает именно `$WORK`, а `$W` — `$WORK/<проект>`; не подставляй `../../work`
++без проверки. `in/` — входы, `build/` — сборка, `out/` — готовые MP4 внутри проекта.
++Не называй пробный результат финальным: готовое проверяется по кадрам
+ из MP4 и по громкости (`scripts/deliver.py`).
+ 
+ Для первого запроса используй навык `cadence`. Для отдельной задачи выбери подходящий
+@@ -19,7 +23,7 @@
+ `cadence-structures`, `cadence-sound`, `cadence-style`, `cadence-cut`, `cadence-resolve`,
+ `cadence-breakdown`, `cadence-generate`.
+ 
+-Учись на правках человека: в начале задачи читай `work/preferences.md`, после каждой правки
++Учись на правках человека: в начале задачи читай `$WORK/preferences.md`, после каждой правки
+ или оценки дописывай туда правило. Подробно — навык `cadence`, «Память о человеке».
+ 
+ Ты не продаёшь и не рекламируешь: набор бесплатный целиком. После ошибки не предлагай
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -17,7 +17,24 @@
+    и агент сам сделает первый ролик; дать материал; попросить идеи; разобрать ролик, который нравится.
+ 3. Дай согласие на установку движка: `npm --prefix engine install`. Это один раз, нужна сеть,
+    около 300 МБ.
+-4. Смотри план и соглашайся. Готовый ролик появится в `work/<проект>/out/` рядом с набором.
++4. Смотри план и соглашайся. Готовый ролик появится в рабочей папке: `<рабочая папка>/<проект>/out/`.
++
++### Где рабочая папка
++
++Из корня распакованного набора выполни `python3 scripts/cadence_paths.py work-root`.
++Команда только печатает абсолютный путь; его же используют скрипты создания проекта:
++
++- если задана `CADENCE_WORK` — используется она (относительный путь считается от текущей папки);
++- для установки `Cadence/releases/<id>/` — `Cadence/work/`, общая для выпусков;
++- после простой распаковки или в dev-репозитории — `work/` внутри папки набора.
++
++Дальше в документации `work/` означает эту вычисленную рабочую папку. Для хранения отдельно
++от распакованного набора задай `CADENCE_WORK` до создания проекта и оставляй её одинаковой
++при следующих запусках. Перед заменой папки простой распаковки сохрани её `work/`.
++
++Примеры команд с переменными — для Bash на macOS/Linux или Windows через WSL; в WSL
++Node, Python и ffmpeg должны быть установлены внутри WSL. Запуск npm-команд движка не
++зависит от Bash, но полный сценарий в обычном Windows не проверен.
+ 
+ ## Что можно попробовать
+ 
+diff --git a/START-HERE.md b/START-HERE.md
+--- a/START-HERE.md
++++ b/START-HERE.md
+@@ -11,6 +11,11 @@
+ 3. Агент проверит инструменты и попросит согласие на установку движка (один раз, сеть).
+ 4. Посмотри план и согласуй вариант.
+ 5. Через пару минут ролик будет в `work/<проект>/out/reel.mp4`.
++
++`work/` — рабочая папка, которую показывает `python3 scripts/cadence_paths.py work-root`
++из корня набора. Установка через `releases/<id>/` хранит её рядом с `releases/`, простая
++распаковка — внутри набора. `CADENCE_WORK` задаёт другое место. Подробности и команды
++для Bash (macOS/Linux/WSL) — в [первом запуске](guides/FIRST-RESULT.md).
+ 
+ ## Набор как чемодан
+ 
+diff --git a/scripts/cadence_paths.py b/scripts/cadence_paths.py
+--- a/scripts/cadence_paths.py
++++ b/scripts/cadence_paths.py
+@@ -4,7 +4,10 @@
+ Рабочая папка (work) ищется так:
+ 1. переменная окружения CADENCE_WORK;
+ 2. если скрипт лежит в выпуске `<установка>/releases/<id>/scripts/` — `<установка>/work`;
+-3. иначе (dev-репозиторий) — `./work` рядом со `scripts/`.
++3. иначе (простая распаковка или dev-репозиторий) — `./work` рядом со `scripts/`.
++
++CLI: `python3 scripts/cadence_paths.py work-root` печатает этот абсолютный путь,
++ничего не создавая.
+ 
+ Исходники не меняются никогда: любой результат — новый файл, обычно в
+ `work/<проект>/out/`.
+@@ -12,6 +15,7 @@
+ 
+ from __future__ import annotations
+ 
++import argparse
+ import hashlib
+ import json
+ import os
+@@ -246,3 +250,15 @@
+         print("Остановлено.", file=sys.stderr)
+         sys.exit(130)
+     sys.exit(code or 0)
++
++
++def main() -> int:
++    ap = argparse.ArgumentParser(description='Пути Cadence: только чтение, без создания папок.')
++    ap.add_argument('command', choices=['work-root'], help='напечатать абсолютный путь рабочей папки')
++    ap.parse_args()
++    print(work_root())
++    return 0
++
++
++if __name__ == '__main__':
++    main_guard(main)
+diff --git a/engine/build.mjs b/engine/build.mjs
+--- a/engine/build.mjs
++++ b/engine/build.mjs
+@@ -12,11 +12,12 @@
+ // сменяются на удар и растут столбики.
+ 
+ import {execFileSync} from 'node:child_process';
+-import {cp, mkdir, readFile, readdir, rm, writeFile} from 'node:fs/promises';
++import {cp, mkdir, readFile, readdir, writeFile} from 'node:fs/promises';
+ import {existsSync} from 'node:fs';
+ import path from 'node:path';
+ import process from 'node:process';
+ import {fileURLToPath} from 'node:url';
++import {assertBuildDirectory, defaultWorkDir, prepareBuildDirectory} from './safe-build.mjs';
+ 
+ const engine = path.dirname(fileURLToPath(import.meta.url));
+ const root = path.resolve(engine, '..');
+@@ -37,10 +38,10 @@
+ if (!(await list()).includes(id)) throw new Error(`Нет шаблона ${id}; есть: ${(await list()).join(', ')}`);
+ 
+ // Рабочая папка человека — рядом с выпуском, не внутри: CADENCE_WORK → ../../work → ./work.
+-const workDir = process.env.CADENCE_WORK
+-  ?? (path.basename(path.dirname(root)) === 'releases' ? path.resolve(root, '../../work') : path.join(root, 'work'));
+-const out = path.resolve(process.cwd(), option('--out') ?? path.join(workDir, id, 'build'));
+-if (out === root || root.startsWith(out + path.sep)) throw new Error(`--out ${out} перекрывает сам набор`);
++const workDir = defaultWorkDir(root);
++let out = path.resolve(process.cwd(), option('--out') ?? path.join(workDir, id, 'build'));
++const buildOptions = {root, workDir, out, inputs: [option('--film'), option('--pack') && packFile(option('--pack'))], sourceDirs: [engine]};
++out = await assertBuildDirectory(buildOptions);
+ 
+ // Свой пак человека лежит в work/packs/<id>/ и переживает обновление выпуска; встроенные — в design/packs/.
+ function packFile(packId) {
+@@ -59,7 +60,7 @@
+     const c = JSON.parse(await readFile(packFile(option('--pack')), 'utf8')).colors;
+     packColors = {coral: c.signal, hot: c.positive ?? c.signal, amber: c.signalSecondary ?? c.signal, cream: c.ink, ash: c.muted, ink: c.canvas, panel: c.surface, line: c.line ?? c.muted};
+   }
+-  await buildOneTake({root, engine, template: path.join(templates, id), filmPath: path.resolve(option('--film')), out, packColors});
++  await buildOneTake({root, engine, template: path.join(templates, id), filmPath: path.resolve(option('--film')), out, packColors, workDir});
+   console.log(`${id} → ${path.relative(process.cwd(), out) || '.'}`);
+   process.exit(0);
+ }
+@@ -223,8 +224,7 @@
+ const fontCss = (await readFile(path.join(engine, 'fonts/fonts.css'), 'utf8')).replaceAll('url(./', 'url(fonts/');
+ html = html.replace('<!-- cadence:fonts -->', `<style>\n${fontCss}\n    </style>`);
+ 
+-await rm(out, {recursive: true, force: true});
+-await mkdir(out, {recursive: true});
++out = await prepareBuildDirectory({...buildOptions, out, inputs: [filmPath, ...filmAssets.map(([from]) => from), packId && packFile(packId)]});
+ await writeFile(path.join(out, 'index.html'), html);
+ await cp(path.join(engine, 'lib'), path.join(out, 'lib'), {recursive: true});
+ await cp(path.join(engine, 'fonts'), path.join(out, 'fonts'), {recursive: true});
+diff --git a/engine/onetake.mjs b/engine/onetake.mjs
+--- a/engine/onetake.mjs
++++ b/engine/onetake.mjs
+@@ -9,6 +9,7 @@
+ import {cp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
+ import {existsSync} from 'node:fs';
+ import path from 'node:path';
++import {assertBuildDirectory, defaultWorkDir, prepareBuildDirectory} from './safe-build.mjs';
+ 
+ const HOOK = 3, TOTAL_BEATS = 55, FPS = 30;
+ // [звук, доля, громкость] — пик файла ложится на долю
+@@ -28,7 +29,9 @@
+   ['bell', 51, 0.35],                                                                    // знак
+ ];
+ 
+-export async function buildOneTake({root, engine, template, filmPath, out, packColors}) {
++export async function buildOneTake({root, engine, template, filmPath, out, packColors, workDir = defaultWorkDir(root)}) {
++  const buildOptions = {root, workDir, out, inputs: [filmPath], sourceDirs: [engine, template]};
++  out = await assertBuildDirectory(buildOptions);
+   const run = (cmd, a) => execFileSync(cmd, a, {stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 1 << 28});
+   const probe = (f) => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString());
+   const film = JSON.parse(await readFile(filmPath, 'utf8'));
+@@ -41,13 +44,16 @@
+   if (!Array.isArray(film.screens) || film.screens.length !== 2) throw new Error('Нужно ровно два экрана: screens[0] (A) и screens[1] (B)');
+ 
+   const track = from(film.music.src);
++  const screenSources = film.screens.map((screen) => from(screen.src));
++  buildOptions.inputs.push(track, ...screenSources);
++  await assertBuildDirectory({...buildOptions, out});
+   const map = JSON.parse(run('python3', [path.join(root, 'scripts/track_structure.py'), track, '--quiet-json']).toString());
+   const beat = map.beat, b = (n) => n * beat, total = b(TOTAL_BEATS);
+   const dropBeat = map.drops.length ? map.drops[0].beat : 8;
+   const musicIn = film.music.start ?? Math.max(0, map.firstBeat + (dropBeat - HOOK) * beat);
+   if (probe(track) < musicIn + total) throw new Error(`Трек короче нужного: от ${musicIn.toFixed(1)} с нужно ещё ${total.toFixed(1)} с`);
+ 
+-  await rm(out, {recursive: true, force: true});
++  out = await prepareBuildDirectory({...buildOptions, out});
+   await mkdir(path.join(out, 'assets'), {recursive: true});
+   const A = (name) => path.join(out, 'assets', name);
+   const V = ['-c:v', 'libx264', '-crf', '15', '-preset', 'medium', '-pix_fmt', 'yuv420p', '-g', '15', '-an'];
+@@ -89,15 +95,15 @@
+   const meta = JSON.parse(await readFile(path.join(root, 'sounds/sounds.json'), 'utf8'));
+   const audio = [`<audio id="music" class="clip" src="assets/music.m4a" data-start="0" data-duration="${total.toFixed(3)}" data-volume="${film.music.volume ?? 0.6}" data-track-index="30"></audio>`];
+   const used = new Set();
+-  CUES.forEach(([name, at, volume], i) => {
++  for (const [i, [name, at, volume]] of CUES.entries()) {
+     const file = `${name}.wav`, m = meta[file];
+-    if (!m) return;
+-    if (!used.has(file)) { used.add(file); execFileSync('cp', [path.join(root, 'sounds', file), A(`sfx-${file}`)]); }
++    if (!m) continue;
++    if (!used.has(file)) { used.add(file); await cp(path.join(root, 'sounds', file), A(`sfx-${file}`)); }
+     let start = b(at) - (m.peak - m.onset), mediaStart = m.onset;
+     if (start < 0) { mediaStart -= start; start = 0; }
+     const dur = Math.min(m.length - mediaStart, total - start);
+     if (dur > 0.03) audio.push(`<audio id="s${i}" class="clip" src="assets/sfx-${file}" data-start="${start.toFixed(3)}" data-duration="${dur.toFixed(3)}" data-media-start="${mediaStart.toFixed(3)}" data-volume="${volume}" data-track-index="${31 + i}"></audio>`);
+-  });
++  }
+ 
+   const videos = ids.map((id, i) => `<video id="v-${id}" class="clip tex" src="assets/${id}.mp4" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="${2 + i}" muted playsinline></video>`);
+   const filmOut = {...film};
+diff --git a/engine/package.json b/engine/package.json
+--- a/engine/package.json
++++ b/engine/package.json
+@@ -5,12 +5,12 @@
+   "description": "Локальный рендер Cadence: HTML → MP4 через HyperFrames, телеметрия выключена.",
+   "scripts": {
+     "build": "node build.mjs",
+-    "check": "HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes check",
+-    "lint": "HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes lint",
+-    "snapshot": "HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes snapshot --describe false",
+-    "render": "HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes render",
+-    "preview": "HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes preview",
+-    "doctor": "HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes doctor --json"
++    "check": "node run-hyperframes.mjs check",
++    "lint": "node run-hyperframes.mjs lint",
++    "snapshot": "node run-hyperframes.mjs snapshot --describe false",
++    "render": "node run-hyperframes.mjs render",
++    "preview": "node run-hyperframes.mjs preview",
++    "doctor": "node run-hyperframes.mjs doctor --json"
+   },
+   "dependencies": {
+     "hyperframes": "0.7.64"
+diff --git a/engine/run-hyperframes.mjs b/engine/run-hyperframes.mjs
+new file mode 100644
+--- /dev/null
++++ b/engine/run-hyperframes.mjs
+@@ -0,0 +1,27 @@
++// Запуск локального CLI без shell-синтаксиса VAR=1 и платформенных .cmd-обёрток.
++import {spawnSync} from 'node:child_process';
++import {existsSync, readFileSync} from 'node:fs';
++import path from 'node:path';
++import {fileURLToPath} from 'node:url';
++
++const packagePath = fileURLToPath(new URL('./node_modules/hyperframes/package.json', import.meta.url));
++
++try {
++  const pkg = JSON.parse(readFileSync(packagePath, 'utf8'));
++  const bin = typeof pkg.bin === 'string' ? pkg.bin : pkg.bin?.hyperframes;
++  if (typeof bin !== 'string' || !bin) throw new Error('В пакете нет CLI hyperframes');
++  const entry = path.resolve(path.dirname(packagePath), bin);
++  if (!existsSync(entry)) throw new Error(`Нет файла CLI: ${entry}`);
++
++  const result = spawnSync(process.execPath, [entry, ...process.argv.slice(2)], {
++    stdio: 'inherit',
++    env: {...process.env, HYPERFRAMES_NO_TELEMETRY: '1', DO_NOT_TRACK: '1'},
++  });
++  if (result.error) throw result.error;
++  if (result.signal) console.error(`HyperFrames остановлен сигналом ${result.signal}`);
++  process.exitCode = result.status ?? 1;
++} catch (error) {
++  console.error(`Не удалось запустить локальный HyperFrames: ${error.message}`);
++  console.error('Проверь установку движка: npm --prefix engine install (нужна сеть и согласие).');
++  process.exitCode = 1;
++}
+diff --git a/engine/safe-build.mjs b/engine/safe-build.mjs
+new file mode 100644
+--- /dev/null
++++ b/engine/safe-build.mjs
+@@ -0,0 +1,92 @@
++// Только явно принадлежащую Cadence папку сборки можно очищать при повторном запуске.
++// Маркер привязан к реальному пути: копия маркера не делает чужую папку сборкой.
++import {lstat, mkdir, readFile, realpath, rm, writeFile} from 'node:fs/promises';
++import {homedir} from 'node:os';
++import path from 'node:path';
++import {fileURLToPath} from 'node:url';
++
++const MARKER = '.cadence-build.json';
++const runtimeRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
++const within = (parent, child) => {
++  const relative = path.relative(parent, child);
++  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
++};
++const overlap = (a, b) => within(a, b) || within(b, a);
++const statIfPresent = async (file) => {
++  try { return await lstat(file); }
++  catch (error) { if (error.code === 'ENOENT') return null; throw error; }
++};
++
++// realpath также для ещё не существующего назначения; существующие родители могут
++// быть ссылками (включая системный /tmp). Дальше используем только полученный путь.
++async function canonical(file) {
++  const absolute = path.resolve(file);
++  const info = await statIfPresent(absolute);
++  if (info) return realpath(absolute);
++  const parent = path.dirname(absolute);
++  if (parent === absolute) throw new Error(`Не удалось проверить путь ${absolute}`);
++  return path.join(await canonical(parent), path.basename(absolute));
++}
++
++export function defaultWorkDir(root) {
++  const env = process.env.CADENCE_WORK?.trim();
++  if (env) {
++    if (env === '~') return homedir();
++    if (env.startsWith('~/') || (path.sep === '\\' && env.startsWith('~\\'))) return path.resolve(homedir(), env.slice(2));
++    if (env.startsWith('~')) throw new Error('CADENCE_WORK: используй ~/ или абсолютный путь вместо ~имя');
++    return path.resolve(env);
++  }
++  return path.basename(path.dirname(root)) === 'releases' ? path.resolve(root, '../../work') : path.resolve(root, 'work');
++}
++
++export async function assertBuildDirectory({root = runtimeRoot, workDir = defaultWorkDir(root), out, inputs = [], sourceDirs = []}) {
++  const requested = path.resolve(out);
++  const info = await statIfPresent(requested);
++  if (info && (!info.isDirectory() || info.isSymbolicLink())) {
++    throw new Error(`--out ${requested}: нужна отдельная папка сборки, не файл или ссылка`);
++  }
++  const destination = await canonical(requested);
++  const work = await canonical(workDir);
++  if (within(destination, work)) throw new Error(`--out ${requested} перекрывает рабочую папку`);
++  for (const release of new Set([await canonical(root), await canonical(runtimeRoot)])) {
++    // В распакованном наборе допускается только его обычная work/, не код или примеры.
++    // Не разрешаем ссылке work/ → engine/ превратить код в рабочую область.
++    const localWork = path.join(release, 'work');
++    if (within(destination, release) || (within(release, destination) && !within(localWork, destination))) {
++      throw new Error(`--out ${requested} перекрывает сам набор или его исходники`);
++    }
++  }
++  for (const source of sourceDirs) {
++    if (overlap(destination, await canonical(source))) throw new Error(`--out ${requested} перекрывает исходники: ${source}`);
++  }
++  for (const input of inputs.filter(Boolean)) {
++    if (overlap(destination, await canonical(input))) throw new Error(`--out ${requested} перекрывает входной файл: ${input}`);
++  }
++  if (info) {
++    const marker = path.join(destination, MARKER);
++    const markerInfo = await statIfPresent(marker);
++    let owner;
++    if (markerInfo?.isFile() && !markerInfo.isSymbolicLink()) {
++      try { owner = JSON.parse(await readFile(marker, 'utf8')); }
++      catch (error) { if (error.code && error.code !== 'ENOENT') throw error; }
++    }
++    if (owner?.type !== 'cadence-build' || owner.version !== 1 || owner.path !== destination) {
++      throw new Error(`--out ${requested}: папка уже существует и не является отмеченной сборкой Cadence; выбери новую папку (старую не удаляю)`);
++    }
++  }
++  return destination;
++}
++
++export async function prepareBuildDirectory(options) {
++  const destination = await assertBuildDirectory(options);
++  if (await statIfPresent(destination)) {
++    // Повторная проверка непосредственно перед удалением; ссылки внутри rm не обходит.
++    await assertBuildDirectory({...options, out: destination});
++    await rm(destination, {recursive: true});
++  }
++  await mkdir(path.dirname(destination), {recursive: true});
++  // Не присваиваем себе папку, которая появилась после проверки.
++  await mkdir(destination);
++  await writeFile(path.join(destination, MARKER), JSON.stringify({type: 'cadence-build', version: 1, path: destination}) + '\n', {flag: 'wx'});
++  return destination;
++}
+diff --git a/engine/safe-build.test.mjs b/engine/safe-build.test.mjs
+new file mode 100644
+--- /dev/null
++++ b/engine/safe-build.test.mjs
+@@ -0,0 +1,273 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {spawnSync} from 'node:child_process';
++import {cp, lstat, mkdir, mkdtemp, readFile, realpath, rename, rm, symlink, writeFile} from 'node:fs/promises';
++import os from 'node:os';
++import path from 'node:path';
++import {fileURLToPath, pathToFileURL} from 'node:url';
++import {assertBuildDirectory, prepareBuildDirectory} from './safe-build.mjs';
++import {buildOneTake} from './onetake.mjs';
++
++const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
++const MARKER = '.cadence-build.json';
++const missing = (file) => assert.rejects(lstat(file), {code: 'ENOENT'});
++
++async function fixture(t) {
++  const base = await realpath(await mkdtemp(path.join(os.tmpdir(), 'cadence-safe-build-')));
++  t.after(() => rm(base, {recursive: true, force: true}));
++  const release = path.join(base, 'release');
++  const work = path.join(base, 'work');
++  const project = path.join(work, 'project');
++  const out = path.join(project, 'build');
++  await mkdir(path.join(release, 'engine'), {recursive: true});
++  await mkdir(path.join(release, 'scripts'), {recursive: true});
++  await mkdir(path.join(project, 'in'), {recursive: true});
++  await writeFile(path.join(project, 'in', 'source.txt'), 'original input');
++  await writeFile(path.join(release, 'scripts', 'source.txt'), 'original code');
++  const options = {root: release, workDir: work, out};
++  const oneTake = {root: release, engine: path.join(release, 'engine'), template: path.join(release, 'template'), filmPath: path.join(project, 'film.json'), out, workDir: work};
++  return {base, release, work, project, out, options, oneTake};
++}
++
++test('creates a fresh marked output and replaces only that owned output', async (t) => {
++  const f = await fixture(t);
++  assert.equal(await prepareBuildDirectory(f.options), f.out);
++  const owner = JSON.parse(await readFile(path.join(f.out, MARKER), 'utf8'));
++  assert.deepEqual(owner, {type: 'cadence-build', version: 1, path: f.out});
++  await writeFile(path.join(f.out, 'stale.txt'), 'old generated file');
++  await prepareBuildDirectory(f.options);
++  await missing(path.join(f.out, 'stale.txt'));
++  assert.equal(await readFile(path.join(f.project, 'in', 'source.txt'), 'utf8'), 'original input');
++});
++
++test('refuses existing directories, including empty ones and project roots', async (t) => {
++  const f = await fixture(t);
++  await mkdir(f.out);
++  for (const out of [f.out, f.project, path.join(f.project, 'in')]) {
++    await assert.rejects(prepareBuildDirectory({...f.options, out}), /папка уже существует/);
++  }
++  assert.equal(await readFile(path.join(f.project, 'in', 'source.txt'), 'utf8'), 'original input');
++});
++
++test('protects release roots, ancestors, code and the work root before mutation', async (t) => {
++  const f = await fixture(t);
++  for (const out of [f.release, f.base, path.parse(f.base).root, f.work, path.join(f.release, 'scripts', 'new-build')]) {
++    await assert.rejects(prepareBuildDirectory({...f.options, out}), /перекрывает/);
++  }
++  await missing(path.join(f.release, 'scripts', 'new-build'));
++  assert.equal(await readFile(path.join(f.release, 'scripts', 'source.txt'), 'utf8'), 'original code');
++});
++
++test('permits local release/work builds and does not confuse sibling path prefixes', async (t) => {
++  const f = await fixture(t);
++  const localWork = path.join(f.release, 'work');
++  const localOut = path.join(localWork, 'project', 'build');
++  await prepareBuildDirectory({...f.options, workDir: localWork, out: localOut});
++  await prepareBuildDirectory({...f.options, out: `${f.release}-extra/build`});
++  assert.ok((await lstat(localOut)).isDirectory());
++});
++
++test('a work symlink cannot turn code into a permitted build area', async (t) => {
++  const f = await fixture(t);
++  await symlink(f.release, path.join(f.release, 'work'), 'dir');
++  const out = path.join(f.release, 'scripts', 'new-build');
++  await assert.rejects(prepareBuildDirectory({...f.options, workDir: path.join(f.release, 'work'), out}), /исходники/);
++  await missing(out);
++});
++
++test('rejects final symlinks, including dangling ones, and file outputs', async (t) => {
++  const f = await fixture(t);
++  await prepareBuildDirectory(f.options);
++  const link = path.join(f.base, 'output-link');
++  const dangling = path.join(f.base, 'dangling');
++  const file = path.join(f.base, 'file');
++  await symlink(f.out, link, 'dir');
++  await symlink(path.join(f.base, 'absent'), dangling, 'dir');
++  await writeFile(file, 'keep');
++  for (const out of [link, dangling, file]) await assert.rejects(prepareBuildDirectory({...f.options, out}), /не файл или ссылка/);
++  assert.ok((await lstat(link)).isSymbolicLink());
++  assert.equal(await readFile(file, 'utf8'), 'keep');
++});
++
++test('resolves parent aliases before protecting code and binds ownership to the canonical path', async (t) => {
++  const f = await fixture(t);
++  const alias = path.join(f.base, 'alias');
++  await symlink(f.base, alias, 'dir');
++  await assert.rejects(prepareBuildDirectory({...f.options, out: path.join(alias, 'release', 'scripts', 'new')}), /исходники/);
++  const aliasedOut = path.join(alias, 'work', 'project', 'build');
++  assert.equal(await prepareBuildDirectory({...f.options, out: aliasedOut}), f.out);
++  assert.equal(await prepareBuildDirectory(f.options), f.out);
++  await missing(path.join(f.release, 'scripts', 'new'));
++});
++
++test('refuses invalid, copied, moved and symlinked ownership markers', async (t) => {
++  const f = await fixture(t);
++  await prepareBuildDirectory(f.options);
++  const copied = path.join(f.base, 'copied');
++  await cp(f.out, copied, {recursive: true});
++  await writeFile(path.join(copied, 'sentinel.txt'), 'keep');
++  await assert.rejects(prepareBuildDirectory({...f.options, out: copied}), /папка уже существует/);
++  assert.equal(await readFile(path.join(copied, 'sentinel.txt'), 'utf8'), 'keep');
++  const moved = path.join(f.base, 'moved');
++  await rename(f.out, moved);
++  await assert.rejects(prepareBuildDirectory({...f.options, out: moved}), /папка уже существует/);
++  await mkdir(f.out);
++  await symlink(path.join(moved, MARKER), path.join(f.out, MARKER), 'file');
++  await assert.rejects(prepareBuildDirectory(f.options), /папка уже существует/);
++  await rm(path.join(f.out, MARKER));
++  await writeFile(path.join(f.out, MARKER), '{invalid');
++  await assert.rejects(prepareBuildDirectory(f.options), /папка уже существует/);
++});
++
++test('protects inputs inside an owned output, including inputs reached by symlink', async (t) => {
++  const f = await fixture(t);
++  await prepareBuildDirectory(f.options);
++  const input = path.join(f.out, 'source.txt');
++  const alias = path.join(f.project, 'input-link.txt');
++  await writeFile(input, 'keep original');
++  await symlink(input, alias, 'file');
++  for (const source of [input, alias]) {
++    await assert.rejects(prepareBuildDirectory({...f.options, inputs: [source]}), /входной файл/);
++  }
++  assert.equal(await readFile(input, 'utf8'), 'keep original');
++});
++
++test('rejects output nested inside input directories and external source trees', async (t) => {
++  const f = await fixture(t);
++  const inputs = [path.join(f.project, 'in')];
++  const out = path.join(inputs[0], 'new-build');
++  await assert.rejects(prepareBuildDirectory({...f.options, out, inputs}), /входной файл/);
++  await assert.rejects(prepareBuildDirectory({...f.options, out, sourceDirs: inputs}), /исходники/);
++  await missing(out);
++});
++
++test('removing an owned output does not follow links to external input directories', async (t) => {
++  const f = await fixture(t);
++  await prepareBuildDirectory(f.options);
++  await symlink(path.join(f.project, 'in'), path.join(f.out, 'external-inputs'), 'dir');
++  await prepareBuildDirectory(f.options);
++  assert.equal(await readFile(path.join(f.project, 'in', 'source.txt'), 'utf8'), 'original input');
++});
++
++test('a read-only validation never creates an output or marker', async (t) => {
++  const f = await fixture(t);
++  assert.equal(await assertBuildDirectory(f.options), f.out);
++  await missing(f.out);
++});
++
++test('CADENCE_WORK normalization agrees with the Python CLI for empty, trimmed, relative and home paths', async (t) => {
++  const f = await fixture(t);
++  const moduleUrl = pathToFileURL(path.join(root, 'engine/safe-build.mjs')).href;
++  const script = `import {defaultWorkDir} from ${JSON.stringify(moduleUrl)}; console.log(defaultWorkDir(${JSON.stringify(root)}));`;
++  for (const value of [undefined, '', '   ', 'relative-work', '  relative work  ', '  ~/new work  ', '~', `  ${f.work}  `]) {
++    const env = {...process.env, HOME: f.base, USERPROFILE: f.base};
++    if (value === undefined) delete env.CADENCE_WORK;
++    else env.CADENCE_WORK = value;
++    const options = {cwd: f.base, env, encoding: 'utf8', timeout: 15000};
++    const js = spawnSync(process.execPath, ['--input-type=module', '-e', script], options);
++    const py = spawnSync('python3', [path.join(root, 'scripts/cadence_paths.py'), 'work-root'], options);
++    assert.equal(js.status, 0, js.stderr);
++    assert.equal(py.status, 0, py.stderr);
++    assert.equal(js.stdout.trim(), py.stdout.trim(), `CADENCE_WORK=${JSON.stringify(value)}`);
++  }
++  await missing(path.join(f.base, 'relative-work'));
++  await missing(path.join(f.base, 'new work'));
++});
++
++function runBuild(f, args, cwd = root) {
++  return spawnSync(process.execPath, [path.join(root, 'engine/build.mjs'), ...args], {
++    cwd, encoding: 'utf8', env: {...process.env, CADENCE_WORK: f.work}, timeout: 15000,
++  });
++}
++
++test('CLI builds a fresh directory and supports safe repeat builds without dependencies', async (t) => {
++  const f = await fixture(t);
++  for (let i = 0; i < 2; i++) {
++    const result = runBuild(f, ['shader-field', '--out', f.out]);
++    assert.equal(result.status, 0, result.stderr);
++    assert.match(await readFile(path.join(f.out, 'index.html'), 'utf8'), /<html/);
++  }
++});
++
++test('CLI default output stays under CADENCE_WORK and is safely repeatable', async (t) => {
++  const f = await fixture(t);
++  const out = path.join(f.work, 'shader-field', 'build');
++  for (let i = 0; i < 2; i++) {
++    const result = runBuild(f, ['shader-field']);
++    assert.equal(result.status, 0, result.stderr);
++    assert.match(await readFile(path.join(out, 'index.html'), 'utf8'), /<html/);
++  }
++});
++
++test('CLI refuses --out . for an existing project without touching the sentinel', async (t) => {
++  const f = await fixture(t);
++  const result = runBuild(f, ['shader-field', '--out', '.'], f.project);
++  assert.notEqual(result.status, 0);
++  assert.match(result.stderr, /папка уже существует/);
++  assert.equal(await readFile(path.join(f.project, 'in', 'source.txt'), 'utf8'), 'original input');
++});
++
++test('CLI protects film JSON and local film assets in a previously owned build', async (t) => {
++  const f = await fixture(t);
++  await prepareBuildDirectory(f.options);
++  const filmInside = path.join(f.out, 'film.json');
++  await writeFile(filmInside, JSON.stringify({bpm: 120, scenes: []}));
++  let result = runBuild(f, ['keynote-launch', '--film', filmInside, '--out', f.out]);
++  assert.notEqual(result.status, 0);
++  assert.match(result.stderr, /входной файл/);
++  const clip = path.join(f.out, 'clip.txt');
++  await writeFile(clip, 'original clip');
++  const film = path.join(f.project, 'film.json');
++  await writeFile(film, JSON.stringify({bpm: 120, scenes: [{beats: 1, src: 'build/clip.txt'}]}));
++  result = runBuild(f, ['keynote-launch', '--film', film, '--out', f.out]);
++  assert.notEqual(result.status, 0);
++  assert.match(result.stderr, /входной файл/);
++  assert.equal(await readFile(clip, 'utf8'), 'original clip');
++  assert.equal(await readFile(filmInside, 'utf8'), JSON.stringify({bpm: 120, scenes: []}));
++});
++
++test('CLI protects a custom pack stored in a previously owned build', async (t) => {
++  const f = await fixture(t);
++  const out = path.join(f.work, 'packs', 'custom');
++  await prepareBuildDirectory({...f.options, out});
++  const pack = path.join(out, 'pack.json');
++  await writeFile(pack, JSON.stringify({colors: {signal: '#ff0000'}}));
++  const result = runBuild(f, ['shader-field', '--pack', 'custom', '--out', out]);
++  assert.notEqual(result.status, 0);
++  assert.match(result.stderr, /входной файл/);
++  assert.equal(await readFile(pack, 'utf8'), JSON.stringify({colors: {signal: '#ff0000'}}));
++});
++
++test('exported one-take entry point protects arbitrary output before reading film or invoking media tools', async (t) => {
++  const f = await fixture(t);
++  await assert.rejects(buildOneTake({...f.oneTake, out: f.project}), /входной файл/);
++  await mkdir(f.out);
++  await assert.rejects(buildOneTake(f.oneTake), /папка уже существует/);
++  await assert.rejects(buildOneTake({...f.oneTake, out: path.join(f.release, 'engine', 'new')}), /исходники/);
++  await missing(path.join(f.release, 'engine', 'new'));
++  assert.equal(await readFile(path.join(f.project, 'in', 'source.txt'), 'utf8'), 'original input');
++});
++
++test('exported one-take entry point protects screen inputs before track analysis', async (t) => {
++  const f = await fixture(t);
++  await prepareBuildDirectory(f.options);
++  await writeFile(path.join(f.project, 'track.wav'), 'synthetic track');
++  await writeFile(path.join(f.out, 'screen.mp4'), 'synthetic screen');
++  await writeFile(f.oneTake.filmPath, JSON.stringify({music: {src: 'track.wav'}, screens: [{src: 'build/screen.mp4'}, {src: 'build/screen.mp4'}]}));
++  await assert.rejects(buildOneTake(f.oneTake), /входной файл/);
++  assert.equal(await readFile(path.join(f.out, 'screen.mp4'), 'utf8'), 'synthetic screen');
++});
++
++test('exported one-take entry point protects film and track inputs in an owned build', async (t) => {
++  const f = await fixture(t);
++  await prepareBuildDirectory(f.options);
++  const film = path.join(f.out, 'film.json');
++  await writeFile(film, '{}');
++  await assert.rejects(buildOneTake({...f.oneTake, filmPath: film}), /входной файл/);
++  await writeFile(path.join(f.out, 'track.wav'), 'synthetic track');
++  await writeFile(path.join(f.project, 'screen.mp4'), 'synthetic screen');
++  await writeFile(f.oneTake.filmPath, JSON.stringify({music: {src: 'build/track.wav'}, screens: [{src: 'screen.mp4'}, {src: 'screen.mp4'}]}));
++  await assert.rejects(buildOneTake(f.oneTake), /входной файл/);
++  assert.equal(await readFile(path.join(f.out, 'track.wav'), 'utf8'), 'synthetic track');
++  assert.equal(await readFile(film, 'utf8'), '{}');
++});
+diff --git a/guides/FIRST-RESULT.md b/guides/FIRST-RESULT.md
+--- a/guides/FIRST-RESULT.md
++++ b/guides/FIRST-RESULT.md
+@@ -18,12 +18,26 @@
+ 
+ ## Подготовка рабочей папки
+ 
+-Работы лежат рядом с набором, не внутри него. Свой трек копируется, а не переносится:
++Все команды ниже — из корня набора, в одной сессии Bash (macOS/Linux или Windows через
++WSL). В WSL используй Node, Python и ffmpeg из WSL. Полный сценарий в обычном Windows
++пока не проверен; команды с `W=...` не предназначены для PowerShell или cmd.exe.
++
++Сначала получи абсолютный рабочий путь из того же кода, которым пользуется `new_project.py`:
++
++```bash
++WORK="$(python3 scripts/cadence_paths.py work-root)"
++W="$WORK/first-reel"
++```
++
++У установки `Cadence/releases/<id>/` это `Cadence/work/`, после простой распаковки —
++`work/` внутри набора. `CADENCE_WORK` имеет приоритет; задай её до этих команд, если
++нужно другое место. Не добавляй `$(pwd)/` к `$W`: путь уже абсолютный.
++
++Свой трек копируется, а не переносится:
+ скрипт заводит проект, копирует трек, сверяет хэш копии и кладёт сценарий-пример с уже
+ вписанным путём к треку.
+ 
+ ```bash
+-W=../../work/first-reel            # или $CADENCE_WORK/first-reel
+ python3 scripts/new_project.py first-reel --copy "<путь к треку>" --film beat-reel
+ ```
+ 
+@@ -51,8 +65,8 @@
+ 
+ ```bash
+ node engine/build.mjs beat-reel --film "$W/film.json" --out "$W/build"
+-npm --prefix engine run check -- "$(pwd)/$W/build"
+-npm --prefix engine run render -- "$(pwd)/$W/build" --quality high --fps 30 --output "$(pwd)/$W/out/reel-raw.mp4"
++npm --prefix engine run check -- "$W/build"
++npm --prefix engine run render -- "$W/build" --quality high --fps 30 --output "$W/out/reel-raw.mp4"
+ python3 scripts/deliver.py "$W/out/reel-raw.mp4" --out "$W/out/reel.mp4"
+ python3 scripts/check_reel.py "$W/out/reel.mp4"
+ ```
+diff --git a/tests/startup.test.mjs b/tests/startup.test.mjs
+new file mode 100644
+--- /dev/null
++++ b/tests/startup.test.mjs
+@@ -0,0 +1,211 @@
++// Только временные файлы: без настоящего HyperFrames, сети и пользовательских материалов.
++import assert from 'node:assert/strict';
++import {spawnSync} from 'node:child_process';
++import {cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync} from 'node:fs';
++import os from 'node:os';
++import path from 'node:path';
++import {fileURLToPath} from 'node:url';
++import test from 'node:test';
++
++const root = fileURLToPath(new URL('..', import.meta.url));
++const python = process.env.PYTHON || 'python3';
++
++function temp(t) {
++  const dir = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'cadence startup ')));
++  t.after(() => rmSync(dir, {recursive: true, force: true}));
++  return dir;
++}
++
++function cleanEnv(extra = {}) {
++  const env = {...process.env};
++  delete env.CADENCE_WORK;
++  return {...env, ...extra};
++}
++
++function pathsFixture(t, layout = 'unpacked') {
++  const dir = temp(t);
++  const release = path.join(dir, layout === 'release' ? 'Cadence/releases/1.2' : 'unpacked kit');
++  mkdirSync(path.join(release, 'scripts'), {recursive: true});
++  const script = path.join(release, 'scripts/cadence_paths.py');
++  cpSync(path.join(root, 'scripts/cadence_paths.py'), script);
++  return {dir, release, script};
++}
++
++function runPaths(fixture, extra = {}, cwd = fixture.dir) {
++  return spawnSync(python, [fixture.script, 'work-root'], {
++    cwd, env: cleanEnv(extra), encoding: 'utf8',
++  });
++}
++
++test('work-root: direct unpack is based on script location, not current directory', t => {
++  const fixture = pathsFixture(t);
++  const result = runPaths(fixture);
++  assert.equal(result.status, 0, result.stderr);
++  const expected = path.join(fixture.release, 'work');
++  assert.equal(result.stdout.trim(), expected);
++  assert.equal(existsSync(expected), false, 'read-only command must not create work');
++});
++
++test('work-root: releases/id uses shared installation work directory', t => {
++  const fixture = pathsFixture(t, 'release');
++  const result = runPaths(fixture);
++  assert.equal(result.status, 0, result.stderr);
++  assert.equal(result.stdout.trim(), path.join(fixture.dir, 'Cadence/work'));
++  assert.equal(existsSync(path.join(fixture.dir, 'Cadence/work')), false);
++});
++
++test('work-root: absolute CADENCE_WORK wins over installed layout and preserves spaces', t => {
++  const fixture = pathsFixture(t, 'release');
++  const custom = path.join(fixture.dir, 'мои работы');
++  const result = runPaths(fixture, {CADENCE_WORK: custom});
++  assert.equal(result.status, 0, result.stderr);
++  assert.equal(result.stdout.trim(), custom);
++  assert.equal(existsSync(custom), false);
++});
++
++test('work-root: relative override resolves against caller working directory', t => {
++  const fixture = pathsFixture(t);
++  const result = runPaths(fixture, {CADENCE_WORK: ' my work '});
++  assert.equal(result.status, 0, result.stderr);
++  assert.equal(result.stdout.trim(), path.join(fixture.dir, 'my work'));
++});
++
++test('work-root: tilde override expands and blank override falls back', t => {
++  const fixture = pathsFixture(t);
++  const home = path.join(fixture.dir, 'synthetic home');
++  const result = runPaths(fixture, {CADENCE_WORK: '~/my work', HOME: home, USERPROFILE: home});
++  assert.equal(result.status, 0, result.stderr);
++  assert.equal(result.stdout.trim(), path.join(home, 'my work'));
++  const blank = runPaths(fixture, {CADENCE_WORK: '  '});
++  assert.equal(blank.status, 0, blank.stderr);
++  assert.equal(blank.stdout.trim(), path.join(fixture.release, 'work'));
++});
++
++test('work-root: new_project dry-run and CLI agree without creating a project', t => {
++  const fixture = pathsFixture(t, 'release');
++  cpSync(path.join(root, 'scripts/new_project.py'), path.join(fixture.release, 'scripts/new_project.py'));
++  mkdirSync(path.join(fixture.release, 'examples'));
++  const env = cleanEnv({CADENCE_WORK: path.join(fixture.dir, 'custom work')});
++  const result = spawnSync(python, [path.join(fixture.release, 'scripts/new_project.py'), 'first-reel', '--dry-run'], {
++    cwd: fixture.dir, env, encoding: 'utf8',
++  });
++  assert.equal(result.status, 0, result.stderr);
++  assert.ok(result.stdout.includes(path.join(runPaths(fixture, env).stdout.trim(), 'first-reel')));
++  assert.equal(existsSync(env.CADENCE_WORK), false);
++});
++
++test('work-root: guide workflow creates film under the same root in both installation layouts', t => {
++  for (const layout of ['unpacked', 'release']) {
++    const fixture = pathsFixture(t, layout);
++    cpSync(path.join(root, 'scripts/new_project.py'), path.join(fixture.release, 'scripts/new_project.py'));
++    const example = path.join(fixture.release, 'examples/beat-reel');
++    mkdirSync(example, {recursive: true});
++    writeFileSync(path.join(example, 'film.json'), JSON.stringify({music: {src: 'in/demo-beat.wav'}}));
++    const work = runPaths(fixture).stdout.trim();
++    const result = spawnSync(python, [path.join(fixture.release, 'scripts/new_project.py'), 'first-reel', '--film', 'beat-reel'], {
++      cwd: fixture.release, env: cleanEnv(), encoding: 'utf8',
++    });
++    assert.equal(result.status, 0, result.stderr);
++    assert.equal(existsSync(path.join(work, 'first-reel/in')), true);
++    assert.equal(existsSync(path.join(work, 'first-reel/out')), true);
++    assert.deepEqual(JSON.parse(readFileSync(path.join(work, 'first-reel/film.json'), 'utf8')),
++      {music: {src: 'in/demo-beat.wav'}});
++  }
++});
++
++function runnerFixture(t, bin = {hyperframes: 'dist/cli.mjs'}) {
++  const dir = temp(t);
++  const engine = path.join(dir, 'engine with spaces');
++  const dependency = path.join(engine, 'node_modules/hyperframes');
++  mkdirSync(path.join(dependency, 'dist'), {recursive: true});
++  cpSync(path.join(root, 'engine/run-hyperframes.mjs'), path.join(engine, 'run-hyperframes.mjs'));
++  writeFileSync(path.join(dependency, 'package.json'), JSON.stringify({name: 'hyperframes', bin}));
++  writeFileSync(path.join(dependency, 'dist/cli.mjs'), `
++console.log(JSON.stringify({args: process.argv.slice(2), cwd: process.cwd(),
++  telemetry: process.env.HYPERFRAMES_NO_TELEMETRY, doNotTrack: process.env.DO_NOT_TRACK,
++  inherited: process.env.CADENCE_TEST_INHERITED}));
++process.exitCode = Number(process.env.CADENCE_TEST_EXIT || 0);
++`);
++  return {dir, engine, dependency, runner: path.join(engine, 'run-hyperframes.mjs')};
++}
++
++function runRunner(fixture, args = [], env = {}) {
++  return spawnSync(process.execPath, [fixture.runner, ...args], {
++    cwd: fixture.dir, env: {...process.env, ...env}, encoding: 'utf8',
++  });
++}
++
++test('runner: preserves argv literally, cwd, and env; telemetry stays disabled', t => {
++  const fixture = runnerFixture(t);
++  const args = ['render', 'a path/ролик & $(echo no)', '--output', 'C:\\My Work\\reel.mp4', '--title', '"quoted"', '', '--fps', '30'];
++  const result = runRunner(fixture, args, {
++    HYPERFRAMES_NO_TELEMETRY: '0', DO_NOT_TRACK: '0', CADENCE_TEST_INHERITED: 'kept', PATH: '',
++  });
++  assert.equal(result.status, 0, result.stderr);
++  assert.deepEqual(JSON.parse(result.stdout), {
++    args, cwd: fixture.dir, telemetry: '1', doNotTrack: '1', inherited: 'kept',
++  });
++});
++
++test('runner: supports string bin metadata and preserves nonzero exit status', t => {
++  const fixture = runnerFixture(t, 'dist/cli.mjs');
++  const result = runRunner(fixture, ['doctor', '--json'], {CADENCE_TEST_EXIT: '23'});
++  assert.equal(result.status, 23, result.stderr);
++  assert.deepEqual(JSON.parse(result.stdout).args, ['doctor', '--json']);
++});
++
++test('runner: missing dependency gives an actionable error and never installs', t => {
++  const fixture = runnerFixture(t);
++  rmSync(fixture.dependency, {recursive: true});
++  const result = runRunner(fixture, ['check']);
++  assert.equal(result.status, 1);
++  assert.ok(result.stderr.includes('npm --prefix engine install'));
++  assert.equal(existsSync(fixture.dependency), false);
++});
++
++test('runner: missing bin metadata or entry fails clearly', t => {
++  const fixture = runnerFixture(t, {});
++  const missingBin = runRunner(fixture);
++  assert.equal(missingBin.status, 1);
++  assert.ok(missingBin.stderr.includes('CLI hyperframes'));
++  writeFileSync(path.join(fixture.dependency, 'package.json'), JSON.stringify({bin: 'missing.mjs'}));
++  const missingEntry = runRunner(fixture);
++  assert.equal(missingEntry.status, 1);
++  assert.ok(missingEntry.stderr.includes('CLI:'));
++});
++
++test('npm scripts use shell-free launcher and retain default arguments', () => {
++  const {scripts} = JSON.parse(readFileSync(path.join(root, 'engine/package.json'), 'utf8'));
++  for (const name of ['check', 'lint', 'snapshot', 'render', 'preview', 'doctor']) {
++    assert.ok(scripts[name].startsWith(`node run-hyperframes.mjs ${name}`));
++    assert.equal(scripts[name].includes('=1'), false);
++  }
++  assert.equal(scripts.snapshot, 'node run-hyperframes.mjs snapshot --describe false');
++  assert.equal(scripts.doctor, 'node run-hyperframes.mjs doctor --json');
++});
++
++test('first-result guide computes an absolute work root and does not prepend pwd', () => {
++  const guide = readFileSync(path.join(root, 'guides/FIRST-RESULT.md'), 'utf8');
++  assert.ok(guide.includes('WORK="$(python3 scripts/cadence_paths.py work-root)"'));
++  assert.ok(guide.includes('W="$WORK/first-reel"'));
++  assert.equal(guide.includes('W=../../work'), false);
++  assert.equal(guide.includes('"$(pwd)/$W/'), false);
++});
++
++test('startup skill mirrors match and all share the authoritative work-root helper', () => {
++  for (const skill of ['cadence', 'cadence-beat-reel', 'cadence-showreel', 'cadence-motion', 'cadence-breakdown']) {
++    const canonical = readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
++    for (const mirror of ['.agents/skills', '.claude/skills']) {
++      assert.equal(readFileSync(path.join(root, mirror, skill, 'SKILL.md'), 'utf8'), canonical);
++    }
++    assert.ok(canonical.includes('python3 scripts/cadence_paths.py work-root'));
++    assert.equal(canonical.includes('W=work/'), false);
++    assert.equal(canonical.includes('"$(pwd)/$W/'), false);
++  }
++});
++
++test('one-take sound copies do not invoke the platform cp executable', () => {
++  const source = readFileSync(path.join(root, 'engine/onetake.mjs'), 'utf8');
++  assert.equal(/execFileSync\(['"]cp['"]/.test(source), false);
++  assert.ok(source.includes("await cp(path.join(root, 'sounds', file), A(`sfx-${file}`))"));
++});
+diff --git a/.agents/skills/cadence-beat-reel/SKILL.md b/.agents/skills/cadence-beat-reel/SKILL.md
+--- a/.agents/skills/cadence-beat-reel/SKILL.md
++++ b/.agents/skills/cadence-beat-reel/SKILL.md
+@@ -23,9 +23,13 @@
+ 
+ ## План → согласие → сборка
+ 
++Команды ниже — из корня набора в Bash (macOS/Linux/WSL).
++
+ ```bash
++WORK="$(python3 scripts/cadence_paths.py work-root)"
++W="$WORK/<проект>"
+ # 0. проект в рабочей папке: копия трека со сверкой хэша и сценарий-пример с путём к треку
+-python3 scripts/new_project.py <проект> --copy "<трек>" --film beat-reel   # W = work/<проект>
++python3 scripts/new_project.py <проект> --copy "<трек>" --film beat-reel
+ # нет трека: проект без --copy, затем демо-бит (путь в film.json уже in/demo-beat.wav)
+ python3 scripts/new_project.py <проект> --film beat-reel
+ python3 scripts/demo_beat.py --out "$W/in/demo-beat.wav"
+diff --git a/.agents/skills/cadence/SKILL.md b/.agents/skills/cadence/SKILL.md
+--- a/.agents/skills/cadence/SKILL.md
++++ b/.agents/skills/cadence/SKILL.md
+@@ -19,6 +19,10 @@
+ > 4. **Покажи ролик, который нравится** — разберу, как он сделан, и предложу сделать так же.
+ >
+ > Пока ты не выберешь, я ничего не меняю.
++
++Рабочую папку `$WORK` сначала определи командой `python3 scripts/cadence_paths.py work-root`
++из корня набора. Она только печатает абсолютный путь с учётом `CADENCE_WORK` и способа установки.
++Во всех примерах `work/` означает этот путь.
+ 
+ Если в `$WORK/preferences.md` уже есть записи или в `work/` есть проекты — это не первый
+ раз: поздоровайся короче и предложи продолжить последний проект или начать новый.
+diff --git a/.agents/skills/cadence-showreel/SKILL.md b/.agents/skills/cadence-showreel/SKILL.md
+--- a/.agents/skills/cadence-showreel/SKILL.md
++++ b/.agents/skills/cadence-showreel/SKILL.md
+@@ -37,15 +37,18 @@
+ 
+ ## План → согласие → сборка
+ 
++Команды ниже — из корня набора в Bash (macOS/Linux/WSL).
++
+ ```bash
+-W=work/<проект>                                    # рядом с набором, не внутри
++WORK="$(python3 scripts/cadence_paths.py work-root)"
++W="$WORK/<проект>"
+ python3 scripts/new_project.py <проект> --copy "<трек>" "<работа A>" "<работа B>" --film one-take-showreel
+ python3 scripts/track_structure.py "$W/in/<трек>"   # только чтение: темп, дроп
+ # в $W/film.json пути уже вписаны — поправить отрезки работ и тексты
+ node engine/build.mjs one-take-showreel --film "$W/film.json" --out "$W/build"
+-npm --prefix engine run check -- "$(pwd)/$W/build"
+-npm --prefix engine run snapshot -- "$(pwd)/$W/build" --no-end --at 1,2.5,8,15,20,25,32
+-npm --prefix engine run render -- "$(pwd)/$W/build" --quality high --fps 30 --output "$(pwd)/$W/out/showreel-raw.mp4"
++npm --prefix engine run check -- "$W/build"
++npm --prefix engine run snapshot -- "$W/build" --no-end --at 1,2.5,8,15,20,25,32
++npm --prefix engine run render -- "$W/build" --quality high --fps 30 --output "$W/out/showreel-raw.mp4"
+ python3 scripts/deliver.py "$W/out/showreel-raw.mp4" --out "$W/out/showreel.mp4"
+ python3 scripts/check_reel.py "$W/out/showreel.mp4"
+ ```
+diff --git a/.agents/skills/cadence-breakdown/SKILL.md b/.agents/skills/cadence-breakdown/SKILL.md
+--- a/.agents/skills/cadence-breakdown/SKILL.md
++++ b/.agents/skills/cadence-breakdown/SKILL.md
+@@ -15,7 +15,7 @@
+ - **Нет файла или нет `ffmpeg` — сказать и остановиться.** Не описывать кадры, которых не видел.
+ - Исходный файл не трогать: всё, что получается, — новые файлы в рабочей папке.
+ 
+-Рабочая папка: переменная `CADENCE_WORK`, иначе `../../work` от корня набора, в dev-репозитории — `./work`. Для разбора — `<рабочая папка>/<проект>/breakdown/`.
++Рабочую папку показывает `python3 scripts/cadence_paths.py work-root` из корня набора. Команда учитывает `CADENCE_WORK`, установку `releases/<id>/` и простую распаковку; используй её абсолютный результат. Для разбора — `<рабочая папка>/<проект>/breakdown/`.
+ 
+ ## Шаг 1. Паспорт файла
+ 
+diff --git a/.agents/skills/cadence-motion/SKILL.md b/.agents/skills/cadence-motion/SKILL.md
+--- a/.agents/skills/cadence-motion/SKILL.md
++++ b/.agents/skills/cadence-motion/SKILL.md
+@@ -24,10 +24,10 @@
+ | Стиль | свой пак — `$WORK/packs/<id>/pack.json`, встроенные — `design/packs/<id>/`, по умолчанию `cadence-ember` |
+ | Работы человека | `$WORK/<проект>/`: `in/`, `build/`, `out/` (путь — ниже) |
+ 
+-**Рабочая папка `$WORK`.** Если задана переменная `CADENCE_WORK` — она. Иначе в установленном выпуске (`…/releases/<id>/`) — `../../work` от корня выпуска, в dev-репозитории — `./work`. Все команды ниже запускаются из корня выпуска, а `$WORK` задаётся так:
++**Рабочая папка `$WORK`.** Путь вычисляет общий скрипт: `CADENCE_WORK` имеет приоритет; в установленном выпуске `releases/<id>/` используется общая `work/` рядом с `releases/`, после простой распаковки — `work/` внутри набора. Все команды ниже запускаются из корня набора в Bash (macOS/Linux/WSL), а абсолютный `$WORK` задаётся так:
+ 
+ ```bash
+-WORK="${CADENCE_WORK:-$( [ "$(basename "$(dirname "$PWD")")" = releases ] && echo "$(cd ../.. && pwd)/work" || echo "$PWD/work" )}"
++WORK="$(python3 scripts/cadence_paths.py work-root)"
+ ```
+ 
+ Исходники человека не меняются: результат всегда новый файл в `$WORK/<проект>/out/`.
+diff --git a/skills/cadence-beat-reel/SKILL.md b/skills/cadence-beat-reel/SKILL.md
+--- a/skills/cadence-beat-reel/SKILL.md
++++ b/skills/cadence-beat-reel/SKILL.md
+@@ -23,9 +23,13 @@
+ 
+ ## План → согласие → сборка
+ 
++Команды ниже — из корня набора в Bash (macOS/Linux/WSL).
++
+ ```bash
++WORK="$(python3 scripts/cadence_paths.py work-root)"
++W="$WORK/<проект>"
+ # 0. проект в рабочей папке: копия трека со сверкой хэша и сценарий-пример с путём к треку
+-python3 scripts/new_project.py <проект> --copy "<трек>" --film beat-reel   # W = work/<проект>
++python3 scripts/new_project.py <проект> --copy "<трек>" --film beat-reel
+ # нет трека: проект без --copy, затем демо-бит (путь в film.json уже in/demo-beat.wav)
+ python3 scripts/new_project.py <проект> --film beat-reel
+ python3 scripts/demo_beat.py --out "$W/in/demo-beat.wav"
+diff --git a/skills/cadence/SKILL.md b/skills/cadence/SKILL.md
+--- a/skills/cadence/SKILL.md
++++ b/skills/cadence/SKILL.md
+@@ -19,6 +19,10 @@
+ > 4. **Покажи ролик, который нравится** — разберу, как он сделан, и предложу сделать так же.
+ >
+ > Пока ты не выберешь, я ничего не меняю.
++
++Рабочую папку `$WORK` сначала определи командой `python3 scripts/cadence_paths.py work-root`
++из корня набора. Она только печатает абсолютный путь с учётом `CADENCE_WORK` и способа установки.
++Во всех примерах `work/` означает этот путь.
+ 
+ Если в `$WORK/preferences.md` уже есть записи или в `work/` есть проекты — это не первый
+ раз: поздоровайся короче и предложи продолжить последний проект или начать новый.
+diff --git a/skills/cadence-showreel/SKILL.md b/skills/cadence-showreel/SKILL.md
+--- a/skills/cadence-showreel/SKILL.md
++++ b/skills/cadence-showreel/SKILL.md
+@@ -37,15 +37,18 @@
+ 
+ ## План → согласие → сборка
+ 
++Команды ниже — из корня набора в Bash (macOS/Linux/WSL).
++
+ ```bash
+-W=work/<проект>                                    # рядом с набором, не внутри
++WORK="$(python3 scripts/cadence_paths.py work-root)"
++W="$WORK/<проект>"
+ python3 scripts/new_project.py <проект> --copy "<трек>" "<работа A>" "<работа B>" --film one-take-showreel
+ python3 scripts/track_structure.py "$W/in/<трек>"   # только чтение: темп, дроп
+ # в $W/film.json пути уже вписаны — поправить отрезки работ и тексты
+ node engine/build.mjs one-take-showreel --film "$W/film.json" --out "$W/build"
+-npm --prefix engine run check -- "$(pwd)/$W/build"
+-npm --prefix engine run snapshot -- "$(pwd)/$W/build" --no-end --at 1,2.5,8,15,20,25,32
+-npm --prefix engine run render -- "$(pwd)/$W/build" --quality high --fps 30 --output "$(pwd)/$W/out/showreel-raw.mp4"
++npm --prefix engine run check -- "$W/build"
++npm --prefix engine run snapshot -- "$W/build" --no-end --at 1,2.5,8,15,20,25,32
++npm --prefix engine run render -- "$W/build" --quality high --fps 30 --output "$W/out/showreel-raw.mp4"
+ python3 scripts/deliver.py "$W/out/showreel-raw.mp4" --out "$W/out/showreel.mp4"
+ python3 scripts/check_reel.py "$W/out/showreel.mp4"
+ ```
+diff --git a/skills/cadence-breakdown/SKILL.md b/skills/cadence-breakdown/SKILL.md
+--- a/skills/cadence-breakdown/SKILL.md
++++ b/skills/cadence-breakdown/SKILL.md
+@@ -15,7 +15,7 @@
+ - **Нет файла или нет `ffmpeg` — сказать и остановиться.** Не описывать кадры, которых не видел.
+ - Исходный файл не трогать: всё, что получается, — новые файлы в рабочей папке.
+ 
+-Рабочая папка: переменная `CADENCE_WORK`, иначе `../../work` от корня набора, в dev-репозитории — `./work`. Для разбора — `<рабочая папка>/<проект>/breakdown/`.
++Рабочую папку показывает `python3 scripts/cadence_paths.py work-root` из корня набора. Команда учитывает `CADENCE_WORK`, установку `releases/<id>/` и простую распаковку; используй её абсолютный результат. Для разбора — `<рабочая папка>/<проект>/breakdown/`.
+ 
+ ## Шаг 1. Паспорт файла
+ 
+diff --git a/skills/cadence-motion/SKILL.md b/skills/cadence-motion/SKILL.md
+--- a/skills/cadence-motion/SKILL.md
++++ b/skills/cadence-motion/SKILL.md
+@@ -24,10 +24,10 @@
+ | Стиль | свой пак — `$WORK/packs/<id>/pack.json`, встроенные — `design/packs/<id>/`, по умолчанию `cadence-ember` |
+ | Работы человека | `$WORK/<проект>/`: `in/`, `build/`, `out/` (путь — ниже) |
+ 
+-**Рабочая папка `$WORK`.** Если задана переменная `CADENCE_WORK` — она. Иначе в установленном выпуске (`…/releases/<id>/`) — `../../work` от корня выпуска, в dev-репозитории — `./work`. Все команды ниже запускаются из корня выпуска, а `$WORK` задаётся так:
++**Рабочая папка `$WORK`.** Путь вычисляет общий скрипт: `CADENCE_WORK` имеет приоритет; в установленном выпуске `releases/<id>/` используется общая `work/` рядом с `releases/`, после простой распаковки — `work/` внутри набора. Все команды ниже запускаются из корня набора в Bash (macOS/Linux/WSL), а абсолютный `$WORK` задаётся так:
+ 
+ ```bash
+-WORK="${CADENCE_WORK:-$( [ "$(basename "$(dirname "$PWD")")" = releases ] && echo "$(cd ../.. && pwd)/work" || echo "$PWD/work" )}"
++WORK="$(python3 scripts/cadence_paths.py work-root)"
+ ```
+ 
+ Исходники человека не меняются: результат всегда новый файл в `$WORK/<проект>/out/`.
+diff --git a/.claude/skills/cadence-beat-reel/SKILL.md b/.claude/skills/cadence-beat-reel/SKILL.md
+--- a/.claude/skills/cadence-beat-reel/SKILL.md
++++ b/.claude/skills/cadence-beat-reel/SKILL.md
+@@ -23,9 +23,13 @@
+ 
+ ## План → согласие → сборка
+ 
++Команды ниже — из корня набора в Bash (macOS/Linux/WSL).
++
+ ```bash
++WORK="$(python3 scripts/cadence_paths.py work-root)"
++W="$WORK/<проект>"
+ # 0. проект в рабочей папке: копия трека со сверкой хэша и сценарий-пример с путём к треку
+-python3 scripts/new_project.py <проект> --copy "<трек>" --film beat-reel   # W = work/<проект>
++python3 scripts/new_project.py <проект> --copy "<трек>" --film beat-reel
+ # нет трека: проект без --copy, затем демо-бит (путь в film.json уже in/demo-beat.wav)
+ python3 scripts/new_project.py <проект> --film beat-reel
+ python3 scripts/demo_beat.py --out "$W/in/demo-beat.wav"
+diff --git a/.claude/skills/cadence/SKILL.md b/.claude/skills/cadence/SKILL.md
+--- a/.claude/skills/cadence/SKILL.md
++++ b/.claude/skills/cadence/SKILL.md
+@@ -19,6 +19,10 @@
+ > 4. **Покажи ролик, который нравится** — разберу, как он сделан, и предложу сделать так же.
+ >
+ > Пока ты не выберешь, я ничего не меняю.
++
++Рабочую папку `$WORK` сначала определи командой `python3 scripts/cadence_paths.py work-root`
++из корня набора. Она только печатает абсолютный путь с учётом `CADENCE_WORK` и способа установки.
++Во всех примерах `work/` означает этот путь.
+ 
+ Если в `$WORK/preferences.md` уже есть записи или в `work/` есть проекты — это не первый
+ раз: поздоровайся короче и предложи продолжить последний проект или начать новый.
+diff --git a/.claude/skills/cadence-showreel/SKILL.md b/.claude/skills/cadence-showreel/SKILL.md
+--- a/.claude/skills/cadence-showreel/SKILL.md
++++ b/.claude/skills/cadence-showreel/SKILL.md
+@@ -37,15 +37,18 @@
+ 
+ ## План → согласие → сборка
+ 
++Команды ниже — из корня набора в Bash (macOS/Linux/WSL).
++
+ ```bash
+-W=work/<проект>                                    # рядом с набором, не внутри
++WORK="$(python3 scripts/cadence_paths.py work-root)"
++W="$WORK/<проект>"
+ python3 scripts/new_project.py <проект> --copy "<трек>" "<работа A>" "<работа B>" --film one-take-showreel
+ python3 scripts/track_structure.py "$W/in/<трек>"   # только чтение: темп, дроп
+ # в $W/film.json пути уже вписаны — поправить отрезки работ и тексты
+ node engine/build.mjs one-take-showreel --film "$W/film.json" --out "$W/build"
+-npm --prefix engine run check -- "$(pwd)/$W/build"
+-npm --prefix engine run snapshot -- "$(pwd)/$W/build" --no-end --at 1,2.5,8,15,20,25,32
+-npm --prefix engine run render -- "$(pwd)/$W/build" --quality high --fps 30 --output "$(pwd)/$W/out/showreel-raw.mp4"
++npm --prefix engine run check -- "$W/build"
++npm --prefix engine run snapshot -- "$W/build" --no-end --at 1,2.5,8,15,20,25,32
++npm --prefix engine run render -- "$W/build" --quality high --fps 30 --output "$W/out/showreel-raw.mp4"
+ python3 scripts/deliver.py "$W/out/showreel-raw.mp4" --out "$W/out/showreel.mp4"
+ python3 scripts/check_reel.py "$W/out/showreel.mp4"
+ ```
+diff --git a/.claude/skills/cadence-breakdown/SKILL.md b/.claude/skills/cadence-breakdown/SKILL.md
+--- a/.claude/skills/cadence-breakdown/SKILL.md
++++ b/.claude/skills/cadence-breakdown/SKILL.md
+@@ -15,7 +15,7 @@
+ - **Нет файла или нет `ffmpeg` — сказать и остановиться.** Не описывать кадры, которых не видел.
+ - Исходный файл не трогать: всё, что получается, — новые файлы в рабочей папке.
+ 
+-Рабочая папка: переменная `CADENCE_WORK`, иначе `../../work` от корня набора, в dev-репозитории — `./work`. Для разбора — `<рабочая папка>/<проект>/breakdown/`.
++Рабочую папку показывает `python3 scripts/cadence_paths.py work-root` из корня набора. Команда учитывает `CADENCE_WORK`, установку `releases/<id>/` и простую распаковку; используй её абсолютный результат. Для разбора — `<рабочая папка>/<проект>/breakdown/`.
+ 
+ ## Шаг 1. Паспорт файла
+ 
+diff --git a/.claude/skills/cadence-motion/SKILL.md b/.claude/skills/cadence-motion/SKILL.md
+--- a/.claude/skills/cadence-motion/SKILL.md
++++ b/.claude/skills/cadence-motion/SKILL.md
+@@ -24,10 +24,10 @@
+ | Стиль | свой пак — `$WORK/packs/<id>/pack.json`, встроенные — `design/packs/<id>/`, по умолчанию `cadence-ember` |
+ | Работы человека | `$WORK/<проект>/`: `in/`, `build/`, `out/` (путь — ниже) |
+ 
+-**Рабочая папка `$WORK`.** Если задана переменная `CADENCE_WORK` — она. Иначе в установленном выпуске (`…/releases/<id>/`) — `../../work` от корня выпуска, в dev-репозитории — `./work`. Все команды ниже запускаются из корня выпуска, а `$WORK` задаётся так:
++**Рабочая папка `$WORK`.** Путь вычисляет общий скрипт: `CADENCE_WORK` имеет приоритет; в установленном выпуске `releases/<id>/` используется общая `work/` рядом с `releases/`, после простой распаковки — `work/` внутри набора. Все команды ниже запускаются из корня набора в Bash (macOS/Linux/WSL), а абсолютный `$WORK` задаётся так:
+ 
+ ```bash
+-WORK="${CADENCE_WORK:-$( [ "$(basename "$(dirname "$PWD")")" = releases ] && echo "$(cd ../.. && pwd)/work" || echo "$PWD/work" )}"
++WORK="$(python3 scripts/cadence_paths.py work-root)"
+ ```
+ 
+ Исходники человека не меняются: результат всегда новый файл в `$WORK/<проект>/out/`.

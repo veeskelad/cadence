@@ -234,9 +234,11 @@ body{background:var(--bg);position:relative;z-index:0}
 <script>document.documentElement.className="js";
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("#copy");if(!b)return;
 var s=document.querySelector("#prompt .cmd").innerText.trim();
-function ok(){b.textContent="Скопировано ✓";b.classList.add("done");setTimeout(function(){b.textContent="Скопировать промпт";b.classList.remove("done")},2200)}
-function old(){var a=document.createElement("textarea");a.value=s;a.setAttribute("readonly","");a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(x){}document.body.removeChild(a)}
-if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(s).then(ok,old)}else{old()}});setTimeout(function(){var e=document.getElementsByClassName("rise");for(var i=e.length;i--;)e[i].className+=" on"},4500)</script>
+document.getElementById("copy-status").textContent="";
+function ok(){document.getElementById("copy-status").textContent="Промпт скопирован.";b.textContent="Скопировано ✓";b.classList.add("done");setTimeout(function(){b.textContent="Скопировать промпт";b.classList.remove("done")},2200)}
+function failed(){b.textContent="Выделить промпт";b.classList.remove("done");var p=document.querySelector("#prompt .cmd"),r=document.createRange(),selection=window.getSelection();window.location.hash="prompt";r.selectNodeContents(p);selection.removeAllRanges();selection.addRange(r);document.getElementById("copy-status").textContent="Не удалось скопировать автоматически. Текст выделен: скопируй его вручную."}
+function old(){var a=document.createElement("textarea"),copied=false;a.value=s;a.setAttribute("readonly","");a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{copied=document.execCommand("copy")===true}catch(x){}finally{document.body.removeChild(a)}if(copied){ok()}else{failed()}}
+if(navigator.clipboard&&window.isSecureContext){try{navigator.clipboard.writeText(s).then(ok,old)}catch(x){old()}}else{old()}});setTimeout(function(){var e=document.getElementsByClassName("rise");for(var i=e.length;i--;)e[i].className+=" on"},4500)</script>
 <main>
 
 <header class="hero"><div class="wide">
@@ -431,12 +433,22 @@ SHA-256 и безопасной распаковке ZIP, остановись �
 домашнюю папку, соседние проекты, браузерные профили, cookies, ключи и личные
 файлы. Не используй Git, sudo и платные сервисы. Не изменяй личные файлы.
 
-1. Определи корень установки без изменений.
+1. Определи корень установки. До проверки корня ничего не меняй.
    - Если в открытой папке есть `.cadence-install.json`, используй её как корень
      продукта после проверки по правилам ниже.
    - Если открытая папка пустая, используй её как новый корень.
-   - Если открытая папка не пустая и не является установкой `Cadence`, создай
-     в ней отдельную папку `Cadence` и используй только её.
+   - Если единственный объект в открытой папке — обычный файл cadence-*.zip,
+     предварительно выбери эту папку. После шага 2 проверь точное совпадение
+     имени с archive_filename; при несовпадении остановись. Не создавай вложенную
+     папку только из-за приложенного архива.
+   - Иначе, если папка не пустая и не является установкой `Cadence`, проверь
+     только её дочернюю папку `Cadence`. Создай её, только если её нет. Если она
+     пустая — используй её; если в ней есть `.cadence-install.json` — проверь её
+     как установку. Иначе остановись: не смешивай набор с чужими файлами.
+   - До записи проверь реальные пути: корень должен остаться внутри открытой
+     папки; `.cadence-install.json`, `releases`, выбранный выпуск и существующие
+     компоненты этих путей не должны быть symlink, junction или reparse point.
+     При сомнении остановись, не следуй ссылкам.
    - Если выбранная папка содержит признаки полной версии, остановись и попроси
      открыть отдельную папку. Не смешивай версии.
    - После выбора корня считай все относительные пути ниже путями внутри этого
@@ -451,18 +463,28 @@ https://veeskelad.github.io/cadence/current/manifest.json
 version, archive_filename, sha256, archive_size_bytes, max_expanded_bytes,
 verified_files, fresh_install_tested и tested_update_from. archive_url должен быть
 HTTPS-адресом точного версионного ZIP на том же домене и не должен вести обратно
-на `current`. При ошибке остановись.
+на `current`. Не допускай перенаправления на другой домен или HTTP.
+release_id и archive_filename должны быть простыми именами без разделителей,
+`..`, управляющих символов и абсолютных путей. Проверь типы и диапазоны полей:
+размеры и verified_files — положительные целые, fresh_install_tested — boolean,
+tested_update_from — массив строк, sha256 — ровно 64 шестнадцатеричных символа.
+При ошибке остановись.
 
 3. Если существует `.cadence-install.json`, проверь schema `cadence.local-install.v1`,
 product `Cadence`, release_id, version, относительный active_release и
-archive_sha256. active_release обязан оставаться внутри `./releases/`, вести на
-обычную папку и содержать внутренний `manifest.json` с тем же release_id и
-product_version, равным version.
-   - Если release_id совпадает с указателем, проверь все файлы по хешам
-     внутреннего manifest и ничего не переустанавливай.
+archive_sha256. Проверь локальный release_id по тем же правилам простого имени.
+active_release обязан точно равняться `releases/` + локальный release_id, вести
+на обычную папку внутри корня и содержать внутренний `manifest.json` с тем же
+release_id и product_version, равным version. Другие пути и алиасы отклони.
+   - Если release_id совпадает с указателем, archive_sha256 должен совпасть
+     с sha256 указателя. Это режим проверки: продолжи шаги 4–6, чтобы получить
+     доверенный manifest из архива с проверенным SHA-256. Не доверяй только
+     локальному manifest: его могли изменить вместе с файлами.
+     После сверки в шаге 7 ничего не переустанавливай и не переписывай указатель.
    - Если установленный release_id отличается и отсутствует в tested_update_from,
      ничего не меняй.
-   - Понижение версии не выполняй.
+   - Понижение версии не выполняй. Версии сравнивай по числовым компонентам,
+     а не как строки (например, 1.10 новее 1.2); если формат непонятен, остановись.
 
 4. Для первой установки продолжай только при `fresh_install_tested: true`. Если
 точный archive_filename уже приложен обычным файлом в корне, используй его. Иначе
@@ -471,19 +493,31 @@ product_version, равным version.
 превышать 64 МБ. Посчитай SHA-256 и сравни с указателем.
 
 5. Безопасно распакуй ZIP только во временную пустую папку. Отклони абсолютные
-пути, `..`, symlink, hardlink, устройства и записи вне корня. Разрешён ровно один
-корень с именем release_id. Суммарный размер обычных файлов не должен превышать
-max_expanded_bytes.
+пути, `..`, обратные слеши, имена дисков, symlink, hardlink, устройства и записи
+вне корня. Отклони повторяющиеся и конфликтующие пути (включая различие только
+регистром для Windows/macOS). Разрешён ровно один корень с именем release_id.
+Суммарный размер обычных файлов при чтении и распаковке не должен превышать
+max_expanded_bytes; не доверяй только размерам в заголовке ZIP.
 
 6. Проверь внутренний `manifest.json`: schema_version `cadence-motion-studio.manifest.v1`,
 product `Cadence`, совпадающий release_id и product_version, равный version
-указателя. Проверь каждый указанный файл и SHA-256, отсутствие пропущенных файлов
-и точное число verified_files.
+указателя. Проверь безопасные относительные пути в files, каждый файл и SHA-256,
+отсутствие пропущенных и лишних файлов. В свежем ZIP разрешены только сам
+manifest.json и ровно verified_files обычных файлов из files; manifest.json
+не входит в этот счётчик. Каталоги не считай файлами.
 
-7. Создай `./releases`, только если её ещё нет. Перенеси проверенный выпуск
+7. Повтори проверку реальных путей перед записью. Создай `./releases`, только
+если её ещё нет. Перенеси проверенный выпуск
 create-only в `./releases/RELEASE_ID`. Существующие выпуски не удаляй и не
-перезаписывай. Если целевая папка уже существует, принимай её только после такой
-же полной проверки, иначе остановись. Атомарно запиши `.cadence-install.json` со
+перезаписывай. Если целевая папка уже существует, проверь каждый её ожидаемый файл
+по manifest сверенного архива и побайтовое совпадение самого manifest.json.
+До чтения каждого ожидаемого файла, включая manifest.json, проверь обычный тип,
+отсутствие symlink/junction/reparse point во всех компонентах его пути и реальный
+путь внутри папки выпуска. При ссылке или выходе за границу остановись.
+Дополнительные локальные файлы (например node_modules) не удаляй. При несовпадении
+остановись; не исправляй их автоматически. В режиме проверки перейди к шагу 8:
+ни выпуск, ни `.cadence-install.json` не переписывай.
+Для новой установки или обновления атомарно запиши `.cadence-install.json` со
 значениями: schema, product, version, release_id, относительный
 `active_release: releases/RELEASE_ID` и archive_sha256. Не записывай туда
 абсолютные пути, ключи и пользовательские данные.
@@ -499,8 +533,12 @@ create-only в `./releases/RELEASE_ID`. Существующие выпуски 
 При ошибке остановись и сообщи номер шага и очищенный текст ошибки без ключей,
 имени пользователя и абсолютных путей. Ничего автоматически не удаляй.</div>
       <p class="pbtn"><button type="button" class="copy" id="copy">Скопировать промпт</button><a class="pb-open" href="#prompt">Показать текст целиком</a><a class="pb-close" href="#get">Свернуть</a></p>
+      <p class="cap" id="copy-status" role="status" aria-live="polite"></p>
       <p class="cap">Агент сам скачает и проверит набор, а потом подскажет, какую папку открыть.
-      Открой её и напиши «привет» — дальше он всё объяснит. Чтобы обновиться, отправь этот же текст ещё раз.</p>
+      Открой её и напиши «привет» — дальше он всё объяснит. Движок и нужные инструменты
+      агент проверит отдельно и попросит согласие на установку, если их ещё нет.
+      Для обновления открой корневую папку установки, где лежит `.cadence-install.json`,
+      и отправь этот же текст ещё раз.</p>
     </div>
   </div>
 </div></section>
