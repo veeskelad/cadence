@@ -35,6 +35,16 @@ class CurrentArchive(unittest.TestCase):
             for name,sha in manifest['files'].items():
                 self.assertEqual(hashlib.sha256(z.read(prefix+name)).hexdigest(),sha,name)
             self.assertNotIn('gateway.py',manifest['files'])
+    def test_skill_mirrors_match_for_all_agents(self):
+        prefix=self.pointer['release_id']+'/'
+        with zipfile.ZipFile(self.archive) as z:
+            manifest=json.loads(z.read(prefix+'manifest.json'))
+            self.assertTrue(manifest['skill_mirrors_byte_identical'])
+            for skill in manifest['skill_names']:
+                canonical=z.read(prefix+'skills/'+skill+'/SKILL.md')
+                for agent in ['.claude','.agents']:
+                    self.assertEqual(z.read(prefix+agent+'/skills/'+skill+'/SKILL.md'),canonical,skill)
+
     def test_demo_fix_is_in_archive(self):
         prefix=self.pointer['release_id']+'/'
         with zipfile.ZipFile(self.archive) as z:

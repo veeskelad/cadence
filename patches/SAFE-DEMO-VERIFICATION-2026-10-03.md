@@ -119,3 +119,7 @@ Fresh/repeat/update установки candidate отдельно проверя
 
 Review source patch сохранён отдельно в `patches/`. Public Pages и ZIP
 не публиковались; новая версия остаётся предметом отдельного review/release решения.
+
+## Финальный onboarding update кандидата
+
+Первоначальный demo candidate SHA68f33226... из отчёта выше заменён final ZIP SHA c9aa89de509a4572ea78efd6e1dd5131d2fcc957b1e8989aa3da74a6397273fa (2873122байта). Изменены только onboarding/docs, scope и их manifestSHA; engine/template/film bytes и подтверждённые41 defaultbuildfiles не изменились. Новый install/repeat/updateQA passed. Актуальный источник истины: current/manifest.json в PR; опубликованный Pages1.3 этим не меняется.
