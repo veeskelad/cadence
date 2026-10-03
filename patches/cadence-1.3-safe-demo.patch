@@ -1,0 +1,282 @@
+--- a/engine/templates/beat-reel/index.html
++++ b/engine/templates/beat-reel/index.html
+@@ -39,19 +39,21 @@
+       <!-- cadence:audio -->
+     </div>
+     <script type="application/json" id="film">
+-{"hook": {"title": "Весь этот ролик", "accent": "— код", "sub": "его написал агент"}, "mark": {"name": "Cadence", "tag": "моушн-студия для агента", "cta": "Забирай скилл бесплатно"},
++{"hook": {"title": "Весь этот ролик", "accent": "— код", "sub": "его написал агент"}, "mark": {"name": "Cadence", "tag": "дизайн · моушн · монтаж · звук", "cta": "Забирай скилл бесплатно"},
+  "reel": {"bpm": 100, "beat": 0.6, "total": 20, "hook": 3, "cuts": 12, "mark": 5, "perBeat": 16, "kick": []}}
+     </script>
+     <script type="module">
+       import {bindSeek, clamp, lerp, invLerp, smoothstep, expoOut, spring, rng} from './lib/motion.js';
+       import * as S from './lib/shots.js';
++      import {safeArea, fitText, safeShotContext} from './lib/reel-layout.js';
+ 
+       const film = JSON.parse(document.getElementById('film').textContent);
+       const R = film.reel, B = R.beat, b = (n) => n * B;
+       const root = document.getElementById('root');
+       const W = Number(root.dataset.width), H = Number(root.dataset.height);
+       const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+-      const g = cv.getContext('2d');
++      const A = safeArea(W, H);
++      const g = safeShotContext(cv.getContext('2d'), A, W, H);
+       const css = getComputedStyle(root);
+       const C = (name) => css.getPropertyValue(name).trim();
+       // палитра генераторов — из пака (цвета сигнала, фона и текста)
+@@ -78,26 +80,24 @@
+       }
+ 
+       // ---------- хук ----------
+-      function drawHook(beat, frame) {
++      function drawHook(beat, frame, alpha = 1) {
+         const lines = [
+-          {text: film.hook.title, font: (s) => `400 ${s}px ${SERIF}`, size: 118, col: S.PAL.cream, y: H * 0.43, at: 0.1},
+-          {text: film.hook.accent, font: (s) => `400 ${s}px ${SERIF}`, size: 250, col: S.PAL.coral, y: H * 0.43 + 250, at: 0.45},
+-          {text: film.hook.sub ?? '', font: (s) => `500 ${s}px ${MONO}`, size: 44, col: S.PAL.ash, y: H * 0.43 + 360, at: 0.85},
++          {text: film.hook.title, font: (s) => `400 ${s}px ${SERIF}`, size: 118, col: S.PAL.cream, y: A.cy - 50, at: 0.1},
++          {text: film.hook.accent, font: (s) => `400 ${s}px ${SERIF}`, size: 250, col: S.PAL.coral, y: A.cy + 190, at: 0.45},
++          {text: film.hook.sub ?? '', font: (s) => `500 ${s}px ${MONO}`, size: 44, col: S.PAL.ash, y: A.cy + 300, at: 0.85},
+         ];
+         g.textBaseline = 'alphabetic';
+         lines.forEach((ln, i) => {
+           if (!ln.text) return;
+-          let size = ln.size;
+-          g.font = ln.font(size);
+-          const tw = g.measureText(ln.text).width;
+-          if (tw > W * 0.86) { size = Math.floor(size * W * 0.86 / tw); g.font = ln.font(size); }
++          // Sum character advances: glyph-by-glyph drawing does not retain whole-word kerning.
++          const fitted = fitText(g, ln.text, ln.font, ln.size, A.width * 0.82);
+           const p = clamp((beat - ln.at) / 0.6), chars = [...ln.text], shown = Math.floor(p * (chars.length + 1));
+-          let x = (W - g.measureText(ln.text).width) / 2;
++          let x = A.cx - fitted.width / 2;
+           chars.forEach((ch, j) => {
+             const cw = g.measureText(ch).width;
+             if (ch !== ' ') {
+-              if (j < shown) { g.globalAlpha = 1; g.fillStyle = ln.col; g.textAlign = 'left'; g.fillText(ch, x, ln.y); }
+-              else { g.globalAlpha = 0.55; g.fillStyle = S.PAL.coral; g.textAlign = 'center'; g.fillText(S.glyph(i + 31, j, frame), x + cw / 2, ln.y); }
++              if (j < shown) { g.globalAlpha = alpha; g.fillStyle = ln.col; g.textAlign = 'left'; g.fillText(ch, x, ln.y); }
++              else { g.globalAlpha = alpha * 0.55; g.fillStyle = S.PAL.coral; g.textAlign = 'center'; g.fillText(S.glyph(i + 31, j, frame), x + cw / 2, ln.y); }
+             }
+             x += cw;
+           });
+@@ -108,7 +108,7 @@
+       // ---------- полоса ударов внизу: зритель видит, что смена — ровно на удар ----------
+       function drawStrip(beat, alpha) {
+         if (alpha <= 0) return;
+-        const y = H - 250, hh = 70, ppb = 150, play = W / 2;
++        const y = A.bottom - 90, hh = 70, ppb = 150, play = A.cx;
+         g.save(); g.globalAlpha = alpha;
+         g.fillStyle = S.PAL.ink; g.globalAlpha = alpha * 0.88; g.fillRect(0, y - 70, W, hh + 120); g.globalAlpha = alpha;
+         const bw = ppb / R.perBeat;
+@@ -127,22 +127,22 @@
+         g.fillStyle = S.PAL.cream; g.fillRect(play - 2, y - 24, 4, hh + 40);
+         g.font = `600 28px ${MONO}`; g.fillStyle = S.PAL.coral; g.textBaseline = 'alphabetic';
+         const label = `${Math.round(R.bpm)} BPM`;
+-        g.fillText(label, 60, y - 34);
+-        g.fillStyle = S.PAL.ash; g.fillText(' · смена кадра на удар', 60 + g.measureText(label).width, y - 34);
++        g.fillText(label, A.left + 24, y - 34);
++        g.fillStyle = S.PAL.ash; g.fillText(' · смена кадра на удар', A.left + 24 + g.measureText(label).width, y - 34);
+         g.restore();
+       }
+ 
+       // ---------- знак: маленькие кадры слетаются в кольцо вокруг названия ----------
+-      const RING_N = 28, ringR = Math.min(W, H) * 0.36, TW = 92, TH = TW * 16 / 9;
++      const RING_N = 28, ringR = Math.min(A.width * 0.35, A.height * 0.27), TW = 78, TH = TW * 16 / 9;
+       const tileCv = Array.from({length: RING_N}, () => { const c = document.createElement('canvas'); c.width = 180; c.height = 320; return c; });
+       const tr = rng(11);
+       const tiles = Array.from({length: RING_N}, (_, i) => {
+         const a = -Math.PI / 2 + (i / RING_N) * Math.PI * 2;
+         const fromA = tr() * Math.PI * 2, fromR = Math.hypot(W, H) * (0.6 + tr() * 0.3);
+-        return {a, fx: W / 2 + Math.cos(fromA) * fromR, fy: H * 0.42 + Math.sin(fromA) * fromR, rot: (tr() - 0.5) * 3, fn: order[(i * 7) % order.length], tone: S.TONES[(i * 3) % S.TONES.length], delay: (i / RING_N) * 0.9};
++        return {a, fx: A.cx + Math.cos(fromA) * fromR, fy: A.cy - 70 + Math.sin(fromA) * fromR, rot: (tr() - 0.5) * 3, fn: order[(i * 7) % order.length], tone: S.TONES[(i * 3) % S.TONES.length], delay: (i / RING_N) * 0.9};
+       });
+       function drawMark(beat, t) {
+-        const t0 = b(T_MARK), cx = W / 2, cy = H * 0.42;
++        const t0 = b(T_MARK), cx = A.cx, cy = A.cy - 70;
+         tiles.forEach((tl, i) => {
+           const local = t - t0 - tl.delay * B;
+           if (local < 0) return;
+@@ -156,15 +156,16 @@
+         });
+         const m = film.mark;
+         const fade = (start, dur = 0.5) => eo((beat - start) / dur);
+-        const a1 = fade(T_MARK + 1.2), a2 = fade(T_MARK + 1.8), a3 = fade(T_MARK + 2.4);
++        // Name starts on the cut, so offscreen tiles never leave a black interval.
++        const a1 = 0.18 + 0.82 * fade(T_MARK, 0.4), a2 = fade(T_MARK + 1.8), a3 = fade(T_MARK + 2.4);
+         g.textAlign = 'center'; g.textBaseline = 'middle';
+         let size = 170; g.font = `400 ${size}px ${SERIF}`;
+         const tw = g.measureText(m.name).width; if (tw > ringR * 1.5) { size = Math.floor(size * ringR * 1.5 / tw); g.font = `400 ${size}px ${SERIF}`; }
+         g.globalAlpha = a1; g.fillStyle = S.PAL.cream; g.fillText(m.name, cx, cy + (1 - a1) * 30);
+-        if (m.tag) { g.globalAlpha = a2; g.font = `500 34px ${MONO}`; g.fillStyle = S.PAL.ash; g.fillText(m.tag.toUpperCase(), cx, cy + ringR + TH / 2 + 90 + (1 - a2) * 16); }
++        if (m.tag) { g.globalAlpha = a2; fitText(g, m.tag.toUpperCase(), (size) => `500 ${size}px ${MONO}`, 34, A.width - 48); g.fillStyle = S.PAL.ash; g.fillText(m.tag.toUpperCase(), cx, A.bottom - 230 + (1 - a2) * 16); }
+         if (m.cta) {
+-          g.globalAlpha = a3; g.font = `700 44px ${SANS}`;
+-          const pw = g.measureText(m.cta).width + 100, py = cy + ringR + TH / 2 + 190 + (1 - a3) * 24;
++          g.globalAlpha = a3; fitText(g, m.cta, (size) => `700 ${size}px ${SANS}`, 44, A.width - 148);
++          const pw = g.measureText(m.cta).width + 100, py = A.bottom - 92 + (1 - a3) * 24;
+           g.fillStyle = S.PAL.coral; S.roundRect(g, cx - pw / 2, py - 46, pw, 92, 46); g.fill();
+           g.fillStyle = S.PAL.ink; g.fillText(m.cta, cx, py + 2);
+         }
+@@ -180,19 +181,27 @@
+           let k = -1; cutBeats.forEach((cb, i) => { if (beat >= cb) k = i; });
+           if (k >= 0) {
+             const start = cutBeats[k], p = beat - start, sc = 1 + 0.05 * (1 - eo(p * 4));
+-            g.save(); g.translate(W / 2, H / 2); g.scale(sc, sc); g.translate(-W / 2, -H / 2);
+-            S.withTone(S.TONES[(k * 3) % S.TONES.length], () => order[k % order.length](g, 0, 0, W, H, p, beat));
++            g.save(); g.translate(A.cx, A.cy); g.scale(sc, sc); g.translate(-A.cx, -A.cy);
++            S.withTone(S.TONES[(k * 3) % S.TONES.length], () => order[k % order.length](g, A.left, A.top, A.width, A.height, p, beat));
+             g.restore();
+           }
+           // хук: до дропа читается, на дропе разлетается вперёд
+           const out = clamp((beat - T_DROP) / 0.25);
+           if (out < 1) {
+-            const sc = 1 + 0.04 * smoothstep(T_DROP - 1, T_DROP, beat) + 2.2 * out * out;
+-            g.save(); g.globalAlpha = 1 - out; g.translate(W / 2, H * 0.5); g.scale(sc, sc); g.translate(-W / 2, -H * 0.5);
+-            drawHook(beat, frame); g.restore();
++            const sc = 1 + 0.04 * smoothstep(T_DROP - 1, T_DROP, beat) + 0.1 * out * out;
++            g.save(); g.translate(A.cx, A.cy); g.scale(sc, sc); g.translate(-A.cx, -A.cy);
++            drawHook(beat, frame, 1 - out); g.restore();
+           }
+           drawStrip(beat, smoothstep(T_DROP - 0.2, T_DROP + 0.3, beat) * (1 - smoothstep(T_MARK - 0.4, T_MARK, beat)));
+         } else {
++          // Hold the outgoing shot while the first tiles travel into view.
++          const overlap = 1 - smoothstep(0, 0.45, t - b(T_MARK));
++          if (overlap > 0) {
++            const k = cutBeats.length - 1;
++            g.save(); g.globalAlpha = overlap;
++            S.withTone(S.TONES[(k * 3) % S.TONES.length], () => order[k % order.length](g, A.left, A.top, A.width, A.height, T_MARK - cutBeats[k], T_MARK));
++            g.restore();
++          }
+           drawMark(beat, t);
+         }
+       }
+--- /dev/null
++++ b/engine/lib/reel-layout.js
+@@ -0,0 +1,47 @@
++// Conservative Reels/TikTok layout. Backgrounds may bleed; text clips to the safe area.
++export function safeArea(width, height) {
++  const left = Math.ceil(width * 0.06), right = Math.floor(width * 0.82);
++  const top = Math.ceil(height * 0.15), bottom = Math.floor(height * 0.75);
++  return {left, right, top, bottom, width: right - left, height: bottom - top,
++    cx: (left + right) / 2, cy: (top + bottom) / 2};
++}
++
++export function fitText(ctx, text, font, size, maxWidth) {
++  ctx.font = font(size);
++  const measure = () => [...text].reduce((sum, ch) => sum + ctx.measureText(ch).width, 0);
++  const width = measure();
++  if (width > maxWidth) {
++    size = Math.max(1, Math.floor(size * maxWidth / width));
++    ctx.font = font(size);
++  }
++  return {size, width: measure()};
++}
++
++// Preserve animated positions and rotations. Only clip text at the UI margins.
++// The drawing functions still paint full-bleed backgrounds and abstract decoration.
++export function safeShotContext(ctx, area, width, height) {
++  return new Proxy(ctx, {
++    get(target, key) {
++      if (key === 'fillText' || key === 'strokeText') return (...args) => {
++        const transform = target.getTransform();
++        target.save();
++        target.setTransform(1, 0, 0, 1, 0, 0);
++        target.beginPath(); target.rect(area.left, area.top, area.width, area.height); target.clip();
++        target.setTransform(transform);
++        target[key](...args);
++        target.restore();
++      };
++      if (key === 'fillRect') return (x, y, w, h) => {
++        if (x === area.left && y === area.top && w === area.width && h === area.height) {
++          const transform = target.getTransform();
++          target.save(); target.setTransform(1, 0, 0, 1, 0, 0);
++          target.fillRect(0, 0, width, height); target.restore();
++          target.setTransform(transform);
++        } else target.fillRect(x, y, w, h);
++      };
++      const value = Reflect.get(target, key, target);
++      return typeof value === 'function' ? value.bind(target) : value;
++    },
++    set(target, key, value) { return Reflect.set(target, key, value, target); },
++  });
++}
+--- /dev/null
++++ b/engine/reel-layout.test.mjs
+@@ -0,0 +1,67 @@
++import {test} from 'node:test';
++import assert from 'node:assert/strict';
++import {safeArea, fitText, safeShotContext} from './lib/reel-layout.js';
++
++test('essential rectangle matches conservative 1080x1920 UI margins', () => {
++  assert.deepEqual(safeArea(1080, 1920), {
++    left: 65, right: 885, top: 288, bottom: 1440, width: 820, height: 1152, cx: 475, cy: 864,
++  });
++  const half = safeArea(540, 960);
++  assert(half.left >= 32.4 && half.right <= 442.8 && half.top >= 144 && half.bottom <= 720);
++});
++
++test('per-character advances fit despite whole-word kerning and longer Cyrillic copy', () => {
++  const ctx = {font: '', measureText(text) {
++    const size = Number(this.font.match(/([\d.]+)px/)[1]);
++    // Whole-word kerning is intentionally different from the advances used by the decoder.
++    return {width: [...text].length * size * 0.58 * (text.length > 1 ? 0.9 : 1)};
++  }};
++  for (const text of ['Весь этот ролик', 'AI · video · code', 'Полная система дизайна, монтажа и звука']) {
++    const result = fitText(ctx, text, (size) => `400 ${size}px serif`, 250, 672);
++    assert(result.width <= 672);
++    const center = 475, maximumDepartureScale = 1.14;
++    assert(center - result.width / 2 * maximumDepartureScale >= 65);
++    assert(center + result.width / 2 * maximumDepartureScale <= 885);
++  }
++});
++
++test('text clips in canvas coordinates even under a shot zoom or rotation', () => {
++  const area = safeArea(1080, 1920), calls = [], states = [];
++  let transform = {a: 1.05, b: 0.1, c: -0.1, d: 1.05, e: -30, f: -40};
++  const original = transform;
++  const ctx = {
++    getTransform() { return transform; },
++    setTransform(...args) { transform = args.length === 1 ? args[0] : Object.fromEntries(['a', 'b', 'c', 'd', 'e', 'f'].map((k, i) => [k, args[i]])); },
++    save() { states.push(transform); }, restore() { transform = states.pop(); },
++    beginPath() { calls.push(['begin']); },
++    rect(...args) { calls.push(['rect', ...args, transform]); },
++    clip() { calls.push(['clip']); },
++    fillText(...args) { calls.push(['fillText', ...args, transform]); },
++    strokeText(...args) { calls.push(['strokeText', ...args, transform]); },
++  };
++  const safe = safeShotContext(ctx, area, 1080, 1920);
++  for (const method of ['fillText', 'strokeText']) {
++    safe[method]('КАДРА', 300, 900);
++    const rect = calls.findLast((call) => call[0] === 'rect');
++    assert.deepEqual(rect.slice(1, 5), [65, 288, 820, 1152]);
++    assert.deepEqual(rect[5], {a: 1, b: 0, c: 0, d: 1, e: 0, f: 0});
++    assert.equal(calls.at(-1).at(-1), original);
++    assert.equal(transform, original);
++    assert.equal(states.length, 0);
++  }
++});
++
++test('shot background bleeds to full canvas while foreground coordinates stay intact', () => {
++  const area = safeArea(1080, 1920), calls = [], stack = [];
++  let matrix = 'shot-transform';
++  const ctx = {getTransform() { return matrix; }, setTransform(...values) { matrix = values.length === 1 ? values[0] : values; },
++    save() { stack.push(matrix); }, restore() { matrix = stack.pop(); },
++    fillRect(...args) { calls.push({args, matrix}); }};
++  const safe = safeShotContext(ctx, area, 1080, 1920);
++  safe.fillRect(area.left, area.top, area.width, area.height);
++  assert.deepEqual(calls[0].args, [0, 0, 1080, 1920]);
++  assert.deepEqual(calls[0].matrix, [1, 0, 0, 1, 0, 0]);
++  assert.equal(matrix, 'shot-transform');
++  safe.fillRect(100, 500, 50, 100);
++  assert.deepEqual(calls[1], {args: [100, 500, 50, 100], matrix: 'shot-transform'});
++});
+--- a/examples/beat-reel/film.json
++++ b/examples/beat-reel/film.json
+@@ -2,5 +2,5 @@
+   "music": {"src": "in/demo-beat.wav", "volume": 0.6},
+   "trackTitle": "демо-бит",
+   "hook": {"title": "Весь этот ролик", "accent": "— код", "sub": "его написал агент"},
+-  "mark": {"name": "Cadence", "tag": "моушн-студия для агента", "cta": "Забирай скилл бесплатно"}
++  "mark": {"name": "Cadence", "tag": "дизайн · моушн · монтаж · звук", "cta": "Забирай скилл бесплатно"}
+ }
