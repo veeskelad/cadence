@@ -5,3 +5,5 @@ Archive SHA256: 64fb0f63ce9fcb2fa691055f8b391aadff37998559fb00b23ccf1739150d1979
 Passed: release verify (523/523, mirrors identical), install contract (1.5 from the live address, update to 1.6, work preserved, 1.5 preserved, same-release no-op, fresh 1.6), inside the installed 1.6: update check without consent stays offline, explicit check reports current, apply refuses an equal version, palette picker runs, style comparison sheet renders with a user pack from work/.
 
 Not performed: full render of the default demo on HyperFrames 0.9.15, conversation test with a new agent. Self-update `apply` against a newer published version can only be exercised once 1.7 exists; it is covered by an offline test with two synthetic releases.
+
+Update from 1.4 (added 2026-11-13): install contract 1.4 → published 1.6 archive passed (fresh 1.4, update, work preserved, 1.4 preserved, no-op, fresh 1.6). First-result guide on a fresh 1.6 install from the live address: the reel renders on HyperFrames 0.9.15 and passes check_reel; the engine check step reports a 404 for a missing Unbounded Vietnamese font file (present since 1.5), fixed in source for the next release.
