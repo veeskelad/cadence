@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — shader field</title>
+    <!--
+      Полноэкранный фрагментный шейдер на чистом WebGL2: без библиотек, картинок и моделей.
+      Режимы (data-mode): planet — процедурная планета с ночными огнями (0xsolty-735200);
+      contour — изолинии как в титрах сериала (abhinayguptha-259981);
+      tunnel — гипнотический тоннель колец (monokern-832979, johnsavage-ai-427263).
+      Кадр = функция uTime, поэтому любой кадр рендера совпадает с превью.
+    -->
+    <!-- cadence:fonts -->
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+      }
+      html, body { margin: 0; background: var(--canvas); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+      #fill { position: absolute; inset: 0; background: var(--canvas); }
+      #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      #copy { position: absolute; left: 0; right: 0; bottom: 260px; text-align: center; color: var(--ink); }
+      #title { font: 600 128px/1 "Literata Variable", Georgia, serif; letter-spacing: 0.32em; text-indent: 0.32em; text-transform: uppercase; opacity: 0; }
+      #rule { width: 280px; height: 3px; margin: 42px auto 0; background: var(--signal); transform: scaleX(0); }
+      #sub { margin-top: 30px; font: 500 30px/1.2 "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="shader-field" data-start="0" data-width="1080" data-height="1920" data-duration="8" data-no-timeline
+      data-mode="planet" data-title="Cadence" data-sub="собрано кодом" data-seed="3">
+      <section id="scene" class="clip" data-start="0" data-duration="8" data-track-index="1">
+        <div id="fill"></div>
+        <canvas id="gl"></canvas>
+        <div id="copy"><div id="title"></div><div id="rule"></div><div id="sub"></div></div>
+      </section>
+    </div>
+    <script type="module">
+      import {bindSeek, stage, token, expoOut, invLerp, premium} from './lib/motion.js';
+
+      const {root, width, height} = stage();
+      const cfg = root.dataset;
+      const MODES = {planet: 0, contour: 1, tunnel: 2};
+      if (!(cfg.mode in MODES)) throw new Error(`shader-field: unknown data-mode ${cfg.mode}`);
+      document.getElementById('title').textContent = cfg.title;
+      document.getElementById('sub').textContent = cfg.sub;
+
+      const canvas = document.getElementById('gl');
+      canvas.width = width; canvas.height = height;
+      const gl = canvas.getContext('webgl2', {preserveDrawingBuffer: true, antialias: false});
+      if (!gl) throw new Error('shader-field: WebGL2 unavailable');
+
+      const vert = `#version 300 es
+      in vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
+      const frag = `#version 300 es
+      precision highp float;
+      out vec4 o;
+      uniform vec2 uRes; uniform float uTime; uniform int uMode; uniform float uSeed;
+      uniform vec3 cCanvas, cSurface, cInk, cSignal, cSignal2;
+
+      float h31(vec3 p){ p = fract(p*0.3183099 + .1 + uSeed*0.013); p *= 17.; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+      float noise(vec3 x){ vec3 i = floor(x), f = fract(x); f = f*f*(3.-2.*f);
+        return mix(mix(mix(h31(i),h31(i+vec3(1,0,0)),f.x), mix(h31(i+vec3(0,1,0)),h31(i+vec3(1,1,0)),f.x),f.y),
+                   mix(mix(h31(i+vec3(0,0,1)),h31(i+vec3(1,0,1)),f.x), mix(h31(i+vec3(0,1,1)),h31(i+vec3(1,1,1)),f.x),f.y), f.z); }
+      float fbm(vec3 p){ float a = .5, s = 0.; for (int i = 0; i < 6; i++){ s += a*noise(p); p = p*2.03 + 1.7; a *= .5; } return s; }
+      mat3 rotY(float a){ float c = cos(a), s = sin(a); return mat3(c,0.,-s, 0.,1.,0., s,0.,c); }
+
+      vec3 planet(vec2 uv){
+        float t = uTime;
+        uv.y -= .16;                                               // шар выше центра: снизу место под титр
+        float D = mix(5.6, 3.5, smoothstep(0., 8., t));           // наезд камеры
+        const float F = 1.9;                                       // фокусное: экран на z = -F
+        float rs = F / sqrt(D*D - 1.);                             // экранный радиус шара R = 1
+        vec3 col = cCanvas * (.6 + .4*(1.-length(uv)));
+        float star = step(.9965, h31(floor(vec3(uv*420., 3.))));   // неподвижные звёзды
+        col += star * .7 * cInk;
+        vec3 ro = vec3(0., 0., D), rd = normalize(vec3(uv, -F));
+        float b = dot(ro, rd), c = dot(ro, ro) - 1., disc = b*b - c;
+        // Солнце сбоку-сзади: терминатор делит диск, на ночной стороне загораются города.
+        // Терминатор заметно идёт по диску: день уходит, на ночной стороне загораются города.
+        vec3 sun = normalize(vec3(cos(-.2 + t*.16), .3, sin(-.2 + t*.16) - .35));
+        if (disc > 0.) {
+          vec3 pos = ro + rd * (-b - sqrt(disc));
+          vec3 n = normalize(pos);
+          vec3 q = rotY(t * .12) * n;
+          float h = fbm(q * 2.2) + .07 * (fbm(q * 13.) - .5);     // мелкая изрезанность берегов
+          float land = smoothstep(.50, .53, h);
+          float mount = smoothstep(.58, .72, h);
+          vec3 ocean = mix(cSurface*0.9, cSignal2*0.55, smoothstep(.3, .5, h));
+          vec3 ground = mix(vec3(.30,.38,.22), vec3(.55,.45,.33), mount);
+          ground = mix(ground, vec3(.92), smoothstep(.72, .8, h) + smoothstep(.82, .92, abs(q.y)));
+          vec3 albedo = mix(ocean, ground, land);
+          float clouds = smoothstep(.52, .8, fbm(rotY(t*.2) * n * vec3(3.1, 6.5, 3.1) + 4.));
+          albedo = mix(albedo, vec3(.95), clouds*.85);
+          float diff = max(dot(n, sun), 0.);
+          float night = smoothstep(.12, -.08, dot(n, sun));
+          float spec = pow(max(dot(reflect(-sun, n), -rd), 0.), 40.) * (1.-land) * (1.-clouds);
+          col = albedo * (diff*1.25 + .06) + spec*.6;
+          float city = land * (1.-mount) * step(.7, noise(q*90.)) * smoothstep(.5, .58, fbm(q*7.));
+          col += night * city * (1.-clouds) * cSignal * 2.2;
+          float rim = pow(1. - max(dot(n, -rd), 0.), 3.);
+          col += rim * cSignal * (.35 + .9*max(dot(n, sun) + .3, 0.));
+        }
+        float d = length(uv) / rs;
+        col += cSignal * .55 * exp(-12.*max(d - 1., 0.)) * step(1., d) * smoothstep(-.6, .6, dot(normalize(vec3(uv,0.)), sun));
+        return col;
+      }
+
+      vec3 contour(vec2 uv){
+        float t = uTime;
+        vec2 p = uv * 2.2 + vec2(t*.03, -t*.02);
+        float f = fbm(vec3(p, t*.06)) + .35*length(uv);
+        float k = f * 22.;
+        float w = abs(fract(k) - .5) / fwidth(k);                    // ширина линии в пикселях, без алиасинга
+        float bold = step(.8, fract(k / 5.));                        // каждая пятая линия — жирнее
+        float line = 1. - smoothstep(0., 1.2 + 1.4*bold, w);
+        float reveal = smoothstep(0., 1.6, t*1.2 - length(uv)*.9);  // линии проступают от центра
+        vec3 col = cCanvas;
+        col = mix(col, cInk*.9, line * reveal * (.45 + .55*fbm(vec3(uv*3., 1.))));
+        float level = .62 + .04*sin(t*.4);                           // одна акцентная изолиния
+        float a = abs(f - level) / fwidth(f);
+        col = mix(col, cSignal, (1. - smoothstep(1.5, 3.5, a)) * smoothstep(2., 3.2, t));
+        col *= 1. - .7*smoothstep(-.28, -.55, uv.y);                 // тёмная подложка под титр
+        return col * (1. - .55*pow(length(uv*vec2(.9, .6)), 2.));
+      }
+
+      vec3 tunnel(vec2 uv){
+        float t = uTime;
+        // Стенки трубы: глубина z = 1/r, угол — вторая координата. Плитки + чёткие швы.
+        float r = max(length(uv), .001), ang = atan(uv.y, uv.x) / 6.2831 + t*.03;
+        float z = .42 / r + t * 1.4;
+        float depth = exp(-(.42 / r) * .55);                       // дальние кольца гаснут
+        vec2 g = vec2(z * 1.5, ang * 18.);
+        vec2 cell = floor(g);
+        float checker = mod(cell.x + cell.y, 2.);
+        vec2 e = abs(fract(g) - .5) / fwidth(g);
+        float seam = 1. - smoothstep(0., 1.3, min(e.x, e.y));
+        float pulse = .5 + .5*sin(cell.x * .9 - t * 5.);           // бегущая волна света по кольцам
+        vec3 col = mix(cSignal2, cSignal, checker) * (.3 + .7*pulse*checker);
+        col = mix(col, cInk, seam * .85);
+        col *= depth;
+        col += cInk * pow(max(0., 1. - r*3.2), 5.) * 1.6;         // свет в конце тоннеля
+        return col * smoothstep(1.4, .35, r);
+      }
+
+      void main(){
+        vec2 uv = (gl_FragCoord.xy - .5*uRes) / min(uRes.x, uRes.y);
+        vec3 col = uMode == 0 ? planet(uv) : uMode == 1 ? contour(uv) : tunnel(uv);
+        // Статичное зерно против бандинга. Зерно, меняющееся каждый кадр, раздувало MP4 до ~50 Мбит/с.
+        col += (h31(vec3(gl_FragCoord.xy, 1.)) - .5) * .02;
+        o = vec4(pow(max(col, 0.), vec3(1./1.1)), 1.);
+      }`;
+
+      const compile = (type, src) => {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src); gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+        return s;
+      };
+      const prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, vert));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, frag));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+      gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'p');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      const u = (n) => gl.getUniformLocation(prog, n);
+      const rgb = (hex) => {
+        const v = parseInt(hex.replace('#', ''), 16);
+        return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255];
+      };
+      gl.uniform2f(u('uRes'), width, height);
+      gl.uniform1i(u('uMode'), MODES[cfg.mode]);
+      gl.uniform1f(u('uSeed'), Number(cfg.seed));
+      for (const [name, v] of [['cCanvas', '--canvas'], ['cSurface', '--surface'], ['cInk', '--ink'], ['cSignal', '--signal'], ['cSignal2', '--signal-2']]) {
+        gl.uniform3fv(u(name), rgb(token(v)));
+      }
+      gl.viewport(0, 0, width, height);
+
+      const title = document.getElementById('title');
+      const rule = document.getElementById('rule');
+      const sub = document.getElementById('sub');
+      function render(t) {
+        gl.uniform1f(u('uTime'), t);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        const a = premium(invLerp(4.6, 6.2, t));
+        title.style.opacity = a;
+        title.style.letterSpacing = `${0.62 - 0.3 * a}em`;
+        title.style.filter = `blur(${(1 - a) * 10}px)`;
+        rule.style.transform = `scaleX(${expoOut(invLerp(5.4, 6.4, t))})`;
+        sub.style.opacity = expoOut(invLerp(5.9, 6.8, t));
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>

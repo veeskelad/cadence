@@ -51,6 +51,7 @@ video{display:block;width:100%;max-width:330px;aspect-ratio:9/16;margin:0 auto;b
 @keyframes play{from{transform:translateX(0)}to{transform:translateX(320px)}}
 .beat .fr{opacity:.18;animation:hit 4s steps(1) infinite}
 @keyframes hit{0%{opacity:1}12.5%{opacity:.18}100%{opacity:.18}}
+.plug{margin:12px 0 14px;padding:14px 16px;border-radius:12px;background:#080706;border:1px solid var(--line2);font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-x:auto}
 .cap{color:var(--dim2);font-size:14px;line-height:1.55;margin-top:10px}
 .quote{margin:34px 0 0;padding:2px 0 2px 22px;border-left:3px solid var(--acc);font-size:clamp(22px,4.6vw,28px);line-height:1.3}
 
@@ -286,7 +287,7 @@ if(navigator.clipboard&&window.isSecureContext){try{navigator.clipboard.writeTex
   <ul class="zones rise">
     <li><b>/ твои проекты /</b><span>копии исходников, сценарии, готовые ролики</span></li>
     <li><b>/ твой стиль и правки /</b><span>цвета, шрифты и всё, что агент про тебя запомнил</span></li>
-    <li><b>/ система /</b><span>обновляется отдельно, новая версия встаёт рядом со старой</span></li>
+    <li><b>/ система /</b><span>обновляется отдельно: если разрешишь, агент сам скажет, что вышла новая версия, и по слову «обнови» поставит её рядом со старой</span></li>
   </ul>
 </div></section>
 
@@ -373,8 +374,12 @@ if(navigator.clipboard&&window.isSecureContext){try{navigator.clipboard.writeTex
     <p class="label">Стиль</p>
     <h3>Ролики в твоём стиле</h3>
     <p>Пришли агенту три-пять картинок или опиши словами, и он соберёт твой стиль: цвета, шрифты,
-    скругления, характер движения. Читается ли текст на фоне, проверяет скрипт. По умолчанию
-    стоит тёплая тёмная тема:</p>
+    скругления, характер движения. Читается ли текст на фоне, проверяет скрипт.</p>
+    <p>Не знаешь, какой стиль твой? Агент покажет два-четыре варианта прямо на кадрах твоего
+    ролика и подберёт цвета по классическому словарю сочетаний Сандзо Вады. Скажешь «этот цвет не
+    нравится» или «ближе к чёрно-белому», и следующие варианты это учтут. Готовый стиль лежит в твоей
+    папке вместе с правилами движения и переходов. Таких стилей может быть сколько угодно.</p>
+    <p>По умолчанию стоит тёплая тёмная тема:</p>
     <div class="sw"><i style="background:#0E0C0B;color:#F0EEE6">фон<br>#0E0C0B</i><i style="background:#1C1917;color:#F0EEE6">карточки<br>#1C1917</i><i style="background:#F0EEE6;color:#0E0C0B">текст<br>#F0EEE6</i><i style="background:#A39D94;color:#0E0C0B">подписи<br>#A39D94</i><i style="background:#D97757;color:#0E0C0B">акцент<br>#D97757</i><i style="background:#F2A65A;color:#0E0C0B">второй акцент<br>#F2A65A</i><i style="background:#FF8A4C;color:#0E0C0B">успех<br>#FF8A4C</i></div>
   </div>
 </div></section>
@@ -410,7 +415,7 @@ if(navigator.clipboard&&window.isSecureContext){try{navigator.clipboard.writeTex
     <article><div class="st"><i>05</i><h3>Ритм и sound design</h3></div>
       <ul><li>кадр на каждый удар</li><li>темп и дроп</li><li>звуки на события</li><li>своя библиотека звуков</li><li>громкость под площадки</li></ul></article>
     <article><div class="st"><i>06</i><h3>Стиль и память</h3></div>
-      <ul><li>твой стиль</li><li>память о правках</li><li>проверка перед публикацией</li><li>готовые фразы агенту</li><li>обновления</li></ul></article>
+      <ul><li>твой стиль</li><li>подбор стиля на твоих кадрах</li><li>память о правках</li><li>проверка перед публикацией</li><li>готовые фразы агенту</li><li>обновления по согласию</li></ul></article>
   </div>
 </div></section>
 
@@ -419,8 +424,12 @@ if(navigator.clipboard&&window.isSecureContext){try{navigator.clipboard.writeTex
   <p class="lead rise">Бесплатно, без регистрации и ключей.</p>
   <div class="free rise">
     <p class="label">[ Cadence · бесплатно ]</p>
-    <p>В версии 1.6.1 — 26 навыков и 18 самостоятельных рецептов элементов: композиция, поведение анимации, состояния и свой стиль. Не знаешь, какой стиль твой, — агент покажет варианты прямо на твоих кадрах. Новые версии приходят сами, если разрешишь проверку.</p>
-<p>Открой пустую папку в Claude Code или Codex и отправь агенту этот текст:</p>
+    <p>В версии 1.7 — 26 навыков и 18 самостоятельных рецептов элементов: композиция, поведение анимации, состояния и свой стиль. Не знаешь, какой стиль твой, — агент покажет варианты прямо на твоих кадрах. Новые версии приходят сами, если разрешишь проверку.</p>
+<p>В Claude Code проще всего плагином. Две команды в терминале, и Cadence доступен в любом проекте, а новые версии приходят через Claude Code:</p>
+<pre class="plug">claude plugin marketplace add veeskelad/cadence
+claude plugin install cadence@cadence</pre>
+<p>Чтобы обновления ставились сами, включи автообновление в <code>/plugin</code> → Marketplaces → cadence. Твои проекты и стиль лежат в <code>~/Cadence/work</code>, обновление их не трогает.</p>
+<p>В Codex или без плагина: открой пустую папку и отправь агенту этот текст:</p>
     <div class="promptbox" id="prompt">
       <div class="cmd">Установи, проверь или безопасно обнови `Cadence` до текущей опубликованной
 версии.
@@ -582,7 +591,7 @@ create-only в `./releases/RELEASE_ID`. Существующие выпуски 
 </div></section>
 
 </main>
-<div class="foot">Cadence 1.6.1</div>
+<div class="foot">Cadence 1.7</div>
 
 <script>
 (function(){

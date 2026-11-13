@@ -1,0 +1,21 @@
+{
+  "about": "Звук ролика в бит: события в долях ролика (hook — длина хука, cuts — кадров, mark — знак). Пик каждого файла ложится на событие.",
+  "events": [
+    ["key-1", 0.15], ["key-2", 0.4], ["key-3", 0.65], ["key-1", 0.9], ["key-2", 1.15],
+    ["riser", "hook"],
+    ["hit", "hook"],
+    ["tick", "range(hook + 4, hook + cuts, 4)"],
+    ["whoosh", "hook + cuts + 0.4"],
+    ["bell", "hook + cuts + 1.2"]
+  ],
+  "defaultSfx": {
+    "key-1": {"src": "sounds/key-1.wav", "onset": 0, "peak": 0.005, "volume": 0.3},
+    "key-2": {"src": "sounds/key-2.wav", "onset": 0, "peak": 0.005, "volume": 0.3},
+    "key-3": {"src": "sounds/key-3.wav", "onset": 0, "peak": 0.005, "volume": 0.3},
+    "tick": {"src": "sounds/tick.wav", "onset": 0, "peak": 0.005, "volume": 0.25},
+    "riser": {"src": "sounds/riser.wav", "onset": 0.623, "peak": 1.88, "volume": 0.3},
+    "hit": {"src": "sounds/hit.wav", "onset": 0, "peak": 0.007, "volume": 0.4},
+    "whoosh": {"src": "sounds/whoosh.wav", "onset": 0.046, "peak": 0.551, "volume": 0.4},
+    "bell": {"src": "sounds/bell.wav", "onset": 0, "peak": 0.01, "volume": 0.3}
+  }
+}

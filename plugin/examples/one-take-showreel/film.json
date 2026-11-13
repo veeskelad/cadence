@@ -1,0 +1,19 @@
+{
+  "music": {"src": "in/track.mp3", "volume": 0.6},
+  "trackTitle": "название трека",
+  "trackArtist": "исполнитель",
+  "hook": {"title": "Весь этот ролик", "accent": "— код", "sub": "его написал агент"},
+  "screens": [
+    {"src": "in/work-a.mp4", "from": 0, "to": 4, "speed": 1},
+    {"src": "in/work-b.mp4", "from": 0, "to": 3.5, "speed": 1.1, "labelTop": 190}
+  ],
+  "labels": ["вход → первая работа", "трек → моушн-графика в ритм", "строка текста → 3D-сцена кодом", "код → вторая работа"],
+  "prompt": "шар из света, дышит в такт",
+  "codeFile": "promo.mjs",
+  "code": ["// промо 30 с", "", "const scenes = [", "  { at: beat(0), title: 'Привет' },", "  { at: beat(4), tap: 'Начать' },", "  { at: beat(8), card: 'Готово' },", "]", "", "$ render --fps 30"],
+  "codeOutput": "promo.mp4",
+  "tools": ["HyperFrames", "three.js", "ffmpeg", "DaVinci Resolve", "Whisper", "твой агент"],
+  "toolsTitle": "всё в одном месте",
+  "reveal": ["Монтаж, 3D, звук, код —", "в одном месте для *твоего *агента"],
+  "mark": {"name": "Cadence", "tag": "моушн-студия для агента", "cta": "Забирай скилл бесплатно"}
+}
