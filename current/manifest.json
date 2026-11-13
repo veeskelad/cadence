@@ -14,6 +14,7 @@
   "published_at": "2026-11-13",
   "fresh_install_tested": true,
   "tested_update_from": [
+    "cadence-1.4",
     "cadence-1.5"
   ]
 }
