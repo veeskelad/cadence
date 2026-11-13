@@ -3,9 +3,11 @@
 
     python3 scripts/check_reel.py work/first-reel/out/reel.mp4
     python3 scripts/check_reel.py reel.mp4 --json
+    python3 scripts/check_reel.py reel.mp4 --flashes [--allow 3.2,8.27]
 
 Проверяет: формат кадра, частоту, кодек, длину, звук, громкость и пик, чёрные кадры,
-замершие куски, тишину в начале. Каждая строка — ок, внимание или стоп.
+замершие куски, тишину в начале. С --flashes ещё вспышки и пропадания на один кадр
+(scripts/frame_flashes.py; задуманные вспышки — в --allow). Каждая строка — ок, внимание или стоп.
 Технический «ок» — не решение о публикации: смотреть ролик и решать — человеку.
 """
 
@@ -21,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cadence_paths import (  # noqa: E402
     duration_of, ffmpeg_cmd, first_stream, main_guard, parse_ebur128, probe, require_input, run, video_fps,
 )
+from frame_flashes import analyse as analyse_flashes, parse_allow  # noqa: E402  (numpy — только при --flashes)
 
 FORMATS = {(1080, 1920): '9:16', (1920, 1080): '16:9', (1080, 1350): '4:5', (1080, 1080): '1:1'}
 TARGET_LUFS, PEAK_MAX = -14.0, -1.0
@@ -45,7 +48,7 @@ def scan(path: Path, has_audio: bool) -> tuple[dict, list, list, float | None]:
     return loud, blacks, freezes, head_silence
 
 
-def check(path: Path) -> list[dict]:
+def check(path: Path, flashes: bool = False, allow: list[float] | None = None) -> list[dict]:
     info = probe(path)
     v, a = first_stream(info, 'video'), first_stream(info, 'audio')
     rows = []
@@ -90,6 +93,18 @@ def check(path: Path) -> list[dict]:
         row('внимание', 'замершие куски', ', '.join(f'{t:.2f} с' for t in freezes[:5]) + ' — картинка стоит дольше 0.6 с; задумано или стоп-кадр?')
     else:
         row('ок', 'замершие куски', 'нет')
+    if flashes:
+        rep = analyse_flashes(path, allow)
+        if rep['flashes']:
+            row('стоп', 'вспышки', ', '.join(f"{f['time']:.2f} с" for f in rep['flashes'][:5]) +
+                ' — яркость кадра прыгает и сразу возвращается; задуманную вспышку указать в --allow')
+        else:
+            row('ок', 'вспышки', 'нет')
+        if rep['blinks']:
+            row('внимание', 'пятна на кадр', ', '.join(f"{b['time']:.2f} с" for b in rep['blinks'][:5]) +
+                ' — часть кадра меняется на один кадр; открыть кадр: пропал предмет или это быстрое движение?')
+        else:
+            row('ок', 'пятна на кадр', 'нет')
     return rows
 
 
@@ -97,9 +112,12 @@ def main() -> int:
     ap = argparse.ArgumentParser(description='Техническая проверка ролика перед публикацией.')
     ap.add_argument('video')
     ap.add_argument('--json', action='store_true')
+    ap.add_argument('--flashes', action='store_true', help='ещё вспышки и пропадания на один кадр')
+    ap.add_argument('--allow', help='с --flashes: задуманные вспышки, секунды через запятую')
     args = ap.parse_args()
     path = require_input(args.video, 'ролик')
-    rows = check(path)
+    allow = parse_allow(args.allow)
+    rows = check(path, args.flashes, allow)
     if args.json:
         print(json.dumps({'file': path.name, 'checks': rows}, ensure_ascii=False, indent=2))
     else:

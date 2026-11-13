@@ -59,6 +59,33 @@ export function springTrack(t, from, steps, omega = 14, zeta = 0.9) {
   return v;
 }
 
+// Пружины по ролям: [жёсткость, затухание] при массе 1. Элемент берёт готовую роль по смыслу движения;
+// свою пружину заводят, только когда ни одна роль не подходит. Те же числа — в design/tokens.json → motion.springs.
+export const SPRINGS = {
+  follow: [900, 50],  // держится за курсор или палец: почти без перелёта и без запаздывания
+  settle: [280, 22],  // отпустили, встаёт на место: один маленький перелёт
+  soft: [260, 24],    // большие перемещения: панель, лист, вся сцена
+  lead: [620, 36],    // растяжение: край, который идёт впереди
+  trail: [190, 19],   // растяжение: отстающий край, он и даёт растяжку
+  pop: [520, 16],     // хлопок иконки или числа при выборе
+  fade: [420, 32],    // прозрачность и короткие сдвиги
+};
+export const STAGGER = 0.045; // секунды между элементами, входящими по очереди
+
+// Перевод «жёсткость, затухание» в omega и zeta для spring().
+export const springParams = ([k, c]) => [Math.sqrt(k), c / (2 * Math.sqrt(k))];
+export function springRole(t, role = 'settle') {
+  const [omega, zeta] = springParams(SPRINGS[role] ?? SPRINGS.settle);
+  return spring(t, omega, zeta);
+}
+
+// Растяжка: два края одного объекта едут к цели на разных пружинах (ведущий быстрее), между ними — тело.
+// Возвращает [ведущий край, отстающий край] при переезде from → to в момент at.
+export function stretch(t, from, to, at = 0, lead = 'lead', trail = 'trail') {
+  const d = to - from;
+  return [from + d * springRole(t - at, lead), from + d * springRole(t - at, trail)];
+}
+
 // Детерминированный генератор: одинаковый seed — одинаковая сцена в превью и рендере.
 export function rng(seed = 1) {
   let a = seed >>> 0;
