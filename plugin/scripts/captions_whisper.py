@@ -8,11 +8,14 @@
     python3 scripts/captions_whisper.py work/my-vlog/out/take1-cut.mp4 --dry-run
     python3 scripts/captions_whisper.py work/my-vlog/out/take1-cut.mp4
     python3 scripts/captions_whisper.py work/my-vlog/out/take1-cut.mp4 --burn
+    # речь не на русском или язык неизвестен — пусть Whisper определит сам:
+    python3 scripts/captions_whisper.py work/my-vlog/in/interview.mp4 --lang auto
     # поправили текст в SRT руками — вшить исправленный:
     python3 scripts/captions_whisper.py work/my-vlog/out/take1-cut.mp4 --srt-in work/my-vlog/out/take1-cut.srt --burn
 
 Что получится (по умолчанию в work/<проект>/out/):
-    <имя>.srt         субтитры: ≤ 32 знака в строке, ≤ 2 строки, не короче 0,8 с
+    <имя>.srt         субтитры: ≤ 32 знака в строке, ≤ 2 строки, не короче 0,8 с,
+                      читать не быстрее 17 знаков в секунду, новый субтитр после паузы > 0,6 с
     <имя>.words.json  слова с временем (из них можно пересобрать SRT без Whisper: --words-in)
     <имя>-subs.mp4    видео со вшитыми субтитрами (только с --burn)
 """
@@ -31,13 +34,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cadence_paths import (  # noqa: E402
-    CadenceError, check_output, ffmpeg_cmd, first_stream, main_guard, out_dir_for,
+    CadenceError, check_output, duration_of, ffmpeg_cmd, first_stream, main_guard, out_dir_for,
     probe, require_input, require_tool, run, same_file, write_json,
 )
 
 MODEL_SIZES = {"tiny": "75 МБ", "base": "145 МБ", "small": "0,5 ГБ", "medium": "1,5 ГБ",
                "large": "3 ГБ", "large-v3": "3 ГБ", "turbo": "1,6 ГБ"}
 SENTENCE_END = re.compile(r"[.!?…]+[»\"')]*$")
+FORCED_LANG_NOTE = ("Язык задан явно. Если в ролике речь на другом языке, Whisper не расшифрует её, "
+                    "а выдаст пересказ на заданном языке. Не уверен в языке — --lang auto.")
 
 
 # ---------------------------------------------------------------- поиск Whisper
@@ -113,12 +118,16 @@ def words_from_segments(segments) -> list[dict]:
     return words
 
 
-def transcribe(backend: str, wav: Path, model: str, lang: str, allow_download: bool, tmp: Path) -> list[dict]:
+def transcribe(backend: str, wav: Path, model: str, lang: str | None, allow_download: bool, tmp: Path,
+               detected: dict | None = None) -> list[dict]:
+    """lang=None — язык определяет Whisper; что определил, кладётся в detected["lang"]."""
     if backend == "faster-whisper":
         from faster_whisper import WhisperModel  # type: ignore
         m = WhisperModel(model, device="auto", compute_type="default",
                          local_files_only=not allow_download)
-        segs, _info = m.transcribe(str(wav), language=lang, word_timestamps=True)
+        segs, info = m.transcribe(str(wav), language=lang, word_timestamps=True)
+        if detected is not None:
+            detected["lang"] = getattr(info, "language", None) or lang
         return words_from_segments(
             {"start": s.start, "end": s.end, "text": s.text,
              "words": [{"word": w.word, "start": w.start, "end": w.end} for w in (s.words or [])]}
@@ -129,14 +138,21 @@ def transcribe(backend: str, wav: Path, model: str, lang: str, allow_download: b
             raise CadenceError("Пакет whisper установлен, но это не openai-whisper. " + install_hint(), 3)
         m = whisper.load_model(model)
         r = m.transcribe(str(wav), language=lang, word_timestamps=True, fp16=False, verbose=None)
+        if detected is not None:
+            detected["lang"] = r.get("language") or lang
         return words_from_segments(r.get("segments", []))
     if backend == "cli":
         outdir = tmp / "cli"
         outdir.mkdir()
-        run([shutil.which("whisper") or "whisper", str(wav), "--model", model, "--language", lang,
-             "--word_timestamps", "True", "--output_format", "json", "--output_dir", str(outdir),
-             "--fp16", "False", "--verbose", "False"])
+        cmd = [shutil.which("whisper") or "whisper", str(wav), "--model", model,
+               "--word_timestamps", "True", "--output_format", "json", "--output_dir", str(outdir),
+               "--fp16", "False", "--verbose", "False"]
+        if lang:
+            cmd += ["--language", lang]
+        run(cmd)
         data = json.loads((outdir / f"{wav.stem}.json").read_text(encoding="utf-8"))
+        if detected is not None:
+            detected["lang"] = data.get("language") or lang
         return words_from_segments(data.get("segments", []))
     raise CadenceError(f"Неизвестный способ распознавания: {backend}")
 
@@ -173,8 +189,16 @@ def wrap(text_words: list[str], max_chars: int, max_lines: int) -> list[str] | N
     return lines if len(lines) <= max_lines else None
 
 
+def cue_chars(cue: dict) -> int:
+    return len(" ".join(cue["lines"]))
+
+
 def group_words(words: list[dict], max_chars: int = 32, max_lines: int = 2, min_dur: float = 0.8,
-                max_dur: float = 6.0, pause: float = 0.5) -> list[dict]:
+                max_dur: float = 6.0, pause: float = 0.6, max_cps: float = 17.0,
+                end_limit: float | None = None) -> list[dict]:
+    """Слова → субтитры. Новый субтитр — после паузы длиннее pause, конца предложения или когда
+    текст не влезает. Каждый держится не меньше min_dur и столько, чтобы его успели прочитать при
+    max_cps знаков в секунду: конец тянется к следующему субтитру, но не налезает на него."""
     cues: list[dict] = []
     cur: list[dict] = []
 
@@ -189,7 +213,7 @@ def group_words(words: list[dict], max_chars: int = 32, max_lines: int = 2, min_
             gap = w["start"] - cur[-1]["end"]
             too_long = w["end"] - cur[0]["start"] > max_dur
             fits = wrap([x["w"] for x in cur] + [w["w"]], max_chars, max_lines) is not None
-            if gap >= pause or too_long or not fits:
+            if gap > pause or too_long or not fits:
                 flush()
         cur.append(w)
         if SENTENCE_END.search(w["w"]) and len(" ".join(x["w"] for x in cur)) >= max_chars // 2:
@@ -197,18 +221,31 @@ def group_words(words: list[dict], max_chars: int = 32, max_lines: int = 2, min_
     flush()
 
     # Не короче min_dur: тянем конец; если мешает следующий субтитр — слегка сдвигаем его начало,
-    # пока у него самого остаётся min_dur.
+    # пока у него самого остаётся min_dur. Скорость чтения: конец тянется дальше, но только в
+    # свободное место до следующего субтитра (его начало ради этого не двигаем).
     gap = 0.04
     for i, c in enumerate(cues):
         want = max(c["end"], c["start"] + min_dur)
+        limit = end_limit if end_limit is not None else float("inf")
         if i + 1 < len(cues):
             nxt = cues[i + 1]
             if want + gap > nxt["start"]:
                 room = max(nxt["end"], nxt["start"] + min_dur) - min_dur
                 nxt["start"] = max(nxt["start"], min(want + gap, room))
             want = min(want, nxt["start"] - gap)
+            limit = min(limit, nxt["start"] - gap)
+        if max_cps > 0:
+            want = max(want, min(c["start"] + cue_chars(c) / max_cps, limit))
         c["end"] = max(want, c["start"] + 0.1)
     return cues
+
+
+def too_fast(cues: list[dict], max_cps: float) -> list[int]:
+    """Номера субтитров (с 1), которые и после растяжки читаются быстрее max_cps."""
+    if max_cps <= 0:
+        return []
+    return [n for n, c in enumerate(cues, 1)
+            if cue_chars(c) / max(c["end"] - c["start"], 1e-6) > max_cps + 0.05]
 
 
 def srt_time(t: float) -> str:
@@ -279,7 +316,9 @@ def burn(src: Path, srt: Path, out: Path, font: str, font_px: float | None, font
 def main() -> int:
     ap = argparse.ArgumentParser(description="Субтитры локальным Whisper (SRT) и вшивание в новый MP4.")
     ap.add_argument("video", help="видео (лучше уже порезанное: субтитры совпадут с итоговым роликом)")
-    ap.add_argument("--lang", default="ru", help="язык речи (по умолчанию ru)")
+    ap.add_argument("--lang", default="ru",
+                    help="язык речи: ru, en… или auto — определит Whisper (по умолчанию ru). "
+                         "Чужой язык, заданный явно, даёт пересказ, а не расшифровку")
     ap.add_argument("--model", default="small", help="модель Whisper: tiny, base, small, medium, large, turbo")
     ap.add_argument("--backend", default="auto", choices=["auto", "faster-whisper", "openai-whisper", "cli"])
     ap.add_argument("--allow-download", action="store_true",
@@ -297,7 +336,9 @@ def main() -> int:
     ap.add_argument("--max-lines", type=int, default=2, help="строк в субтитре (по умолчанию 2)")
     ap.add_argument("--min-dur", type=float, default=0.8, help="мин. длительность субтитра, с (0.8)")
     ap.add_argument("--max-dur", type=float, default=6.0, help="макс. длительность субтитра, с (6)")
-    ap.add_argument("--pause", type=float, default=0.5, help="пауза, после которой новый субтитр, с (0.5)")
+    ap.add_argument("--pause", type=float, default=0.6, help="пауза длиннее этой — новый субтитр, с (0.6)")
+    ap.add_argument("--max-cps", type=float, default=17.0,
+                    help="скорость чтения, знаков в секунду (по умолчанию 17; 0 — не следить)")
     ap.add_argument("--crf", type=int, default=18, help="качество x264 для --burn")
     ap.add_argument("--dry-run", action="store_true", help="показать план, ничего не делать")
     ap.add_argument("--overwrite", action="store_true", help="разрешить заменить прежний результат")
@@ -307,8 +348,8 @@ def main() -> int:
     require_tool("ffmpeg")
     if not re.fullmatch(r"[\w .\-]+", args.font):
         raise CadenceError("--font: только буквы, цифры, пробел, точка и дефис.")
-    if not re.fullmatch(r"[a-z]{2,3}", args.lang):
-        raise CadenceError("--lang: код языка, например ru или en.")
+    if not re.fullmatch(r"auto|[a-z]{2,3}", args.lang):
+        raise CadenceError("--lang: код языка, например ru или en, или auto.")
     if not re.fullmatch(r"[\w.\-]+", args.model):
         raise CadenceError("--model: имя модели, например small.")
     fonts_dir = Path(args.fonts_dir).expanduser() if args.fonts_dir else None
@@ -343,7 +384,8 @@ def main() -> int:
             return 3
         backend = backends[0]
         cached = model_cached(backend, args.model)
-        mode = f"Whisper ({backend}), модель {args.model}, язык {args.lang}"
+        mode = f"Whisper ({backend}), модель {args.model}, " + (
+            "язык определит сам" if args.lang == "auto" else f"язык {args.lang}")
         if not cached and not args.allow_download:
             print(f"Модели {args.model} нет на диске (размер около {MODEL_SIZES.get(args.model, '?')}).\n"
                   "Чтобы скачать её один раз, нужен интернет. Запустите ту же команду с --allow-download.\n"
@@ -352,6 +394,8 @@ def main() -> int:
 
     print(f"Видео: {src}")
     print(f"Текст: {mode}")
+    if backend and args.lang != "auto":
+        print(FORCED_LANG_NOTE)
     if not args.srt_in:
         print(f"Будет записано: {srt_out}" + ("" if args.words_in else f", {words_out.name}"))
     if args.burn:
@@ -371,17 +415,28 @@ def main() -> int:
             if not first_stream(probe(src), "audio"):
                 raise CadenceError("В файле нет звука — распознавать нечего.")
             print("Распознаю речь… (на длинном видео это может занять несколько минут)")
+            detected: dict = {}
             with tempfile.TemporaryDirectory(prefix="cadence-whisper-") as tmpdir:
                 tmp = Path(tmpdir)
-                words = transcribe(backend, extract_wav(src, tmp), args.model, args.lang,
-                                   args.allow_download, tmp)
+                words = transcribe(backend, extract_wav(src, tmp), args.model,
+                                   None if args.lang == "auto" else args.lang, args.allow_download, tmp, detected)
             write_json(words_out, {"source": str(src), "backend": backend, "model": args.model,
-                                   "lang": args.lang, "words": words})
+                                   "lang": detected.get("lang") or args.lang, "lang_requested": args.lang,
+                                   "words": words})
+            if args.lang == "auto":
+                print(f"Whisper определил язык: {detected.get('lang') or 'не сообщил'}")
         if not words:
             raise CadenceError("Речь не распознана: слов нет. Проверь звук и язык (--lang).")
-        cues = group_words(words, args.max_chars, args.max_lines, args.min_dur, args.max_dur, args.pause)
+        end_limit = duration_of(probe(src)) or None
+        cues = group_words(words, args.max_chars, args.max_lines, args.min_dur, args.max_dur, args.pause,
+                           args.max_cps, end_limit)
         srt_out.write_text(to_srt(cues), encoding="utf-8")
         print(f"SRT: {srt_out} ({len(cues)} субтитров)")
+        fast = too_fast(cues, args.max_cps)
+        if fast:
+            print(f"Внимание: субтитры {', '.join(map(str, fast[:10]))}{' …' if len(fast) > 10 else ''} "
+                  f"читаются быстрее {args.max_cps:g} знаков в секунду: места до следующего нет. "
+                  "Сократи текст в SRT или раздели фразу.")
         srt_path = srt_out
 
     # 3. Вшивание

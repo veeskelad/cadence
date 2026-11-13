@@ -81,7 +81,7 @@ else:
 
 ## Эффекты Resolve
 
-Пошаговые рецепты (переход из тряски, полосы, сетка 3×3, свечение по карте глубины, негативная вспышка, удар оптикой) — [references/effects.md](references/effects.md). Что агент может поставить скриптом, а что только рукой и чем это заменить — [references/api-map.md](references/api-map.md). Ещё приёмы — банк эффектов в `knowledge/effects-bank/`.
+Пошаговые рецепты (переход из тряски, полосы, сетка 3×3, свечение по карте глубины, негативная вспышка, удар оптикой) — [references/effects.md](references/effects.md). Что агент может поставить скриптом, а что только рукой и чем это заменить — [references/api-map.md](references/api-map.md). Что из этого подтверждено отрендеренным кадром (и на какой версии), протокол пробы и свой шаблон перехода (`scripts/resolve_transition_template.py`) — [references/verified-effects.md](references/verified-effects.md). Ещё приёмы — банк эффектов в `knowledge/effects-bank/`.
 
 Правила для любого эффекта:
 - Первый раз — пробный кусок 10–15 с **в новом проекте**, а не в рабочем таймлайне.

@@ -12,8 +12,15 @@
 
     python3 scripts/audio_sync.py work/my-vlog/out/take1-cut.mp4 --music work/my-vlog/in/track.mp3 --duck
 
-Можно и то и другое сразу. Картинка не перекодируется (копируется как есть).
-Исходники не меняются, результат — новый MP4 в work/<проект>/out/ плюс JSON с цифрами.
+3) Проверка сведения до полного файла: три коротких ролика (начало, середина, конец),
+   в каждом лицо и звук рекордера вместе — человек смотрит на губы и слушает:
+
+    python3 scripts/audio_sync.py work/my-vlog/in/cam.mp4 --audio work/my-vlog/in/mic.wav --preview
+
+   Видео плюс отдельный WAV — не проверка синхронизации: сводит их тогда плеер, а не мы.
+
+Можно и то и другое сразу. Картинка не перекодируется (копируется как есть); в превью — перекодируется,
+чтобы рез был точным. Исходники не меняются, результат — новый MP4 в work/<проект>/out/ плюс JSON с цифрами.
 """
 
 from __future__ import annotations
@@ -193,6 +200,70 @@ def build_graph(has_rec: bool, offset: float, vdur: float, music_idx: int | None
     return ";".join(parts)
 
 
+def preview_windows(speech: list[tuple[float, float]], vdur: float, clip: float) -> list[tuple[str, float]]:
+    """Три начала окон по clip секунд: в начале, середине и конце, каждое там, где больше всего речи."""
+    clip = min(clip, vdur)
+    last = max(0.0, vdur - clip)
+    anchors = (("start", 0.0), ("middle", last / 2), ("end", last))
+    out = []
+    for name, anchor in anchors:
+        # кандидаты — окно у якоря и сдвиги на ±1/6 длины ролика; берём с наибольшей речью
+        best = (anchor, -1.0)
+        for k in (0, -1, 1, -2, 2, -3, 3, -4, 4):  # при равной речи — ближе к якорю
+            t = min(max(anchor + k * vdur / 24, 0.0), last)
+            talk = sum(max(0.0, min(b, t + clip) - max(a, t)) for a, b in speech)
+            if talk > best[1] + 1e-6:
+                best = (t, talk)
+        out.append((name, round(best[0], 3)))
+    return out
+
+
+def speech_spans(x: np.ndarray, sr: int = SR) -> list[tuple[float, float]]:
+    """Где звучит голос: окна 50 мс громче −35 dBFS (грубо, только чтобы окно превью не попало в тишину)."""
+    hop = sr // 20
+    n = len(x) // hop
+    if n == 0:
+        return []
+    db = 10 * np.log10(np.mean(x[: n * hop].reshape(n, hop) ** 2, axis=1) + 1e-10)
+    loud = db > -35
+    spans, start = [], None
+    for i, v in enumerate(loud):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            spans.append((start / 20, i / 20))
+            start = None
+    if start is not None:
+        spans.append((start / 20, n / 20))
+    return spans
+
+
+def write_previews(video: Path, rec: Path, offset: float, windows: list[tuple[str, float]], clip: float,
+                   folder: Path, vdur: float) -> list[dict]:
+    rows = []
+    full = clip
+    for i, (name, t) in enumerate(windows, 1):
+        target = folder / f"preview-{i}-{name}.mp4"
+        # рекордер включили позже — окно не раньше, чем он начал писать
+        t = round(min(max(t, -offset), max(vdur - 0.5, 0.0)), 3)
+        clip = max(0.5, min(full, vdur - t))
+        rec_start = t + offset
+        if rec_start >= 0:
+            rec_in = ["-ss", f"{rec_start:.3f}", "-t", f"{clip:.3f}", "-i", str(rec)]
+            achain = "[1:a:0]asetpts=PTS-STARTPTS"
+        else:
+            rec_in = ["-t", f"{clip + rec_start:.3f}", "-i", str(rec)]
+            achain = f"[1:a:0]adelay=delays={int(round(-rec_start * 1000))}:all=1"
+        graph = f"{achain},apad,atrim=end={clip:.3f},aresample=48000[a]"
+        run(ffmpeg_cmd("-y", "-loglevel", "error", "-ss", f"{t:.3f}", "-t", f"{clip:.3f}", "-i", video,
+                       *rec_in, "-filter_complex", graph, "-map", "0:v:0", "-map", "[a]",
+                       "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p",
+                       "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", target))
+        rows.append({"file": target.name, "where": name, "video_start": t, "recorder_start": round(rec_start, 3),
+                     "seconds": round(clip, 3)})
+    return rows
+
+
 def inputs_for(video: Path, rec: Path | None, music: Path | None) -> tuple[list[str], int | None]:
     args = ["-i", str(video)]
     if rec:
@@ -219,6 +290,9 @@ def main() -> int:
     ap.add_argument("--offset", type=float, help="задать сдвиг вручную, с (вместо автоматического)")
     ap.add_argument("--max-offset", type=float, default=60.0, help="искать сдвиг в пределах ±, с (60)")
     ap.add_argument("--force", action="store_true", help="писать результат даже при низкой уверенности")
+    ap.add_argument("--preview", action="store_true",
+                    help="вместо полного файла — три коротких ролика (начало, середина, конец) для проверки на глаз")
+    ap.add_argument("--clip-seconds", type=float, default=8.0, help="длина каждого ролика превью, с (по умолчанию 8)")
     ap.add_argument("--dry-run", action="store_true", help="только посчитать и показать, ничего не писать")
     ap.add_argument("--out", help="путь к новому MP4 (по умолчанию work/<проект>/out/<имя>-sync.mp4)")
     ap.add_argument("--project", help="имя проекта в work/")
@@ -232,6 +306,10 @@ def main() -> int:
         raise CadenceError("Нечего делать: укажи --audio (звук рекордера) и/или --music (трек).")
     if args.duck and not music:
         raise CadenceError("--duck работает вместе с --music.")
+    if args.preview and (not rec or music):
+        raise CadenceError("--preview проверяет сведение рекордера: нужен --audio, без --music.")
+    if args.preview and args.clip_seconds <= 0:
+        raise CadenceError("--clip-seconds должен быть больше нуля.")
     vinfo = probe(video)
     if not first_stream(vinfo, "video"):
         raise CadenceError("В первом файле нет картинки — нужен видеофайл.")
@@ -241,15 +319,19 @@ def main() -> int:
         raise CadenceError("В видео нет звука, а --audio не задан: голоса нет, музыку подкладывать не под что.")
 
     suffix = "-".join(x for x in ("sync" if rec else "", "music" if music else "") if x)
-    out = (Path(args.out).expanduser() if args.out
-           else out_dir_for(video, args.project) / f"{video.stem}-{suffix}.mp4")
-    if out.suffix.lower() != ".mp4":
-        raise CadenceError("--out должен заканчиваться на .mp4")
+    if args.preview:
+        out = (Path(args.out).expanduser() if args.out
+               else out_dir_for(video, args.project) / f"{video.stem}-sync-preview")
+    else:
+        out = (Path(args.out).expanduser() if args.out
+               else out_dir_for(video, args.project) / f"{video.stem}-{suffix}.mp4")
+        if out.suffix.lower() != ".mp4":
+            raise CadenceError("--out должен заканчиваться на .mp4")
     sources = [p for p in (video, rec, music) if p]
-    for p in (out, out.with_suffix(".json")):
+    for p in ((out,) if args.preview else (out, out.with_suffix(".json"))):
         for s in sources:
-            if same_file(p, s):
-                raise CadenceError(f"Отказ: выход {p} совпадает с исходником {s}.")
+            if same_file(p, s) or (args.preview and same_file(p, s.parent)):
+                raise CadenceError(f"Отказ: выход {p} совпадает с исходником {s} или его папкой.")
 
     report: dict = {"tool": "cadence audio_sync", "video": str(video), "video_duration": round(vdur, 3)}
     offset = 0.0
@@ -295,13 +377,40 @@ def main() -> int:
         print(f"Голос {lv:.1f} LUFS, трек {lm:.1f} LUFS → трек {music_gain:+.1f} dB "
               f"({args.music_db:+.0f} dB к голосу){', с приглушением под речью' if args.duck else ''}")
 
-    print(f"Будет записано: {out}, {out.with_suffix('.json').name}")
+    if args.preview:
+        # где говорят — по звуку рекордера, переведённому во время видео
+        heard = [(a - offset, b - offset) for a, b in speech_spans(decode(rec, vdur + abs(offset) + 1.0))]
+        windows = preview_windows(heard, vdur, args.clip_seconds)
+        clip = min(args.clip_seconds, vdur)
+        print(f"Превью: три ролика по {clip:.1f} с — " + ", ".join(
+            f"{name} с {fmt_time(t)}" for name, t in windows))
+        print(f"Будет записано: {out}/preview-1-start.mp4, -2-middle, -3-end и preview.json")
+        print("В каждом ролике картинка камеры и звук рекордера вместе: смотреть на губы и слушать. "
+              "Видео и отдельный WAV рядом — не проверка: их сводит плеер.")
+    else:
+        print(f"Будет записано: {out}, {out.with_suffix('.json').name}")
     if rec and report["sync"].get("confidence") == "низкая" and not args.force:
         print("Уверенность низкая — результат не пишу. Проверь, те ли это файлы, "
               "или задайте сдвиг вручную: --offset <секунды> (найдите общий хлопок).")
         return 5
     if args.dry_run:
         print("Это план (--dry-run). Ничего не записано.")
+        return 0
+
+    if args.preview:
+        if out.exists() and not args.overwrite:
+            raise CadenceError(f"Отказ: папка {out} уже есть. Укажи другой --out или добавь --overwrite.")
+        out.mkdir(parents=True, exist_ok=True)
+        hashes = {str(p): sha256(p) for p in sources}
+        print("Собираю три ролика превью…")
+        report["preview"] = write_previews(video, rec, offset, windows, clip, out, vdur)
+        for p, h in hashes.items():
+            if sha256(Path(p)) != h:
+                raise CadenceError(f"Внимание: исходник {p} изменился во время работы.")
+        report["output"] = str(out)
+        write_json(out / "preview.json", report)
+        print(f"Готово: {out}")
+        print("Если губы и звук совпадают во всех трёх — запускай ту же команду без --preview.")
         return 0
 
     out = check_output(out, sources, args.overwrite)

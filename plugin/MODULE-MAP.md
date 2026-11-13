@@ -9,6 +9,14 @@
 | Звук | `cadence-sound` | ffmpeg, `sounds/` | какие события озвучить; громкость эффектов |
 | Стиль | `cadence-style` | — | цвета и шрифты; выбрать стиль вместе (лист вариантов на своём кадре); утвердить пак |
 | Нарезка живого видео | `cadence-cut` | ffmpeg, Whisper (по желанию) | порог пауз; вшивать ли субтитры; музыка |
+| Монтаж из дублей | `scripts/takes_cut.py`, `cadence-cut` | ffmpeg, numpy | какие дубли брать; плотность речи |
+| Хайлайт длинного видео без речи | `scripts/highlight_cut.py`, `cadence-cut` | ffmpeg, numpy | длина, обязательные кадры, музыка |
+| Голос и музыка | `scripts/voice_music_mix.py`, `cadence-sound` | ffmpeg | трек, где дроп, громкость подложки |
+| Уровни эффектов | `skills/cadence-sound/scripts/level_check.py`, `cue_mix.py`, `sfx_probe.py` | ffmpeg, numpy | своя библиотека звуков |
+| Финальная проверка ролика | `scripts/frame_flashes.py`, `scripts/safe_zone_check.py`, `cadence-motion` | ffmpeg, numpy | обложка; принять ролик |
+| Сцены по словам | `scripts/word_anchors.py`, шаблон `kinetic-explainer` | Python | какие слова держат сцены |
+| Сборка на экране, экран в фото устройства | `cadence-structures` | движок | свой экран и фото своего устройства |
+| Шаблоны переходов Resolve | `scripts/resolve_transition_template.py`, `cadence-resolve` | DaVinci Resolve (по желанию) | ставить ли шаблон в Resolve |
 | DaVinci Resolve | `cadence-resolve` | DaVinci Resolve (по желанию) | разрешить правку копии проекта |
 | Разбор референса | `cadence-breakdown` | ffmpeg | какой ролик разобрать; что повторять |
 | Генерация (подготовка) | `cadence-generate` | сервис генерации человека | генерировать ли; какой сервис; бюджет; выбрать кандидата |

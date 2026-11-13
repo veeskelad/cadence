@@ -1,3 +1,15 @@
+# 1.8 — 2026-11-13
+
+Монтаж: `scripts/takes_cut.py` собирает ролик из лучших дублей по маске речи и проверяет стыки, `scripts/highlight_cut.py` вырезает лучшие моменты из длинного видео без речи под доли трека; субтитры определяют язык сами (`--lang auto`) и держат 17 знаков в секунду; `audio_sync.py --preview` даёт три коротких клипа для проверки синхрона.
+
+Звук: `scripts/voice_music_mix.py` сводит голос и музыку без лимитера с приглушением под речь и посадкой дропа; `level_check.py`, `cue_mix.py` и `sfx_probe.py` проверяют громкость эффектов к треку числом и находят тональные звуки.
+
+Моушн: финальная проверка двумя проверяющими, `scripts/frame_flashes.py` (вспышки на один кадр, `check_reel.py --flashes`), `scripts/safe_zone_check.py` (текст в безопасных полях и кадры обложки), `scripts/word_anchors.py` (сцены по словам речи), `engine/lib/timing-kit.js` и `phone.js` для роликов о продукте.
+
+Структуры: «агент собирает на экране» и экран в фото своего устройства (`engine/lib/homography.js`, `camera.js`); Resolve: таблица эффектов, проверенных рендером, и `scripts/resolve_transition_template.py` — свой шаблон перехода из встроенного, без перезаписи.
+
+Пружины по ролям: `follow`, `settle`, `soft`, `pop`, `fade` и пара `lead`/`trail` для растяжки — в `engine/lib/motion.js` (`springRole`, `stretch`, `STAGGER` 45 мс), в `design/tokens.json` и в навыке `cadence-motion-behavior`. Элемент берёт роль по смыслу движения, а не подбирает пружину на глаз; шаблон DESIGN.md стиля получил таблицу ролей.
+
 # 1.7 — 2026-11-13
 
 Cadence ставится плагином Claude Code: `claude plugin marketplace add veeskelad/cadence` и `claude plugin install cadence@cadence`, новые версии приходят через Claude Code. Своя папка `work/` у плагина — `~/Cadence/work` или любая из `~/.config/cadence/config.json`. Движок ставится один раз на компьютер (`scripts/engine_setup.py`): следующие версии с теми же зависимостями подключают его без скачивания. Главные правила набора теперь во входном навыке `cadence`, а команды навыков знают, где корень Cadence в плагине.
