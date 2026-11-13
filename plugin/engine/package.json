@@ -1,0 +1,21 @@
+{
+  "name": "cadence-engine",
+  "private": true,
+  "type": "module",
+  "description": "Локальный рендер Cadence: HTML → MP4 через HyperFrames, телеметрия выключена.",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes check",
+    "lint": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes lint",
+    "snapshot": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes snapshot --describe false",
+    "render": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes render",
+    "preview": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes preview",
+    "doctor": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes doctor --json"
+  },
+  "dependencies": {
+    "hyperframes": "0.9.15"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

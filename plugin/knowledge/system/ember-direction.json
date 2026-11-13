@@ -1,0 +1,85 @@
+{
+  "schema": "cadence.internal-direction.v1",
+  "pack": "cadence-ember",
+  "brand": {
+    "preserve": [
+      "canvas",
+      "ink",
+      "signal",
+      "signalSecondary",
+      "displayFamily",
+      "bodyFamily",
+      "monoFamily"
+    ],
+    "roles": {
+      "display": "главный тезис; Literata",
+      "body": "пояснение и элементы; Manrope",
+      "mono": "код, реальные метки и числа; JetBrains Mono"
+    }
+  },
+  "layout": {
+    "hierarchy": [
+      "hero",
+      "explanation",
+      "support"
+    ],
+    "relationships": [
+      "single",
+      "comparison",
+      "sequence",
+      "cause-result",
+      "collection"
+    ],
+    "spacing": "кратные выбранному модулю сцены; gap зависит от связи",
+    "surface": "оболочка только для настоящего объединения",
+    "reelsEssentialBounds": [
+      0.06,
+      0.15,
+      0.82,
+      0.75
+    ]
+  },
+  "material": {
+    "default": "opaque",
+    "glass": "только при смысловой связи планов, текст отдельно",
+    "shadow": "локальная тень от объекта, не цветное свечение всех элементов"
+  },
+  "attention": {
+    "primaryChanges": 1,
+    "accent": "signal; secondary только для другой реальной роли",
+    "backgroundMotion": "если объясняет процесс или выбранный материал"
+  },
+  "motion": {
+    "clock": "seek-time",
+    "arrivalDefault": "expoOut",
+    "textDefault": "canonical accelerating cascade without fade",
+    "exit": "continuous track through cut",
+    "spring": "reaction to cause with bounded overshoot",
+    "reading": "stable after last meaningful fragment; no universal maximum hold",
+    "zeroDuration": "from before event, to at/after event"
+  },
+  "variation": {
+    "default": "сохранить утверждённый стиль",
+    "allowed": [
+      "другая геометрия отношений",
+      "плотность по материалу",
+      "контраст и размер по смысловой роли"
+    ],
+    "requiresUserIntent": [
+      "новая палитра",
+      "новое семейство шрифта",
+      "новый логотип"
+    ]
+  },
+  "acceptance": [
+    "pack validator",
+    "длинный русский заголовок",
+    "пустой/один/много элементов",
+    "контраст текста и сигналов",
+    "единый свет и радиус",
+    "повторный seek",
+    "UI overlay and cover crops",
+    "export dimensions/SAR/DAR/rotation"
+  ],
+  "runtime": "Это спецификация для агента. Существующий build применяет colors через --pack; остальные поля реализуются в сцене явно. Наличие профиля не означает поддержку дополнительных параметров рендерером."
+}

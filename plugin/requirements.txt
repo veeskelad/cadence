@@ -1,0 +1,10 @@
+# Python-зависимости Cadence: python3 -m pip install -r requirements.txt
+# Нужны для разбора трека (темп, дроп, огибающая), демо-бита, сведения звука и эффектов на видео.
+numpy>=1.24
+scipy>=1.10
+# Кино-эффекты на живом видео (scripts/video_fx.py): оптический поток, смазы, подписи.
+opencv-python-headless>=4.8
+Pillow>=10
+# По желанию, для субтитров — одно из двух, ставится отдельно:
+#   python3 -m pip install faster-whisper
+#   python3 -m pip install openai-whisper

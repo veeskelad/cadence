@@ -1,0 +1,19 @@
+{
+  "name": "cadence",
+  "owner": {
+    "name": "Cadence"
+  },
+  "metadata": {
+    "description": "Cadence — дизайн, моушн, монтаж и звук с агентом",
+    "version": "1.7"
+  },
+  "plugins": [
+    {
+      "name": "cadence",
+      "source": "./plugin",
+      "description": "Дизайн, моушн, монтаж и звук с агентом: ролики кодом, нарезка живого видео, эффекты, звук и свой стиль.",
+      "version": "1.7",
+      "homepage": "https://veeskelad.github.io/cadence/"
+    }
+  ]
+}

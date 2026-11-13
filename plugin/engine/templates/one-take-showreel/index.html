@@ -1,0 +1,1048 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — шоурил одним дублем</title>
+    <!--
+      Шоурил одним дублем. Тёплая тёмная тема: коралл, янтарь, сливочный текст.
+      Хук: заголовок расшифровывается, на дропе камера пролетает сквозь него прямо в экран A.
+      Дальше один непрерывный ход камеры по тёмному залу: пол — дорожка из ударов трека; работы
+      стоят экранами на своих долях. Экран A — первая работа; экран моушна — кадры, нарисованные
+      кодом, сменяются на каждый удар (таймлайн внизу); строка текста → шар из частиц; код
+      расшифровывается и рассыпается → экран B — вторая работа. В финале кадры-генераторы
+      слетаются двумя рядами в кольцо-знак. Кадр — функция времени: подкадровый motion blur,
+      отражения пола, bloom, зерно. Тексты, экраны и трек — из сценария (window.REEL.film).
+      Сетка — 55 долей; сборщик ставит дроп трека на долю 3.
+    -->
+    <!-- cadence:fonts -->
+    <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
+    <style>
+      html, body { margin: 0; background: #000; }
+      /* тёплая тёмная тема: коралл, янтарь, сливочный текст на почти чёрном */
+      :root { --coral: #d97757; --amber: #f2a65a; --cream: #f0eee6; --ash: #a39d94; --ink: #0e0c0b; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); font-family: Manrope, Onest, system-ui, sans-serif; color: var(--cream); }
+      #gl { position: absolute; inset: 0; width: 1080px; height: 1920px; display: block; }
+      .tex { position: absolute; left: 0; top: 0; width: 8px; height: 8px; opacity: 0.001; pointer-events: none; }
+      .label { position: absolute; left: 64px; top: 190px; width: 900px; }
+      .label .n { font: 600 28px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--coral); letter-spacing: .14em; }
+      .label .t { margin-top: 14px; font-weight: 600; font-size: 50px; line-height: 1.1; letter-spacing: -.01em; text-shadow: 0 2px 30px rgba(0,0,0,.8); }
+      .reveal { position: absolute; left: 0; right: 0; top: 1250px; text-align: center; font: 400 64px/1.12 "Literata Variable", Georgia, serif; letter-spacing: -.02em; text-shadow: 0 4px 50px rgba(0,0,0,.9); }
+      .reveal em { font-style: normal; color: var(--coral); }
+      .w { display: inline-block; white-space: pre; }
+      .mark { position: absolute; left: 0; right: 0; top: 1225px; text-align: center; }
+      .mark .name { font: 400 150px/1 "Literata Variable", Georgia, serif; letter-spacing: -.02em; }
+      .mark .tag { margin-top: 26px; font: 500 30px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .2em; text-transform: uppercase; color: var(--ash); }
+      .mark .tag b { color: var(--coral); font-weight: 500; }
+      .mark .cta { display: inline-block; margin-top: 46px; padding: 22px 46px; border-radius: 999px; background: var(--coral); color: var(--ink); font: 700 40px/1 Manrope, sans-serif; letter-spacing: -.01em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="cadence-showreel" data-start="0" data-width="1080" data-height="1920" data-duration="0" data-no-timeline>
+      <section id="scene" class="clip" data-start="0" data-duration="0" data-track-index="1">
+        <canvas id="gl"></canvas>
+        <div id="ui"></div>
+      </section>
+      <!-- reel:videos -->
+      <!-- reel:audio -->
+    </div>
+    <script>/* reel:config */</script>
+    <script type="module">
+      import * as THREE from 'three';
+      import {bindSeek, clamp, lerp, invLerp, smoothstep, expoOut, premium, spring, rng} from './lib/motion.js';
+
+      const R = window.REEL, FILM = R.film;
+      const W = 1080, H = 1920, B = R.beat, TOTAL = R.total;
+      const b = (n) => n * B;
+      const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+      const ui = document.getElementById('ui');
+      const el = (tag, cls, parent, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; };
+      await document.fonts.ready;
+      // шрифты для canvas: без образца кириллицы браузер грузит только латинский поднабор, и текст уходит в засечки
+      const CYR = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя·›';
+      await Promise.all(['800 250px Onest', '500 108px Onest', '600 52px "JetBrains Mono"', '700 120px "JetBrains Mono"', '400 300px "Literata Variable"', '700 60px Manrope']
+        .map((f) => document.fonts.load(f, CYR + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')));
+
+      // ---------- рендерер и сцена ----------
+      const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('gl'), antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance'});
+      renderer.setPixelRatio(1);
+      renderer.setSize(W, H, false);
+      renderer.outputColorSpace = THREE.LinearSRGBColorSpace;   // перевод в sRGB делает финальный шейдер
+      renderer.toneMapping = THREE.NoToneMapping;
+      const FOV = 52;
+      const camera = new THREE.PerspectiveCamera(FOV, W / H, 0.05, 400);
+      const scene = new THREE.Scene();
+      // фон, туман и дальний пол — один цвет, иначе на горизонте видна ступенька
+      const BG = new THREE.Color().setRGB(0.0042, 0.0034, 0.003);   // тёплый почти чёрный
+      scene.background = BG;
+      scene.fog = new THREE.FogExp2(BG.getHex(THREE.LinearSRGBColorSpace), 0.016);
+      scene.fog.color.copy(BG);
+      const world = new THREE.Group();
+      scene.add(world);
+      const aniso = renderer.capabilities.getMaxAnisotropy();
+
+      // ---------- раскладка: дорожка трека, экраны на своих долях ----------
+      const SPEED = 96 / TOTAL;                                  // единиц на секунду ролика
+      const zOf = (beat) => 4 - b(beat) * SPEED;
+      const HS = 6, WS = HS * 9 / 16, CY = 3.3;
+      const DF = (HS / 2) / Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * 0.985; // экран во весь кадр
+      const S = {};
+      const place = (id, pos, yawDeg) => { const a = THREE.MathUtils.degToRad(yawDeg); S[id] = {id, pos, yaw: a, n: V3(Math.sin(a), 0, Math.cos(a))}; };
+      place('a', V3(-6, CY, zOf(5.6)), 50);
+      place('cut', V3(6, CY, zOf(15.8)), -50);                  // монтаж в ритм
+      const O = V3(-6, 4.8, zOf(37.5));                          // шар из частиц сбоку от дорожки: столбики не лезут в облёт
+      place('b', V3(-5.5, CY, zOf(49.9)), 30);
+      const F = V3(0.45, 12.2, zOf(57.9) - 4);                  // центр кольца-знака; сдвиг вправо уравновешивает разрыв «C»
+      const Lp = (s, d) => s.pos.clone().add(s.n.clone().multiplyScalar(d));
+
+      // ---------- текстуры ----------
+      const vtex = {};
+      for (const id of R.screens) {
+        const t = new THREE.VideoTexture(document.getElementById(`v-${id}`));
+        t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = aniso; t.generateMipmaps = false; t.minFilter = THREE.LinearFilter;
+        vtex[id] = t;
+      }
+      const loadTex = (src) => new Promise((ok) => new THREE.TextureLoader().load(src, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = aniso; ok(t); }));
+      const loadImg = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.src = src; });
+      function canvasTex(w, h, draw) {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const g = c.getContext('2d'); draw(g, w, h);
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = aniso;
+        t.redraw = (fn) => { g.clearRect(0, 0, w, h); fn(g, w, h); t.needsUpdate = true; };
+        return t;
+      }
+      const glowTex = canvasTex(256, 256, (g, w, h) => {
+        const gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+        gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      });
+      const roundRect = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+      // ---------- палитра: тёплая тёмная тема ----------
+      const PAL = {coral: '#d97757', hot: '#ff8a4c', amber: '#f2a65a', cream: '#f0eee6', ash: '#a39d94', ink: '#0e0c0b', panel: '#1c1917', line: '#3a332e'};
+      const SERIF = '"Literata Variable"', MONO = '"JetBrains Mono"';
+      const chipTex = (text) => canvasTex(1024, 128, (g, w, h) => {
+        g.font = `600 52px ${MONO}`;
+        const tw = g.measureText(text).width;
+        roundRect(g, 4, 10, tw + 130, 108, 54); g.fillStyle = 'rgba(24,20,18,.94)'; g.fill();
+        g.lineWidth = 4; g.strokeStyle = 'rgba(217,119,87,.8)'; g.stroke();
+        g.fillStyle = PAL.coral; g.beginPath(); g.arc(62, 64, 13, 0, 7); g.fill();
+        g.fillStyle = PAL.cream; g.textBaseline = 'middle'; g.fillText(text, 96, 66);
+      });
+
+      // ---------- экран «моушн в ритм» ----------
+      // На экране — кадры моушн-дизайна, сгенерированные кодом; каждая смена кадра ровно на удар бочки.
+      // Внизу таймлайн: плейхед, удары трека и стыки кадров на них — зритель видит, почему смена именно здесь.
+      const cutTex = canvasTex(1080, 1920, () => {});
+      const RG = {x: 0, y: 330, w: 1080, h: 970};                 // зона графики; сверху тёмная полоса под подпись
+      const eo = (x) => expoOut(clamp(x));
+      const kickAt = (beat) => R.kick[clamp(Math.floor(beat * R.perBeat), 0, R.kick.length - 1)];
+      const pulse = (beat) => Math.exp(-(((beat % 1) + 1) % 1) * 6);
+      const tagText = (g, n, name, col, x, y) => { g.font = `600 26px ${MONO}`; g.textBaseline = 'alphabetic'; g.textAlign = 'left'; g.fillStyle = col; g.fillText(`${String(n).padStart(2, '0')} — ${name}`, x + 40, y + 64); };
+      const fitFont = (g, font, size, text, maxW) => { g.font = `${font.replace('$', size)}`; const k = Math.min(1, maxW / g.measureText(text).width); g.font = `${font.replace('$', Math.floor(size * k))}`; return size * k; };
+
+      function shotIntro(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        g.fillStyle = PAL.coral; g.beginPath(); g.arc(x + w / 2, y + h / 2 - 40, 26 * (1 + 0.6 * pulse(beat)), 0, 7); g.fill();
+        g.font = `500 34px ${MONO}`; g.textAlign = 'center'; g.fillStyle = PAL.ash; g.fillText(`${R.track.title} · ${Math.round(R.bpm)} BPM`, x + w / 2, y + h / 2 + 60); g.textAlign = 'left';
+      }
+      function shotType(g, x, y, w, h, p) {
+        g.fillStyle = PAL.coral; g.fillRect(x, y, w, h);
+        const word = 'РИТМ'; const size = fitFont(g, `400 $px ${SERIF}`, h * 0.5, word, w * 0.86);
+        g.textBaseline = 'alphabetic'; g.fillStyle = PAL.ink;
+        let cx = x + (w - g.measureText(word).width) / 2;
+        [...word].forEach((ch, i) => {
+          const e = eo((p - i * 0.06) * 3.2);
+          g.save(); g.translate(cx, y + h * 0.66 + (1 - e) * h * 0.55); g.rotate((1 - e) * 0.25); g.fillText(ch, 0, 0); g.restore();
+          cx += g.measureText(ch).width;
+        });
+        g.fillRect(x + 40, y + h * 0.74, (w - 80) * eo(p * 2.5), 6);
+        tagText(g, 1, 'типографика', PAL.ink, x, y);
+      }
+      function shotRings(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const cx = x + w / 2, cy = y + h / 2, R0 = Math.hypot(w, h) * 0.55;
+        for (let i = 0; i < 14; i++) {
+          const f = ((i / 14) + p * 0.8) % 1, r = f * R0;
+          g.strokeStyle = i % 3 ? PAL.coral : PAL.cream; g.globalAlpha = (1 - f) * 0.95; g.lineWidth = 2 + 22 * (1 - f);
+          g.beginPath(); g.arc(cx, cy, r, 0, 7); g.stroke();
+        }
+        g.globalAlpha = 1; g.fillStyle = PAL.coral; g.beginPath(); g.arc(cx, cy, Math.min(w, h) * 0.08 * (1 + 0.5 * pulse(beat)), 0, 7); g.fill();
+        tagText(g, 2, 'кольца', PAL.ash, x, y);
+      }
+      function shotGrid(g, x, y, w, h, p) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const n = 6, cell = Math.min(w, h) / (n + 0.6), ox = x + (w - cell * n) / 2, oy = y + (h - cell * n) / 2;
+        for (let c = 0; c < n; c++) for (let r = 0; r < n; r++) {
+          const e = eo(p * 3.2 - (c + r) * 0.11), s = cell * 0.8 * e;
+          g.save(); g.translate(ox + (c + 0.5) * cell, oy + (r + 0.5) * cell); g.rotate((1 - e) * Math.PI / 2);
+          g.fillStyle = (c * 7 + r * 3) % 5 === 0 ? PAL.cream : (c + r) % 2 ? PAL.coral : PAL.line;
+          roundRect(g, -s / 2, -s / 2, s, s, s * 0.18); g.fill(); g.restore();
+        }
+        tagText(g, 3, 'сетка', PAL.ash, x, y);
+      }
+      function shotCount(g, x, y, w, h, p) {
+        g.fillStyle = PAL.panel; g.fillRect(x, y, w, h);
+        const v = Math.round(R.bpm * eo(p * 1.8)), txt = String(v);
+        fitFont(g, `700 $px ${MONO}`, h * 0.42, '130', w * 0.8);
+        g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillStyle = PAL.cream; g.fillText(txt, x + w / 2, y + h * 0.6);
+        g.font = `600 52px ${MONO}`; g.fillStyle = PAL.coral; g.fillText('BPM', x + w / 2, y + h * 0.6 + 90); g.textAlign = 'left';
+        g.fillStyle = PAL.line; g.fillRect(x + 80, y + h * 0.84, w - 160, 6);
+        g.fillStyle = PAL.coral; g.fillRect(x + 80, y + h * 0.84, (w - 160) * eo(p * 1.8), 6);
+        tagText(g, 4, 'счётчик', PAL.ash, x, y);
+      }
+      function shotSlice(g, x, y, w, h, p) {
+        g.fillStyle = PAL.cream; g.fillRect(x, y, w, h);
+        const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) * 0.38, N = 11, bh = (2 * r) / N;
+        for (let i = 0; i < N; i++) {
+          const off = (i % 2 ? 1 : -1) * (1 - eo(p * 2.6 - i * 0.05)) * w * 0.8;
+          g.save(); g.beginPath(); g.rect(x, cy - r + i * bh, w, bh - 3); g.clip(); g.translate(off, 0);
+          g.fillStyle = i % 4 === 1 ? PAL.hot : PAL.coral; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fill(); g.restore();
+        }
+        tagText(g, 5, 'срез', PAL.ink, x, y);
+      }
+      function shotKinetic(g, x, y, w, h, p) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const lines = ['СМЕНА', 'КАДРА', 'НА УДАР'];
+        const size = fitFont(g, `800 $px Onest`, h * 0.24, 'НА УДАР', w * 0.88);
+        g.textBaseline = 'alphabetic';
+        lines.forEach((t, i) => {
+          const e = eo(p * 2.8 - i * 0.09), dir = i % 2 ? 1 : -1, tw = g.measureText(t).width;
+          const tx = x + (w - tw) / 2 + dir * (1 - e) * w, ty = y + h / 2 + (i - 1) * size * 0.95 + size * 0.35;
+          if (i === 1) { g.lineWidth = 4; g.strokeStyle = PAL.coral; g.strokeText(t, tx, ty); } else { g.fillStyle = i === 2 ? PAL.coral : PAL.cream; g.fillText(t, tx, ty); }
+        });
+        tagText(g, 6, 'кинетика', PAL.ash, x, y);
+      }
+      function shotWave(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const span = 4, mid = y + h / 2, reveal = x + w * eo(p * 3);
+        const bw = w / (span * 2 * R.perBeat);
+        for (let i = 0; i < span * 2 * R.perBeat; i++) {
+          const bt = beat - span + i / R.perBeat, bx = x + i * bw; if (bx > reveal) break;
+          const hh = 4 + kickAt(bt) * h * 0.4;
+          g.fillStyle = bt <= beat ? PAL.coral : PAL.line; g.fillRect(bx, mid - hh, Math.max(2, bw - 2), hh * 2);
+        }
+        g.fillStyle = PAL.cream; g.fillRect(x + w / 2 - 2, y + 60, 4, h - 120);
+        tagText(g, 7, 'волна', PAL.ash, x, y);
+      }
+      function shotCube(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.coral; g.fillRect(x, y, w, h);
+        const cx = x + w / 2, cy = y + h / 2, base = Math.min(w, h) * 0.3 * (1 + 0.06 * pulse(beat));
+        const V = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]];
+        const E = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+        [[1, 6], [0.62, 4], [0.36, 3]].forEach(([k, lw], j) => {
+          const ay = beat * 0.9 * (j % 2 ? -1 : 1) + p * 1.2, ax = 0.6 + j * 0.3;
+          const P = V.map(([vx, vy, vz]) => {
+            const x1 = vx * Math.cos(ay) - vz * Math.sin(ay), z1 = vx * Math.sin(ay) + vz * Math.cos(ay);
+            const y2 = vy * Math.cos(ax) - z1 * Math.sin(ax), z2 = vy * Math.sin(ax) + z1 * Math.cos(ax);
+            const s = base * k * eo(p * 3 - j * 0.1) / (1 + z2 * 0.18);
+            return [cx + x1 * s, cy + y2 * s];
+          });
+          g.strokeStyle = j === 1 ? PAL.cream : PAL.ink; g.lineWidth = lw; g.beginPath();
+          E.forEach(([a, c]) => { g.moveTo(P[a][0], P[a][1]); g.lineTo(P[c][0], P[c][1]); }); g.stroke();
+        });
+        tagText(g, 8, 'каркас', PAL.ink, x, y);
+      }
+      const warp = Array.from({length: 260}, (_, i) => { const r = rng(300 + i); return [r() * Math.PI * 2, r(), r()]; });
+      function shotWarp(g, x, y, w, h, p) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const cx = x + w / 2, cy = y + h / 2, M = Math.hypot(w, h) * 0.6;
+        g.lineCap = 'round';
+        warp.forEach(([a, s, c]) => {
+          const r0 = ((s + p * 0.9) % 1) * M, len = 20 + r0 * 0.5 * (0.4 + c);
+          g.strokeStyle = c > 0.7 ? PAL.cream : c > 0.35 ? PAL.amber : PAL.coral; g.globalAlpha = Math.min(1, r0 / 120); g.lineWidth = 2 + c * 5;
+          g.beginPath(); g.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); g.lineTo(cx + Math.cos(a) * (r0 + len), cy + Math.sin(a) * (r0 + len)); g.stroke();
+        });
+        g.globalAlpha = 1; g.lineCap = 'butt';
+        tagText(g, 9, 'прыжок', PAL.ash, x, y);
+      }
+      const tools = FILM.tools ?? ['HyperFrames', 'three.js', 'ffmpeg', 'DaVinci Resolve', 'Whisper', 'твой агент'];
+      function shotTools(g, x, y, w, h, p) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const steps = p * 3.4, k = Math.min(tools.length - 1, Math.floor(steps)), pos = Math.min(tools.length - 1, k + eo((steps - k) * 3));
+        const rowH = 150, cy = y + h / 2;
+        g.textAlign = 'center'; g.textBaseline = 'middle';
+        tools.forEach((t, i) => {
+          const d = i - pos, ty = cy + d * rowH; if (Math.abs(d) > 3) return;
+          const focus = Math.max(0, 1 - Math.abs(d));
+          g.font = `400 ${Math.round(64 + 48 * focus)}px ${SERIF}`;
+          g.globalAlpha = 0.25 + 0.75 * focus; g.fillStyle = i === tools.length - 1 ? PAL.coral : PAL.cream;
+          g.fillText(t, x + w / 2, ty);
+        });
+        g.globalAlpha = 1; g.textAlign = 'left';
+        g.fillStyle = PAL.coral; g.fillRect(x + 90, cy - 70, 6, 140); g.fillRect(x + w - 96, cy - 70, 6, 140);
+        g.font = `600 26px ${MONO}`; g.fillStyle = PAL.coral; g.textBaseline = 'alphabetic'; g.fillText(`10 — ${FILM.toolsTitle ?? 'всё в одном месте'}`, x + 40, y + 64);
+      }
+      function shotMosaic(g, x, y, w, h, p, beat) {
+        const qs = [shotType, shotRings, shotCube, shotWarp], gw = (w - 12) / 2, gh = (h - 12) / 2;
+        qs.forEach((fn, i) => {
+          const qx = x + (i % 2) * (gw + 12), qy = y + Math.floor(i / 2) * (gh + 12);
+          g.save(); g.beginPath(); g.rect(qx, qy, gw, gh); g.clip(); fn(g, qx, qy, gw, gh, 0.6 + p - i * 0.08, beat); g.restore();
+        });
+        g.fillStyle = PAL.ink; g.fillRect(x, y + h / 2 - 6, w, 12); g.fillRect(x + w / 2 - 6, y, 12, h);
+      }
+      // Ещё кадры для кольца-знака: каждый нарисован кодом, ни одного кадра из исходников.
+      function shotHalftone(g, x, y, w, h, p, beat, col = PAL.coral, bg = PAL.ink) {
+        g.fillStyle = bg; g.fillRect(x, y, w, h);
+        const n = 14, s = w / n, cx = x + w / 2, cy = y + h / 2;
+        g.fillStyle = col;
+        for (let c = 0; c <= n; c++) for (let r = 0; r <= Math.ceil(h / s); r++) {
+          const px = x + c * s, py = y + r * s, d = Math.hypot(px - cx, py - cy) / w;
+          const rad = s * 0.48 * (0.5 + 0.5 * Math.sin(d * 9 - p * 5 + pulse(beat) * 0.8));
+          if (rad > 0.6) { g.beginPath(); g.arc(px, py, rad, 0, 7); g.fill(); }
+        }
+      }
+      function shotContours(g, x, y, w, h, p) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        g.lineWidth = 3;
+        for (let k = 0; k < 18; k++) {
+          g.strokeStyle = k % 4 ? PAL.coral : PAL.amber; g.globalAlpha = k % 4 ? 0.4 : 1;
+          g.beginPath();
+          for (let i = 0; i <= 120; i++) {
+            const a = (i / 120) * Math.PI * 2, rr = (k + 1) * w * 0.032 * (1 + 0.18 * Math.sin(a * 3 + p * 2 + k * 0.4) + 0.08 * Math.sin(a * 5 - p * 3));
+            const px = x + w / 2 + Math.cos(a) * rr, py = y + h / 2 + Math.sin(a) * rr * 1.25;
+            if (i) g.lineTo(px, py); else g.moveTo(px, py);
+          }
+          g.closePath(); g.stroke();
+        }
+        g.globalAlpha = 1;
+      }
+      function shotSpiral(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.panel; g.fillRect(x, y, w, h);
+        const n = 420, cx = x + w / 2, cy = y + h / 2, k = Math.min(w, h) * 0.022;
+        for (let i = 0; i < n; i++) {
+          const a = i * 2.39996 + p * 0.6, r = k * Math.sqrt(i) * (0.4 + 0.6 * eo(p * 2 - i / n));
+          g.fillStyle = i % 9 === 0 ? PAL.cream : i % 2 ? PAL.coral : PAL.amber;
+          g.beginPath(); g.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 2 + 5 * (i / n) * (1 + 0.4 * pulse(beat)), 0, 7); g.fill();
+        }
+      }
+      function shotEq(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const n = 16, bw = w / n;
+        for (let i = 0; i < n; i++) {
+          const v = kickAt(beat - i * 0.125) * 0.8 + 0.2 * (0.5 + 0.5 * Math.sin(i * 1.7 + beat * 3)), bh = v * h * 0.7;
+          g.fillStyle = i % 5 === 0 ? PAL.cream : PAL.coral;
+          for (let k = 0; k < bh; k += 26) g.fillRect(x + i * bw + 4, y + h * 0.85 - k - 20, bw - 8, 20);
+        }
+      }
+      function shotGlyphC(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.coral; g.fillRect(x, y, w, h);
+        g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(Math.sin(p * 1.3) * 0.25);
+        g.font = `400 ${Math.round(Math.min(w, h) * (1.1 + 0.05 * pulse(beat)))}px ${SERIF}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+        for (let k = 5; k >= 0; k--) { g.fillStyle = k ? `rgba(14,12,11,${(0.12 * (6 - k)) / 6})` : PAL.ink; g.fillText('C', k * 14 * Math.cos(p), k * 14 * Math.sin(p)); }
+        g.restore(); g.textAlign = 'left';
+      }
+      function shotOrbits(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        const cx = x + w / 2, cy = y + h / 2;
+        for (let k = 1; k <= 5; k++) {
+          const rx = w * 0.09 * k, ry = rx * 0.42, a = p * (1.6 / k) + k;
+          g.save(); g.translate(cx, cy); g.rotate(-0.4);
+          g.strokeStyle = PAL.line; g.lineWidth = 2; g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, 7); g.stroke();
+          g.fillStyle = k === 3 ? PAL.cream : PAL.coral; g.beginPath(); g.arc(Math.cos(a) * rx, Math.sin(a) * ry, 8 + k * 2, 0, 7); g.fill();
+          g.restore();
+        }
+        g.fillStyle = PAL.amber; g.beginPath(); g.arc(cx, cy, w * 0.06 * (1 + 0.3 * pulse(beat)), 0, 7); g.fill();
+      }
+      function shotStripes(g, x, y, w, h, p) {
+        g.fillStyle = PAL.cream; g.fillRect(x, y, w, h);
+        g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.translate(x + w / 2, y + h / 2); g.rotate(-0.6);
+        const sw = 46, L = Math.hypot(w, h), off = (p * 60) % (sw * 2);
+        for (let i = -20; i < 20; i++) { g.fillStyle = i % 3 ? PAL.coral : PAL.ink; g.fillRect(i * sw * 2 + off + Math.sin(i * 0.3 + p * 2) * 40, -L / 2, sw, L); }
+        g.restore();
+      }
+      function shotDecode(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.panel; g.fillRect(x, y, w, h);
+        const word = 'CADENCE', f = Math.round(beat * 12), rows = 9;
+        g.font = `700 ${Math.round(w * 0.16)}px ${MONO}`; g.textBaseline = 'middle'; g.textAlign = 'left';
+        const cw = g.measureText('M').width;
+        for (let r = 0; r < rows; r++) {
+          const shown = Math.floor(clamp(p * 1.4 - Math.abs(r - 4) * 0.1) * (word.length + 1));
+          for (let j = 0; j < word.length; j++) {
+            const ok = j < shown;
+            g.globalAlpha = r === 4 ? 1 : 0.3; g.fillStyle = ok ? (r === 4 ? PAL.coral : PAL.cream) : PAL.ash;
+            g.fillText(ok ? word[j] : glyph(r, j, f), x + (w - cw * word.length) / 2 + j * cw, y + (h * (r + 0.5)) / rows);
+          }
+        }
+        g.globalAlpha = 1;
+      }
+      function shotBlobs(g, x, y, w, h, p, beat) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.7;
+        [[PAL.coral, 0.3, 0.4], [PAL.amber, 0.7, 0.55], [PAL.hot, 0.45, 0.75]].forEach(([c, u, v], i) => {
+          const cx = x + w * (u + 0.18 * Math.sin(p * 1.1 + i * 2)), cy = y + h * (v + 0.12 * Math.cos(p * 0.9 + i)), r = w * (0.55 + 0.08 * pulse(beat));
+          const gr = g.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, c); gr.addColorStop(1, 'rgba(0,0,0,0)');
+          g.fillStyle = gr; g.fillRect(x, y, w, h);
+        });
+        g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+      }
+      function shotLissajous(g, x, y, w, h, p) {
+        g.fillStyle = PAL.ink; g.fillRect(x, y, w, h);
+        g.strokeStyle = PAL.amber; g.lineWidth = 4; g.beginPath();
+        const N = 600, n = Math.round(N * clamp(p * 1.5));
+        for (let i = 0; i <= n; i++) {
+          const a = (i / N) * Math.PI * 2, px = x + w / 2 + w * 0.4 * Math.sin(3 * a + p), py = y + h / 2 + h * 0.3 * Math.sin(4 * a);
+          if (i) g.lineTo(px, py); else g.moveTo(px, py);
+        }
+        g.stroke();
+      }
+      const shots = [   // [доля начала, имя на таймлайне, кадр]
+        [13, 'типографика', shotType], [14, 'кольца', shotRings], [15, 'сетка', shotGrid], [16, 'счётчик', shotCount],
+        [17, 'срез', shotSlice], [18, 'кинетика', shotKinetic], [19, 'волна', shotWave], [20, 'каркас', shotCube],
+        [21, 'прыжок', shotWarp], [22, 'инструменты', shotTools], [24, 'мозаика', shotMosaic], [25.5, '', null],
+      ];
+      const PPB = 150, PLAY = 540;
+      function drawMontage(t) {
+        const beat = t / B, X = (bt) => PLAY + (bt - beat) * PPB;
+        let k = -1; shots.forEach(([s, , fn], i) => { if (fn && beat >= s) k = i; });
+        cutTex.redraw((g, w, h) => {
+          g.fillStyle = PAL.ink; g.fillRect(0, 0, w, h);
+          // кадр: удар по смене — короткий толчок масштаба
+          g.save(); g.beginPath(); g.rect(RG.x, RG.y, RG.w, RG.h); g.clip();
+          if (k < 0) shotIntro(g, RG.x, RG.y, RG.w, RG.h, 0, beat);
+          else {
+            const p = beat - shots[k][0], sc = 1 + 0.045 * (1 - eo(p * 4));
+            g.translate(RG.x + RG.w / 2, RG.y + RG.h / 2); g.scale(sc, sc); g.translate(-(RG.x + RG.w / 2), -(RG.y + RG.h / 2));
+            shots[k][2](g, RG.x, RG.y, RG.w, RG.h, p, beat);
+          }
+          g.restore();
+          // таймлайн
+          const top = 1340, v1 = 1390, v1h = 76, a1 = 1480, a1h = 80, bottom = a1 + a1h;
+          const b0 = Math.floor(beat - PLAY / PPB) - 1, b1 = Math.ceil(beat + (w - PLAY) / PPB) + 1;
+          g.font = `500 24px ${MONO}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+          for (let n = Math.max(0, b0); n <= b1; n++) {
+            const x = X(n);
+            g.fillStyle = 'rgba(240,238,230,.07)'; g.fillRect(x - 1, v1, 2, bottom - v1);
+            g.fillStyle = PAL.ash; g.fillText(String(n), x, top + 20); g.fillStyle = PAL.line; g.fillRect(x - 1, top + 28, 2, 16);
+          }
+          g.textAlign = 'left';
+          shots.forEach(([s, name, fn], i) => {
+            if (!fn) return;
+            const x0 = X(s) + 3, x1 = X(shots[i + 1][0]) - 3; if (x1 < 0 || x0 > w) return;
+            roundRect(g, x0, v1, x1 - x0, v1h, 12); g.fillStyle = i === k ? '#2a221d' : PAL.panel; g.fill();
+            g.lineWidth = i === k ? 3 : 1.5; g.strokeStyle = i === k ? PAL.coral : PAL.line; g.stroke();
+            g.save(); g.beginPath(); g.rect(x0, v1, x1 - x0, v1h); g.clip();
+            g.font = `600 21px ${MONO}`; g.fillStyle = i === k ? PAL.cream : PAL.ash; g.fillText(name, x0 + 12, v1 + 46); g.restore();
+          });
+          const bw = PPB / R.perBeat, mid = a1 + a1h / 2;
+          for (let i = Math.max(0, b0 * R.perBeat); i < Math.min(R.kick.length, b1 * R.perBeat); i++) {
+            const bt = i / R.perBeat, x = X(bt), hh = 3 + R.kick[i] * (a1h / 2 - 6);
+            g.fillStyle = bt <= beat ? PAL.coral : PAL.line; g.fillRect(x, mid - hh, Math.max(2, bw - 3), hh * 2);
+          }
+          shots.forEach(([s, , fn]) => {
+            if (!fn) return;
+            const x = X(s); if (x < -20 || x > w + 20) return;
+            const hot = Math.max(0, 1 - Math.abs(beat - s) / 0.35);
+            g.fillStyle = `rgba(255,138,76,${0.5 + 0.5 * hot})`; g.fillRect(x - 1.5 - hot * 2, v1 - 6, 3 + hot * 4, bottom - v1 + 12);
+            if (hot > 0) { g.fillStyle = `rgba(240,238,230,${hot})`; g.beginPath(); g.arc(x, mid, 7 + hot * 12, 0, 7); g.fill(); }
+          });
+          g.fillStyle = PAL.ink; g.fillRect(0, v1 - 8, 96, bottom - v1 + 16);
+          g.font = `600 19px ${MONO}`; g.fillStyle = PAL.ash; g.fillText('моушн', 14, v1 + v1h / 2 + 7); g.fillText('трек', 14, mid + 7);
+          g.fillStyle = PAL.cream; g.fillRect(PLAY - 2, top + 30, 4, bottom - top - 24);
+          g.beginPath(); g.moveTo(PLAY - 14, top + 28); g.lineTo(PLAY + 14, top + 28); g.lineTo(PLAY, top + 46); g.fill();
+          const bpm = `${Math.round(R.bpm)} BPM`;
+          g.font = `600 30px ${MONO}`; g.fillStyle = PAL.coral; g.fillText(bpm, 70, 1630);
+          const ox = 70 + g.measureText(bpm).width; g.fillStyle = PAL.cream; g.fillText(' · смена кадра — ровно на удар', ox, 1630);
+        });
+      }
+
+      // ---------- материалы ----------
+      const basic = (opts) => new THREE.MeshBasicMaterial({side: THREE.DoubleSide, ...opts});
+      const planeGeo = new THREE.PlaneGeometry(1, 1);
+      function quad(map, w, h, opts = {}) {
+        const m = new THREE.Mesh(planeGeo, basic({map, transparent: !!opts.transparent, ...opts.mat}));
+        m.scale.set(w, h, 1);
+        return m;
+      }
+
+      // ---------- экраны ----------
+      const faceMap = {...vtex, cut: cutTex};
+      const glowColor = {a: PAL.amber, cut: PAL.coral, b: PAL.coral};
+      for (const s of Object.values(S)) {
+        const g = new THREE.Group();
+        g.position.copy(s.pos); g.rotation.y = s.yaw;
+        const bezel = quad(null, WS + 0.12, HS + 0.12, {mat: {color: new THREE.Color('#15110f')}}); bezel.position.z = -0.02;
+        // ореол только спереди: сзади камера проходит сквозь него без цветной заливки кадра
+        const glow = quad(glowTex, WS * 2.6, HS * 1.7, {transparent: true, mat: {color: new THREE.Color(glowColor[s.id]), blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.55, side: THREE.FrontSide}}); glow.position.z = -0.3;
+        const face = quad(faceMap[s.id], WS, HS);                // цвет материала не трогаем: без сдвига цветов исходника
+        g.add(glow, bezel, face);
+        world.add(g);
+        s.group = g; s.face = face; s.glow = glow;
+      }
+
+      // ---------- карточки входа ----------
+      function inputCard(s, map, w, h, chip, dist) {
+        const g = new THREE.Group();
+        g.position.copy(Lp(s, dist)); g.rotation.y = s.yaw;
+        const back = quad(null, w + 0.1, h + 0.1, {transparent: true, mat: {color: new THREE.Color(PAL.panel)}}); back.position.z = -0.01;
+        const face = quad(map, w, h, {transparent: true});
+        const cw = Math.min(2.4, w * 0.85), ch = cw / 8;
+        const c = quad(chipTex(chip), cw, ch, {transparent: true}); c.position.set(-w / 2 + cw / 2, h / 2 + ch * 1.1, 0);
+        g.add(back, face, c);
+        world.add(g);
+        g.setOpacity = (a) => g.children.forEach((m) => { m.material.opacity = a; });
+        return g;
+      }
+      const cardDist = 7.2;
+      const trackTex = canvasTex(1200, 700, (g, w, h) => {
+        roundRect(g, 0, 0, w, h, 44); g.fillStyle = PAL.panel; g.fill();
+        g.font = `400 76px ${SERIF}`; g.fillStyle = PAL.cream; g.textBaseline = 'alphabetic'; g.fillText(R.track.title, 64, 136);
+        g.font = `500 40px ${MONO}`; g.fillStyle = PAL.coral; g.fillText(`${R.track.artist} · ${Math.round(R.bpm)} BPM`, 64, 200);
+        const mid = 470, bw = (w - 128) / (16 * R.perBeat);
+        for (let i = 0; i < 16 * R.perBeat; i++) {
+          const hh = 8 + R.kick[i] * 190; g.fillStyle = i % R.perBeat === 0 ? PAL.coral : PAL.line;
+          g.fillRect(64 + i * bw, mid - hh, Math.max(2, bw - 3), hh * 2);
+        }
+      });
+      const trackCard = inputCard(S.cut, trackTex, 2.4, 1.4, 'ВХОД · ТРЕК', cardDist);
+      const promptText = FILM.prompt ?? 'шар из света, дышит в такт';
+      const promptFont = '500 108px Onest', PX = 190;
+      const promptTex = canvasTex(2048, 400, () => {});
+      const drawPrompt = (n) => promptTex.redraw((g, w, h) => {
+        roundRect(g, 8, 8, w - 16, h - 16, 60); g.fillStyle = 'rgba(28,25,23,.97)'; g.fill();
+        g.lineWidth = 6; g.strokeStyle = 'rgba(217,119,87,.7)'; g.stroke();
+        g.font = `700 120px ${MONO}`; g.fillStyle = PAL.coral; g.textBaseline = 'middle'; g.fillText('›', 80, h / 2 + 6);
+        g.font = promptFont; g.fillStyle = PAL.cream;
+        const txt = promptText.slice(0, n);
+        g.fillText(txt, PX, h / 2 + 4);
+        const x = PX + g.measureText(txt).width + 10;
+        g.fillStyle = PAL.coral; g.fillRect(x, h / 2 - 60, 10, 120);
+      });
+      drawPrompt(0);
+      const PW = 1.3, PH = PW * 400 / 2048, PD = 6;
+      const OYAW = THREE.MathUtils.degToRad(35);
+      const orbSite = {pos: O, yaw: OYAW, n: V3(Math.sin(OYAW), 0, Math.cos(OYAW))};   // карточка смотрит на дорожку: цель подлёта видна заранее
+      const promptCard = inputCard(orbSite, promptTex, PW, PH, 'ВХОД · ОДНА СТРОКА', PD);
+      // Карточка кода: строки расшифровываются слева направо (скрамбл символами → настоящий текст), затем
+      // «render» до 100 %, и на пролёте код снова рассыпается — из кода получается ролик за ней.
+      const codeTex = canvasTex(1200, 1250, () => {});
+      // строки кода из сценария; подсветка простая: комментарий, строки, ключевые слова, команда
+      const KW = /^(const|let|var|function|return|import|export|from|await|async|if|else|for|new)$/;
+      const CODE = (FILM.code ?? ['// код твоего ролика', "const scenes = ['hook', 'drop', 'mark'];", '$ render --fps 30']).map((line) => {
+        if (!line) return [];
+        if (/^\s*\/\//.test(line)) return [[line, PAL.ash]];
+        if (line.startsWith('$ ')) return [['$ ', PAL.coral], [line.slice(2), PAL.cream]];
+        return line.split(/('[^']*'|"[^"]*"|\b\w+\b)/).filter(Boolean).map((tok) =>
+          [tok, /^['"]/.test(tok) ? PAL.cream : KW.test(tok) ? PAL.coral : /^\w+$/.test(tok) && !/^\d/.test(tok) ? PAL.amber : PAL.ash]);
+      });
+      const GLYPHS = 'abcdef0123456789#%&*+=/<>';
+      const glyph = (i, j, f) => GLYPHS[Math.floor((((Math.sin(i * 12.9898 + j * 78.233 + f * 37.719) * 43758.5453) % 1) + 1) % 1 * GLYPHS.length)];
+      const T_CODE = 41.1, T_RENDER = 43.4, T_DONE = 44.0, T_ENCODE = 44.1;
+      function drawCode(t) {
+        const beat = t / B, frame = Math.round(t * 30);
+        codeTex.redraw((g, w, h) => {
+          roundRect(g, 0, 0, w, h, 48); g.fillStyle = PAL.panel; g.fill();
+          g.lineWidth = 3; g.strokeStyle = PAL.line; g.stroke();
+          [PAL.coral, PAL.line, PAL.line].forEach((c, i) => { g.fillStyle = c; g.beginPath(); g.arc(64 + i * 44, 60, 14, 0, 7); g.fill(); });
+          g.font = `500 28px ${MONO}`; g.fillStyle = PAL.ash; g.textBaseline = 'middle'; g.fillText(FILM.codeFile ?? 'promo.mjs', 210, 62);
+          g.font = `500 40px ${MONO}`; const cw = g.measureText('M').width;
+          const enc = clamp((beat - T_ENCODE) / 0.6);
+          let n = 0;
+          CODE.forEach((tokens, i) => {
+            if (!tokens.length) return;
+            const text = tokens.map(([s]) => s).join(''), len = text.length;
+            const p = clamp((beat - (T_CODE + n * 0.25)) / 0.5); n++;
+            if (p <= 0) return;
+            const shown = Math.floor(p * len);
+            let j = 0;
+            tokens.forEach(([s, col]) => {
+              for (const ch of s) {
+                const scrambled = (j >= shown || j / len > 1 - enc) && ch !== ' ';
+                g.fillStyle = scrambled ? (j / len > 1 - enc ? PAL.coral : PAL.line) : col;
+                g.fillText(scrambled ? glyph(i, j, frame) : ch, 64 + j * cw, 160 + i * 74);
+                j++;
+              }
+            });
+          });
+          // render: полоса до 100 %
+          const r = clamp((beat - T_RENDER) / (T_DONE - T_RENDER));
+          if (r > 0) {
+            const y = 1010;
+            g.font = `600 36px ${MONO}`; g.fillStyle = PAL.coral; g.fillText('▶ render', 64, y);
+            g.fillStyle = PAL.line; roundRect(g, 300, y - 14, 680, 28, 14); g.fill();
+            g.fillStyle = PAL.coral; roundRect(g, 300, y - 14, Math.max(28, 680 * eo(r * 1.1)), 28, 14); g.fill();
+            g.fillStyle = PAL.cream; g.fillText(`${Math.round(100 * eo(r * 1.1))} %`, 1010, y);
+            if (r >= 1) { g.font = `500 32px ${MONO}`; g.fillStyle = PAL.amber; g.fillText(`→ ${FILM.codeOutput ?? 'promo.mp4'}`, 64, y + 90); }
+          }
+        });
+      }
+      const codeCard = inputCard(S.b, codeTex, 2.2, 2.2 * 1250 / 1200, FILM.codeChip ?? 'ВХОД · КОД', cardDist);
+
+      // ---------- хук: заголовок расшифровывается, на дропе камера пролетает сквозь него ----------
+      // Обещание первой секунды: всё, что дальше, — код; ролик это доказывает.
+      const HOOK = [
+        {text: FILM.hook.title, font: `400 150px ${SERIF}`, col: PAL.cream, y: 300, at: 0.1},
+        {text: FILM.hook.accent, font: `400 330px ${SERIF}`, col: PAL.coral, y: 640, at: 0.45},
+        {text: FILM.hook.sub ?? '', font: `500 64px ${MONO}`, col: PAL.ash, y: 810, at: 0.85},
+      ];
+      const hookTex = canvasTex(1600, 900, () => {});
+      function drawHook(t) {
+        const beat = t / B, frame = Math.round(t * 30);
+        hookTex.redraw((g, w, h) => {
+          const gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * 0.55);   // тёмная подложка: зал за титром не спорит с буквами
+          gr.addColorStop(0, 'rgba(14,12,11,.92)'); gr.addColorStop(0.7, 'rgba(14,12,11,.7)'); gr.addColorStop(1, 'rgba(14,12,11,0)');
+          g.fillStyle = gr; g.fillRect(0, 0, w, h);
+          g.textBaseline = 'alphabetic';
+          HOOK.forEach((ln, i) => {
+            g.font = ln.font; g.textAlign = 'left';
+            const p = clamp((beat - ln.at) / 0.6), chars = [...ln.text], shown = Math.floor(p * (chars.length + 1));
+            let cx = (w - g.measureText(ln.text).width) / 2;
+            chars.forEach((ch, j) => {
+              const cw = g.measureText(ch).width;
+              if (ch !== ' ') {
+                if (j < shown) { g.globalAlpha = 1; g.fillStyle = ln.col; g.fillText(ch, cx, ln.y); }
+                else { g.globalAlpha = 0.55; g.fillStyle = PAL.coral; g.textAlign = 'center'; g.fillText(glyph(i + 31, j, frame), cx + cw / 2, ln.y); g.textAlign = 'left'; }
+              }
+              cx += cw;
+            });
+          });
+          g.globalAlpha = 1;
+        });
+      }
+      const hookCard = quad(hookTex, 1.6, 0.9, {transparent: true});
+      hookCard.position.copy(Lp(S.a, 13.2)); hookCard.rotation.y = S.a.yaw; world.add(hookCard);
+
+      // ---------- строка → шар из частиц ----------
+      // Частицы стартуют с пикселей набранной строки, летят по дуге и собираются в шар, который дышит на каждую долю.
+      const T_DISSOLVE = b(34.9), ORB_R = 2.2, NP = 26000;
+      const textPts = (() => {
+        const c = document.createElement('canvas'); c.width = 2048; c.height = 400;
+        const g = c.getContext('2d'); g.font = promptFont; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.fillText(promptText, PX, 204);
+        const d = g.getImageData(0, 0, 2048, 400).data, pts = [];
+        for (let y = 0; y < 400; y += 2) for (let x = 0; x < 2048; x += 2) if (d[(y * 2048 + x) * 4 + 3] > 120) pts.push([x, y]);
+        return pts;
+      })();
+      const pr = rng(77), cardPos = Lp(orbSite, PD), cardRight = V3(Math.cos(OYAW), 0, -Math.sin(OYAW));
+      const aStart = new Float32Array(NP * 3), aDir = new Float32Array(NP * 3), aRnd = new Float32Array(NP * 4);
+      const GA = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < NP; i++) {
+        const [u, v] = textPts[Math.floor(pr() * textPts.length)];
+        const sx = (u / 2048 - 0.5) * PW + (pr() - 0.5) * 0.002;
+        aStart.set([cardPos.x + cardRight.x * sx + orbSite.n.x * 0.012, cardPos.y + (0.5 - v / 400) * PH, cardPos.z + cardRight.z * sx + orbSite.n.z * 0.012], i * 3);
+        const y = 1 - (i / (NP - 1)) * 2, rr = Math.sqrt(1 - y * y), th = GA * i;
+        aDir.set([Math.cos(th) * rr, y, Math.sin(th) * rr], i * 3);
+        aRnd.set([u / 2048 * 0.6 + pr() * 0.4, pr(), pr(), pr()], i * 4);   // слева направо, как читается строка
+      }
+      const orbGeo = new THREE.BufferGeometry();
+      orbGeo.setAttribute('position', new THREE.BufferAttribute(aStart.slice(), 3));
+      orbGeo.setAttribute('aStart', new THREE.BufferAttribute(aStart, 3));
+      orbGeo.setAttribute('aDir', new THREE.BufferAttribute(aDir, 3));
+      orbGeo.setAttribute('aRnd', new THREE.BufferAttribute(aRnd, 4));
+      const orbMat = new THREE.ShaderMaterial({
+        uniforms: {uT: {value: -1}, uTime: {value: 0}, uPulse: {value: 0}, uO: {value: O}, uR: {value: ORB_R}, uH: {value: H}},
+        vertexShader: `attribute vec3 aStart; attribute vec3 aDir; attribute vec4 aRnd;
+          uniform float uT, uTime, uPulse, uR, uH; uniform vec3 uO; varying vec3 vCol; varying float vA;
+          float sm(float x){ x = clamp(x, 0., 1.); return x*x*x*(x*(x*6.-15.)+10.); }
+          void main(){
+            float ang = uTime * 0.35; vec3 d = vec3(aDir.x * cos(ang) - aDir.z * sin(ang), aDir.y, aDir.x * sin(ang) + aDir.z * cos(ang));   // шар медленно вращается
+            float n = sin(d.x*3.1 + uTime*0.9) * sin(d.y*2.7 - uTime*0.7) * sin(d.z*3.3 + uTime*0.5);
+            float n2 = sin(d.x*7.3 - uTime*1.3 + d.z*5.1) * 0.5;
+            float r = uR * (1. + 0.16*n + 0.05*n2 + 0.11*uPulse*(0.6 + 0.4*aRnd.y)) * (0.93 + 0.14*aRnd.z);
+            float e = sm((uT - aRnd.x*0.8) / 0.95);
+            vec3 swirl = (aRnd.yzw - 0.5) * 3.2;
+            vec3 p = mix(aStart, uO + d*r, e) + swirl * sin(3.14159*e) * 0.9;
+            vec4 mv = modelViewMatrix * vec4(p, 1.);
+            gl_Position = projectionMatrix * mv;
+            float size = mix(0.0055, 0.018 + 0.026*aRnd.w*aRnd.w, e);
+            gl_PointSize = max(1.5, size * uH * projectionMatrix[1][1] * 0.5 / -mv.z);
+            vec3 cA = vec3(2.3, 0.62, 0.30), cB = vec3(2.1, 1.35, 0.62);   // коралл снизу, янтарь сверху
+            vCol = mix(vec3(0.9, 0.86, 0.8), mix(cA, cB, 0.5 + 0.5*d.y), e) * (0.75 + 0.9*uPulse*e);
+            vA = step(0., uT) * mix(0.1, 1., smoothstep(0., 0.35, e)) * exp(-length(mv.xyz) * 0.012);   // на строке частицы тусклые: их тысячи на букву
+          }`,
+        fragmentShader: `varying vec3 vCol; varying float vA;
+          void main(){ float a = smoothstep(0.5, 0.05, length(gl_PointCoord - 0.5)) * vA; gl_FragColor = vec4(vCol * a, a); }`,
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      });
+      const orb = new THREE.Points(orbGeo, orbMat);
+      orb.frustumCulled = false;
+      world.add(orb);
+      const core = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, color: new THREE.Color(1.3, 0.45, 0.2), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0}));
+      core.position.copy(O); core.scale.setScalar(7); world.add(core);
+      const orbitRings = [[0.35, 0.2], [-0.5, 1.1]].map(([tilt, spin]) => {
+        const pts = Array.from({length: 257}, (_, i) => { const a = (i / 256) * Math.PI * 2; return V3(Math.cos(a) * 3.3, 0, Math.sin(a) * 3.3); });
+        const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color: new THREE.Color(1.6, 0.75, 0.35), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false}));
+        l.position.copy(O); l.rotation.set(tilt, spin, 0.2); world.add(l);
+        return l;
+      });
+
+      // ---------- дорожка трека: удары, доли, ворота ----------
+      const NB = R.peaks.length, barBeat = (i) => i / 4;
+      const bars = new THREE.InstancedMesh(new THREE.BoxGeometry(0.12, 1, 0.2), basic({color: 0xffffff}), NB * 2);
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), pv = new THREE.Vector3();
+      R.peaks.forEach((p, i) => {
+        const h = i < 28 ? 0 : 0.1 + p * 1.6;                  // первые семь долей пусты: у хука и пролёта к экрану A столбики встают стеной
+        for (const side of [0, 1]) bars.setMatrixAt(i * 2 + side, m4.compose(pv.set(side ? 1.6 : -1.6, h / 2, zOf(barBeat(i))), q, sc.set(1, h, 1)));
+      });
+      bars.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(NB * 2 * 3), 3);
+      world.add(bars);
+      const NBEAT = Math.round(TOTAL / B);
+      const ticks = new THREE.InstancedMesh(planeGeo, basic({color: 0xffffff, transparent: true, opacity: 0.9}), NBEAT + 1);
+      for (let k = 0; k <= NBEAT; k++) ticks.setMatrixAt(k, m4.compose(pv.set(0, 0.012, zOf(k)), new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0)), sc.set(k % 4 ? 1.6 : 2.6, k % 4 ? 0.025 : 0.05, 1)));
+      ticks.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array((NBEAT + 1) * 3), 3);
+      world.add(ticks);
+      const gateBeats = [4.2, 12.4, 27.3, 28.8, 44.6];
+      const gates = gateBeats.map((gb) => {
+        const g = new THREE.Group();
+        for (const x of [-1.6, 1.6]) { const p = quad(null, 0.05, 3.2, {mat: {color: new THREE.Color(0.9, 0.35, 0.18)}}); p.position.set(x, 1.6, 0); g.add(p); }
+        g.position.z = zOf(gb); world.add(g);
+        return {g, beat: gb};
+      });
+
+      // ---------- пыль ----------
+      const dustN = 2600, dr = rng(9);
+      const dustBase = new Float32Array(dustN * 3), dustPh = new Float32Array(dustN);
+      for (let i = 0; i < dustN; i++) { dustBase.set([(dr() - 0.5) * 40, dr() * 16, 10 - dr() * 120], i * 3); dustPh[i] = dr() * 6.28; }
+      const dustGeo = new THREE.BufferGeometry();
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(dustN * 3), 3));
+      const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({size: 0.05, map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: new THREE.Color(0.8, 0.5, 0.3)}));
+      world.add(dust);
+
+      // ---------- кольцо-знак «C» ----------
+      // Два ряда маленьких плиток 9:16 по дуге 280°: внутренний и внешний, шаг по дуге одинаковый — буква читается ровно.
+      // Плитки — кадры, нарисованные кодом: 21 генератор × 8 оттенков одной тёплой гаммы (светлые, средние, тёмные),
+      // соседние плитки разного тона. Живой экран монтажа (тоже код) слетает в кольцо сам.
+      // Кадров из работ человека в знаке нет: они уже показаны в зале.
+      const TW = 0.54, TH = TW * 16 / 9, ARC = 280, ROWS = [3.55, 4.6];
+      const tileShots = [shotType, shotHalftone, shotRings, shotContours, shotGrid, shotSpiral, shotCount, shotEq, shotSlice, shotGlyphC,
+        shotKinetic, shotOrbits, shotWave, shotStripes, shotCube, shotDecode, shotWarp, shotBlobs, shotLissajous,
+        (g, x, y, w, h, p, beat) => shotHalftone(g, x, y, w, h, p, beat, PAL.cream, PAL.ink), shotTools];
+      const TONES = [
+        {},                                                                                                                       // коралл на почти чёрном
+        {ink: '#f0eee6', panel: '#e8dccb', coral: '#d97757', cream: '#2a1a12', ash: '#7a6a5e', line: '#cdbba6', amber: '#b5532f'},  // сливочный
+        {ink: '#d97757', panel: '#c96a4b', coral: '#2a120b', cream: '#fff1e4', amber: '#ffd2a6', ash: '#5a2a1a', line: '#b85c3e'},  // коралл
+        {ink: '#f2a65a', panel: '#e8964a', coral: '#3a1a0e', cream: '#2a120b', amber: '#7a3416', ash: '#6a3a1a', line: '#d98a40'},  // янтарь
+        {ink: '#3a1d14', panel: '#4a2619', coral: '#ff8a4c', cream: '#ffe3c8', amber: '#f2a65a', ash: '#b08070', line: '#5c3020'},  // шоколад
+        {ink: '#7a2e1d', panel: '#8a3a26', coral: '#f2a65a', cream: '#ffe9d0', amber: '#ffc48a', ash: '#d8a088', line: '#9a4a32'},  // терракота
+        {ink: '#f6d3b3', panel: '#efc4a0', coral: '#b5532f', cream: '#3a1d14', amber: '#d97757', ash: '#8a5a42', line: '#e0b08a'},  // персик
+        {ink: '#1a0f0b', panel: '#24150f', coral: '#ffb27a', cream: '#f0eee6', amber: '#ff8a4c', ash: '#a38070', line: '#3a2418'},  // ночь
+      ];
+      const T_TILES = 48.1;
+      const tr = rng(21);
+      const slots = [];
+      ROWS.forEach((r, row) => {
+        const n = Math.floor((r * THREE.MathUtils.degToRad(ARC)) / (TW + 0.06)) + 1;
+        for (let k = 0; k < n; k++) slots.push({r, row, a: 40 + (ARC * k) / (n - 1)});
+      });
+      slots.sort((x, y) => x.a - y.a || x.row - y.row);
+      const liveSlot = slots.findIndex((sl) => sl.row === 1 && sl.a > 180);   // экран монтажа — во внешнем ряду слева, в середине буквы
+      const tiles = slots.map((sl, i) => {
+        const th = THREE.MathUtils.degToRad(sl.a);
+        const live = i === liveSlot ? 'cut' : null;
+        const tex = live ? null : canvasTex(180, 320, () => {});
+        const m = quad(live ? faceMap.cut : tex, TW, TH, {mat: {color: new THREE.Color(1, 1, 1)}});
+        world.add(m);
+        const target = F.clone().add(V3(Math.cos(th) * sl.r, Math.sin(th) * sl.r, 0));
+        const src = live ? S[live] : null;
+        const from = src ? src.pos.clone() : V3((tr() - 0.5) * 30, 0.5 + tr() * 6, O.z - 3.1 - tr() * 27.9);
+        // соседи по дуге и по ряду — разные генератор и тон
+        return {m, th, target, from, tex, shot: tileShots[(i * 8 + sl.row * 5) % tileShots.length], tone: TONES[(i * 3 + sl.row) % TONES.length],
+          fromYaw: src ? src.yaw : (tr() - 0.5) * 2, fromScale: src ? HS / TH : 0.2, src, delay: (sl.a - 40) / ARC * 1.0 + sl.row * 0.08};
+      });
+      function drawTiles(t) {
+        const beat = t / B, saved = {...PAL};
+        tiles.forEach((tl, i) => {
+          if (!tl.tex || t < b(T_TILES) + tl.delay - 0.05) return;
+          Object.assign(PAL, tl.tone);
+          tl.tex.redraw((g) => { g.save(); g.scale(0.25, 0.25); tl.shot(g, 0, 0, 720, 1280, 0.4 + (beat - T_TILES) * 0.7 + i * 0.13, beat + i * 0.37); g.restore(); });
+          Object.assign(PAL, saved);
+        });
+      }
+
+      // ---------- пол с отражением ----------
+      const reflRT = new THREE.WebGLRenderTarget(W / 2, H / 2, {type: THREE.HalfFloatType});
+      const floorMat = new THREE.ShaderMaterial({
+        uniforms: {refl: {value: reflRT.texture}, res: {value: new THREE.Vector2(W, H)}, camPos: {value: new THREE.Vector3()}},
+        vertexShader: `varying vec3 wp; void main(){ vec4 w = modelMatrix*vec4(position,1.); wp = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`,
+        fragmentShader: `uniform sampler2D refl; uniform vec2 res; uniform vec3 camPos; varying vec3 wp;
+          void main(){
+            vec2 uv = gl_FragCoord.xy / res;
+            float d = length(wp - camPos);
+            vec3 r = vec3(0.); float bl = 0.0025 + d * 0.00018;
+            for (int i = -2; i <= 2; i++) for (int j = -2; j <= 2; j++) r += texture2D(refl, uv + vec2(float(i), float(j)) * bl).rgb;
+            r /= 25.;
+            float runway = 1. - smoothstep(1.2, 2.2, abs(wp.x));
+            vec3 bg = vec3(0.0042, 0.0034, 0.003);
+            vec3 base = mix(vec3(0.007, 0.0055, 0.0045), vec3(0.018, 0.011, 0.007), runway);
+            float fog = exp(-d * 0.016);
+            vec3 c = base + r * (0.30 + 0.25 * runway);
+            gl_FragColor = vec4(mix(bg, c, fog), 1.);
+          }`,
+      });
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), floorMat);
+      floor.rotation.x = -Math.PI / 2; floor.position.z = -60;
+      scene.add(floor);
+
+      // ---------- камера: ключи по долям ----------
+      const K = (beat, pos, look, ease = 'io') => ({t: b(beat), pos, look, ease});
+      const at = (s) => s.pos.clone();
+      const card = Lp(orbSite, PD);
+      const orbit = (beat) => {
+        const a = OYAW - THREE.MathUtils.degToRad((beat - 36.5) * 20);
+        return K(beat, O.clone().add(V3(Math.sin(a) * 11, 0.3 + (beat - 36.5) * 0.2, Math.cos(a) * 11)), O.clone(), 'lin');
+      };
+      // над дорожкой взгляд постепенно уходит на карточку строки (w — доля поворота): цель подлёта в кадре заранее
+      const runway = (k, ease, w = 0) => K(k, V3(0, lerp(2.3, 3.2, w), zOf(k + 0.5)), V3(0, 1.3, zOf(k + 0.5) - 12).lerp(card, w), ease);   // камера на полдоли впереди плейхеда
+      const keys = [
+        K(0, Lp(S.a, 16.5), at(S.a)),                     // хук: заголовок на фоне зала
+        K(2.4, Lp(S.a, 16.0), at(S.a), 'lin'),
+        K(4.2, Lp(S.a, DF), at(S.a)),                     // дроп: пролёт сквозь заголовок прямо в скан (фото не показываем: скан сам им станет)
+        K(9.6, Lp(S.a, DF - 0.35), at(S.a), 'lin'),       // скан достраивается и становится фото; фото держится полсекунды, не дольше
+        K(11, V3(2.4, 7.0, S.a.pos.z + 10.4), V3(1.8, 2.8, S.a.pos.z - 14.7)),  // отлёт на сильную долю: видна дорожка
+        K(11.6, Lp(S.cut, 12.6), at(S.cut)),
+        K(11.9, Lp(S.cut, 12.2), at(S.cut), 'lin'),
+        K(12.6, Lp(S.cut, DF), at(S.cut)),
+        K(25.5, Lp(S.cut, DF - 0.2), at(S.cut), 'lin'),           // склейки на долях 13 … 24
+        K(26.2, Lp(S.cut, DF + 2.5), V3(0, 1.3, S.cut.pos.z - 14)),  // отход и разворот к дорожке: не сквозь корпус экрана
+        runway(26.8), runway(27.3, 'lin', 0.35), runway(27.8, 'lin', 0.7),   // над столбиками: впереди рисунок ударов и карточка строки
+        // подлёт к строке: камера сворачивает с дорожки и садится перед карточкой к началу брейка —
+        // звук подлёта приходит вместе с ней, без ухода в свет и без подмены кадра
+        K(29, Lp(orbSite, PD + 3.2), card.clone()),
+        K(34.6, Lp(orbSite, PD + 2.6), card.clone(), 'lin'),                // строка печатается в брейке
+        K(36.5, Lp(orbSite, 11).add(V3(0, 0.3, 0)), O.clone()),             // бит вернулся: буквы летят в шар, камера отходит
+        ...[37.2, 37.9, 38.6, 39.3, 40.0].map(orbit),                        // облёт шара
+        K(41.0, Lp(S.b, cardDist + 4.7), at(S.b).add(V3(0, 1.6, 0))),   // стоим перед карточкой: код расшифровывается; взгляд выше — карточка ниже подписи
+        K(44.0, Lp(S.b, cardDist + 4.2), at(S.b).add(V3(0, 1.6, 0)), 'lin'),
+        K(44.8, Lp(S.b, DF), at(S.b)),                            // render готов — пролёт сквозь код в ролик
+        K(46.9, Lp(S.b, DF - 0.35), at(S.b), 'lin'),
+        K(48.6, V3(4.5, 23, O.z), V3(0, 1.2, O.z - 24.8)),
+        K(49.3, V3(4, 23.4, O.z - 2.3), V3(0, 1.6, O.z - 27.1), 'lin'),
+        K(51, V3(0, F.y - 2.6, F.z + 22.5), V3(0, F.y - 2.6, F.z)),   // знак встаёт на сильную долю; кольцо выше центра
+        K(55, V3(0, F.y - 2.6, F.z + 21.2), V3(0, F.y - 2.6, F.z), 'lin'),
+      ];
+      // Скорость в ключе: внутри цепочки 'lin' — по соседям; на стыке плавного и 'lin' — скорость отрезка 'lin'
+      // (прилёт в удержание и уход из него без рывка); между двумя плавными — ноль. Иначе касательные
+      // Catmull-Rom у длинного удержания смотрят на далёкого соседа, и камера посреди удержания уезжает вбок.
+      const smoother = (u) => u * u * u * (u * (u * 6 - 15) + 10);
+      function velocities(keys) {
+        const rate = (p, q, f) => q[f].clone().sub(p[f]).divideScalar(q.t - p.t);
+        return keys.map((k, i) => {
+          const prev = keys[i - 1], next = keys[i + 1];
+          const linIn = k.ease === 'lin' && prev, linOut = next && next.ease === 'lin';
+          const v = (f) => linIn && linOut ? next[f].clone().sub(prev[f]).divideScalar(next.t - prev.t)
+            : linOut ? rate(k, next, f) : linIn ? rate(prev, k, f) : new THREE.Vector3();
+          return {p: v('pos'), l: v('look')};
+        });
+      }
+      const vel = velocities(keys);
+      const hermite = (p0, p1, m0, m1, u) => {
+        const u2 = u * u, u3 = u2 * u;
+        return p0.clone().multiplyScalar(2 * u3 - 3 * u2 + 1).add(m0.clone().multiplyScalar(u3 - 2 * u2 + u)).add(p1.clone().multiplyScalar(-2 * u3 + 3 * u2)).add(m1.clone().multiplyScalar(u3 - u2));
+      };
+      function camAt(t) {
+        let i = keys.length - 2;
+        for (let k = 0; k < keys.length - 1; k++) if (t < keys[k + 1].t) { i = k; break; }
+        const a = keys[i], c = keys[i + 1], dt = c.t - a.t, u = clamp((t - a.t) / dt);
+        const va = vel[i], vc = vel[i + 1];
+        if (va.p.lengthSq() + vc.p.lengthSq() + va.l.lengthSq() + vc.l.lengthSq() === 0) {
+          const e = smoother(u);
+          return {pos: a.pos.clone().lerp(c.pos, e), look: a.look.clone().lerp(c.look, e)};
+        }
+        return {
+          pos: hermite(a.pos, c.pos, va.p.clone().multiplyScalar(dt), vc.p.clone().multiplyScalar(dt), u),
+          look: hermite(a.look, c.look, va.l.clone().multiplyScalar(dt), vc.l.clone().multiplyScalar(dt), u),
+        };
+      }
+      const passAt = (s, d, b0, b1) => { for (let t = b(b0); t < b(b1); t += 1 / 240) if (camAt(t).pos.clone().sub(s.pos).dot(s.n) < d) return t; return b(b1); };
+      const T_PASS_HOOK = passAt(S.a, 13.2, 2, 5), T_PASS_TRACK = passAt(S.cut, cardDist, 11, 13), T_PASS_CODE = passAt(S.b, cardDist, 43, 46);
+      const yawOf = (p, l) => Math.atan2(l.x - p.x, -(l.z - p.z));
+      function placeCamera(t) {
+        const {pos, look} = camAt(t);
+        const e = 1 / 60, a = camAt(t - e), c = camAt(t + e);
+        let dy = yawOf(c.pos, c.look) - yawOf(a.pos, a.look);
+        dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+        camera.position.copy(pos);
+        camera.up.set(0, 1, 0);
+        camera.lookAt(look);
+        camera.rotateZ(clamp(-dy * 0.9, -0.22, 0.22));           // крен на резком повороте
+        camera.updateMatrixWorld();
+      }
+
+      // ---------- состояние мира во времени ----------
+      const cyan = new THREE.Color(2.0, 0.62, 0.3), dim = new THREE.Color(0.02, 0.012, 0.009), hot = new THREE.Color(2.4, 1.45, 0.7), tmp = new THREE.Color();   // проигранное — коралл, на плейхеде — янтарь
+      function worldAt(t) {
+        const beatNow = t / B;
+        for (let i = 0; i < NB; i++) {
+          const d = beatNow - barBeat(i);
+          if (d < 0) tmp.copy(dim); else if (d < 1) tmp.copy(hot).lerp(cyan, d); else tmp.copy(cyan).multiplyScalar(0.22);
+          bars.setColorAt(i * 2, tmp); bars.setColorAt(i * 2 + 1, tmp);
+        }
+        bars.instanceColor.needsUpdate = true;
+        for (let k = 0; k <= NBEAT; k++) {
+          const d = beatNow - k;
+          tmp.setRGB(0.05, 0.035, 0.028).multiplyScalar(k % 4 ? 1 : 1.8);
+          if (d >= 0) tmp.lerp(cyan, Math.max(0.35, 1 - d * 0.5));
+          ticks.setColorAt(k, tmp);
+        }
+        ticks.instanceColor.needsUpdate = true;
+        gates.forEach(({g, beat}) => { const d = beatNow - beat; const k = d < 0 ? 0.15 : Math.max(0.5, 2.5 - d); g.children.forEach((c) => c.material.color.setRGB(0.9 * k, 0.35 * k, 0.18 * k)); });
+        const pos = dustGeo.attributes.position.array;
+        for (let i = 0; i < dustN; i++) {
+          const ph = dustPh[i];
+          pos[i * 3] = dustBase[i * 3] + Math.sin(t * 0.3 + ph) * 0.4;
+          pos[i * 3 + 1] = dustBase[i * 3 + 1] + Math.sin(t * 0.21 + ph * 1.7) * 0.3;
+          pos[i * 3 + 2] = dustBase[i * 3 + 2] + Math.cos(t * 0.17 + ph) * 0.4;
+        }
+        dustGeo.attributes.position.needsUpdate = true;
+        // строка → шар: карточка гаснет, как только буквы оторвались; шар дышит на каждую долю
+        // ореол экрана гаснет, когда камера уходит вбок: иначе на выходе она пролетает сквозь него и кадр заливает цветом
+        const screenAOn = lerp(0.1, 1, smoothstep(T_PASS_HOOK - 0.3, T_PASS_HOOK + 0.2, t));   // только яркость, оттенок исходника не трогаем
+        S.a.face.material.color.setScalar(screenAOn);
+        S.a.glow.material.opacity = 0.55 * screenAOn * (1 - smoothstep(b(9.8), b(10.4), t));
+        S.cut.glow.material.opacity = 0.55 * (1 - smoothstep(b(25.5), b(26), t));
+        // карточка входа пройдена — убрать, иначе на отлёте камера видит её изнанку
+        hookCard.visible = t < T_PASS_HOOK; trackCard.visible = t < T_PASS_TRACK; codeCard.visible = t < T_PASS_CODE;
+        const uT = t - T_DISSOLVE;
+        drawPrompt(Math.round(promptText.length * invLerp(b(29) + 0.2, b(33.2), t)));
+        promptCard.setOpacity(1 - smoothstep(0.05, 0.45, uT));
+        promptCard.visible = uT < 0.5;
+        orbMat.uniforms.uT.value = uT;
+        orbMat.uniforms.uTime.value = t;
+        const formed = smoothstep(b(35.6), b(36.8), t);
+        orbMat.uniforms.uPulse.value = formed * Math.exp(-(beatNow % 1) * 6);
+        core.material.opacity = formed * (0.35 + 0.35 * orbMat.uniforms.uPulse.value);
+        orbitRings.forEach((l, i) => { l.material.opacity = formed * 0.5; l.rotation.y += 0; l.rotation.z = 0.2 + t * (i ? -0.25 : 0.18); });
+        // кольцо: экраны и миниатюры слетаются в «C»
+        tiles.forEach((tl) => {
+          const start = b(T_TILES) + tl.delay;
+          const p = t < start ? 0 : spring(t - start, 9, 0.86);
+          tl.m.visible = t >= start;
+          if (tl.src) tl.src.group.visible = t < start;
+          const pp = clamp(p, 0, 1.08);
+          const posv = tl.from.clone().lerp(tl.target, pp);
+          posv.y += Math.sin(Math.PI * clamp(pp)) * 4;
+          tl.m.position.copy(posv);
+          const s = lerp(tl.fromScale, 1, clamp(pp));
+          tl.m.scale.set(TW * s, TH * s, 1);
+          tl.m.rotation.set(0, lerp(tl.fromYaw, 0, clamp(pp)), lerp(0, tl.th - Math.PI / 2, clamp(pp)));
+          const lock = Math.max(0, 1 - Math.abs(t - b(51)) / 0.5);
+          tl.m.material.color.setScalar(1 + lock * 0.3);
+        });
+      }
+
+      // ---------- пост: накопление подкадров, bloom, ореол, зерно ----------
+      const rtOpts = {type: THREE.HalfFloatType};
+      const sceneRT = new THREE.WebGLRenderTarget(W, H, {...rtOpts, samples: 4});
+      const accRT = new THREE.WebGLRenderTarget(W, H, rtOpts);
+      const fsCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const fsGeo = new THREE.PlaneGeometry(2, 2);
+      const pass = (mat) => { const m = new THREE.Mesh(fsGeo, mat); const s = new THREE.Scene(); s.add(m); return s; };
+      const vs = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`;
+      const accMat = new THREE.ShaderMaterial({uniforms: {map: {value: sceneRT.texture}, w: {value: 1}}, vertexShader: vs,
+        fragmentShader: `uniform sampler2D map; uniform float w; varying vec2 vUv; void main(){ gl_FragColor = vec4(texture2D(map, vUv).rgb * w, 1.); }`,
+        blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, transparent: true});
+      const accScene = pass(accMat);
+      const levels = [2, 4, 8, 16, 32].map((d) => ({a: new THREE.WebGLRenderTarget(W / d, H / d, rtOpts), b: new THREE.WebGLRenderTarget(W / d, H / d, rtOpts)}));
+      const brightMat = new THREE.ShaderMaterial({uniforms: {map: {value: null}, thr: {value: 1.0}}, vertexShader: vs,
+        fragmentShader: `uniform sampler2D map; uniform float thr; varying vec2 vUv; void main(){ vec3 c = texture2D(map, vUv).rgb; float l = max(c.r, max(c.g, c.b)); gl_FragColor = vec4(c * smoothstep(thr, thr + 0.6, l), 1.); }`});
+      const blurMat = new THREE.ShaderMaterial({uniforms: {map: {value: null}, dirv: {value: new THREE.Vector2()}}, vertexShader: vs,
+        fragmentShader: `uniform sampler2D map; uniform vec2 dirv; varying vec2 vUv;
+          void main(){ vec3 c = texture2D(map, vUv).rgb * 0.227;
+            c += (texture2D(map, vUv + dirv * 1.385).rgb + texture2D(map, vUv - dirv * 1.385).rgb) * 0.316;
+            c += (texture2D(map, vUv + dirv * 3.231).rgb + texture2D(map, vUv - dirv * 3.231).rgb) * 0.070;
+            gl_FragColor = vec4(c, 1.); }`});
+      const brightScene = pass(brightMat), blurScene = pass(blurMat);
+      const compMat = new THREE.ShaderMaterial({
+        uniforms: {map: {value: accRT.texture}, b0: {value: levels[0].a.texture}, b1: {value: levels[1].a.texture}, b2: {value: levels[2].a.texture}, b3: {value: levels[3].a.texture}, b4: {value: levels[4].a.texture},
+          exposure: {value: 1}, bloom: {value: 0.55}, frame: {value: 0}, res: {value: new THREE.Vector2(W, H)}},
+        vertexShader: vs,
+        fragmentShader: `uniform sampler2D map, b0, b1, b2, b3, b4; uniform float exposure, bloom, frame; uniform vec2 res; varying vec2 vUv;
+          vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0., 1.); }
+          float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+          vec3 srgb(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1. / 2.4)) - 0.055, step(0.0031308, c)); }
+          void main(){
+            vec2 d = vUv - 0.5; float r2 = dot(d, d);
+            vec3 c = texture2D(map, vUv).rgb;                    // без хроматической аберрации: цвет исходников не сдвигаем
+            vec3 bl = texture2D(b0, vUv).rgb * 0.5 + texture2D(b1, vUv).rgb * 0.6 + texture2D(b2, vUv).rgb * 0.7 + texture2D(b3, vUv).rgb * 0.8 + texture2D(b4, vUv).rgb * 0.9;
+            c = (c + bl * bloom) * exposure;
+            // плечо по яркости с сохранением оттенка: до 0,8 кадр как есть, выше мягко сжимается;
+            // ACES сдвигал цвета видео. Очень яркое (уход в свет) уходит в белый.
+            float L = max(c.r, max(c.g, c.b));
+            if (L > 0.8) c *= (0.8 + 0.2 * (1. - exp(-(L - 0.8) / 0.2))) / L;
+            c = mix(c, vec3(min(1., L)), smoothstep(1.5, 6., L));
+            c *= 1. - r2 * 0.6;
+            c = srgb(c);
+            c += (h(vUv * res + frame * 17.13) - 0.5) * 0.035;
+            gl_FragColor = vec4(c, 1.);
+          }`});
+      const compScene = pass(compMat);
+      const drawTo = (sc, rt) => { renderer.setRenderTarget(rt); renderer.render(sc, fsCam); };
+
+      const SHUTTER = 0.5 / 30;
+      // подкадров больше там, где камера быстро едет или поворачивает: иначе вместо смаза видны отдельные копии
+      function subframes(t) {
+        const a = camAt(t - SHUTTER / 2), c = camAt(t + SHUTTER / 2);
+        const turn = a.look.clone().sub(a.pos).normalize().angleTo(c.look.clone().sub(c.pos).normalize());
+        return Math.round(clamp(6 + a.pos.distanceTo(c.pos) * 40 + turn * 150, 6, 16));
+      }
+      function renderFrame(t) {
+        const lock = Math.max(0, 1 - Math.abs(t - b(51)) / 0.6);
+        renderer.setRenderTarget(accRT); renderer.setClearColor(0x000000, 1); renderer.clear();
+        const SUB = subframes(t);
+        accMat.uniforms.w.value = 1 / SUB;
+        for (let s = 0; s < SUB; s++) {
+          const ts = t + (s / (SUB - 1) - 0.5) * SHUTTER;
+          worldAt(ts);
+          placeCamera(ts);
+          // подпиксельный сдвиг: подкадры заодно сглаживают края
+          const jx = ((s * 0.618) % 1 - 0.5) / W, jy = ((s * 0.382) % 1 - 0.5) / H;
+          camera.setViewOffset(W, H, jx * W, jy * H, W, H);
+          floorMat.uniforms.camPos.value.copy(camera.position);
+          floor.visible = false; world.scale.y = -1;
+          renderer.setRenderTarget(reflRT); renderer.setClearColor(0x010306, 1); renderer.clear(); renderer.render(scene, camera);
+          world.scale.y = 1; floor.visible = true;
+          renderer.setRenderTarget(sceneRT); renderer.clear(); renderer.render(scene, camera);
+          renderer.setRenderTarget(accRT); renderer.autoClear = false; renderer.render(accScene, fsCam); renderer.autoClear = true;
+        }
+        camera.clearViewOffset();
+        brightMat.uniforms.map.value = accRT.texture; drawTo(brightScene, levels[0].a);
+        let srcTex = levels[0].a.texture;
+        levels.forEach((lv, i) => {
+          const w = W / [2, 4, 8, 16, 32][i], h = H / [2, 4, 8, 16, 32][i];
+          blurMat.uniforms.map.value = srcTex; blurMat.uniforms.dirv.value.set(1 / w, 0); drawTo(blurScene, lv.b);
+          blurMat.uniforms.map.value = lv.b.texture; blurMat.uniforms.dirv.value.set(0, 1 / h); drawTo(blurScene, lv.a);
+          srcTex = lv.a.texture;
+        });
+        compMat.uniforms.exposure.value = 1;
+        compMat.uniforms.bloom.value = 0.55 + lock * 0.4;
+        compMat.uniforms.frame.value = Math.round(t * 30);
+        drawTo(compScene, null);
+      }
+
+      // ---------- подписи поверх (DOM: чёткий текст) ----------
+      const L = FILM.labels ?? ['', '', '', ''];
+      const labels = [
+        [4.2, 9.6, '01', L[0]],
+        [12.6, 25.5, '02', L[1] ?? 'трек → моушн-графика в ритм'],
+        [29.2, 40.4, '03', L[2] ?? 'строка текста → 3D-сцена кодом'],
+        [41.1, 46.9, '04', L[3], FILM.screens?.[1]?.labelTop ?? 190],
+      ].filter(([, , , text]) => text).map(([a, z, n, text, top]) => { const d = el('div', 'label', ui); if (top) d.style.top = `${top}px`; el('div', 'n', d, n); el('div', 't', d, text); return {d, a: b(a), z: b(z)}; });
+      const reveal = el('div', 'reveal', ui);
+      // смысл финала: Cadence — место, где все инструменты моушна собраны для агента
+      const rwords = []; (FILM.reveal ?? ['Монтаж, 3D, звук, код —', 'в одном месте для *твоего *агента']).map((line) => [line]).forEach((line, li) => {
+        const words = line.length === 1 ? line[0].split(' ') : line;
+        words.forEach((w, i) => { const sp = el(w.startsWith('*') ? 'em' : 'span', 'w', reveal, w.replace('*', '') + (i < words.length - 1 ? ' ' : '')); rwords.push(sp); });
+        if (!li) el('br', '', reveal);
+      });
+      const mark = el('div', 'mark', ui); const mname = el('div', 'name', mark, FILM.mark.name); const mtag = el('div', 'tag', mark); mtag.textContent = FILM.mark.tag ?? '';
+      const mcta = el('div', 'cta', mark, FILM.mark.cta ?? ''); if (!FILM.mark.cta) mcta.style.display = 'none';
+      const fadeIn = (node, t, t0, dur = 0.35, dy = 20) => { const a = expoOut(invLerp(t0, t0 + dur, t)); node.style.opacity = a; node.style.filter = `blur(${(1 - a) * 8}px)`; node.style.transform = `translateY(${(1 - a) * dy}px)`; return a; };
+      function uiAt(t) {
+        labels.forEach(({d, a, z}) => { const on = t >= a && t < z; d.style.display = on ? '' : 'none'; if (on) fadeIn(d, t, a + 0.05); });
+        reveal.style.display = t >= b(47.6) && t < b(50.6) ? '' : 'none';
+        rwords.forEach((w, i) => fadeIn(w, t, b(47.8) + i * 0.08, 0.35, 24));
+        mark.style.display = t >= b(50.8) ? '' : 'none';
+        fadeIn(mname, t, b(51), 0.5, 30); fadeIn(mtag, t, b(51.7), 0.45, 16); fadeIn(mcta, t, b(52.4), 0.45, 24);
+      }
+
+      function render(t) {
+        for (const v of Object.values(vtex)) v.needsUpdate = true;
+        if (t < b(5)) drawHook(t);
+        drawMontage(t);
+        drawCode(t);
+        if (t > b(T_TILES) - 0.1) drawTiles(t);
+        renderFrame(t);
+        uiAt(t);
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>
