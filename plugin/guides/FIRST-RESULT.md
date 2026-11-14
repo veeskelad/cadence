@@ -1,11 +1,13 @@
-# Первый результат: ролик в бит
+# Первый результат: твой ролик в бит
 
 ## Что получится
 
-MP4 1080×1920 на 10–15 секунд в `work/<проект>/out/reel.mp4`:
-- хук расшифровывается до дропа;
-- на каждый удар — новый кадр моушна, нарисованный кодом;
-- в финале — знак с подписью и кнопкой.
+MP4 1080×1920 на 10–15 секунд в `work/<проект>/out/reel.mp4` — с твоими словами, твоим знаком и в твоём стиле:
+- хук — твоя фраза, пока трек ещё тихий;
+- на каждую долю форма перестраивается в новую фигуру (форма «одна форма»; пёстрая — новый кадр на каждый удар);
+- в финале — твоё название, подпись и кнопка.
+
+Расскажи агенту, о чём ролик и для кого. Тексты в примере сценария — только заготовка.
 
 Всё считается на твоей машине, ключи и платные сервисы не нужны.
 
@@ -24,14 +26,14 @@ MP4 1080×1920 на 10–15 секунд в `work/<проект>/out/reel.mp4`:
 
 ```bash
 W=../../work/first-reel            # или $CADENCE_WORK/first-reel
-python3 scripts/new_project.py first-reel --copy "<путь к треку>" --film beat-reel
+python3 scripts/new_project.py first-reel --copy "<путь к треку>" --film one-shape
 ```
 
 Нет трека — проект без `--copy` и демо-бит кодом:
 
 ```bash
-python3 scripts/new_project.py first-reel --film beat-reel
-# или «одна форма» — девять плиток перестраиваются на каждую долю: --film one-shape, и ниже build.mjs one-shape
+python3 scripts/new_project.py first-reel --film one-shape
+# пёстрая форма, новый кадр на каждый удар: --film beat-reel, и ниже build.mjs beat-reel
 python3 scripts/demo_beat.py --out "$W/in/demo-beat.wav"
 ```
 
@@ -46,12 +48,12 @@ python3 scripts/track_structure.py "$W/in/<трек>"
 - где дроп;
 - точку входа ролика в трек.
 
-Сценарий — `$W/film.json`. В нём поправь три строки хука и знак.
+Сценарий — `$W/film.json`. Агент впишет в него твой хук, название, подпись и кнопку; пример про Cadence в твой ролик не попадает.
 
 ## Выполнение (после согласия)
 
 ```bash
-node engine/build.mjs beat-reel --film "$W/film.json" --out "$W/build"
+node engine/build.mjs one-shape --film "$W/film.json" --out "$W/build"
 npm --prefix engine run check -- "$(pwd)/$W/build"
 npm --prefix engine run render -- "$(pwd)/$W/build" --quality high --fps 30 --output "$(pwd)/$W/out/reel-raw.mp4"
 python3 scripts/deliver.py "$W/out/reel-raw.mp4" --out "$W/out/reel.mp4"

@@ -55,7 +55,7 @@
 [guides/FIRST-CUT.md](guides/FIRST-CUT.md). Перед публикацией —
 [guides/BEFORE-POSTING.md](guides/BEFORE-POSTING.md).
 
-В версии 1.9.1 — 26 навыков и 18 карточек элементов с входами, слоями, формулами и проверкой. Выбор дополнительных модулей — [маршрутизация](knowledge/system/ROUTING.md); согласование правил — [совместимость](knowledge/system/compatibility.md).
+В версии 1.9.2 — 26 навыков и 18 карточек элементов с входами, слоями, формулами и проверкой. Выбор дополнительных модулей — [маршрутизация](knowledge/system/ROUTING.md); согласование правил — [совместимость](knowledge/system/compatibility.md).
 
 ## Как устроен набор
 

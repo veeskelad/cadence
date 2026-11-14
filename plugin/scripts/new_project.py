@@ -77,6 +77,7 @@ def main() -> int:
         print(f'  копия: {s} → in/{s.name}')
     if args.film:
         print(f'  сценарий: examples/{args.film}/film.json → film.json')
+        print('  тексты в film.json — заготовка: впиши хук, название, подпись и кнопку по идее человека')
     if args.dry_run:
         print('--dry-run: ничего не создано')
         return 0
