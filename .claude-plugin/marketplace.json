@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Cadence — дизайн, моушн, монтаж и звук с агентом",
-    "version": "1.9"
+    "version": "1.9.1"
   },
   "plugins": [
     {
       "name": "cadence",
       "source": "./plugin",
       "description": "Дизайн, моушн, монтаж и звук с агентом: ролики кодом, нарезка живого видео, эффекты, звук и свой стиль.",
-      "version": "1.9",
+      "version": "1.9.1",
       "homepage": "https://veeskelad.github.io/cadence/"
     }
   ]

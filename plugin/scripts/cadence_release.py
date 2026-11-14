@@ -57,7 +57,8 @@ def pointer(value,allowed):
         pu=urllib.parse.urlsplit(value)
         require(url.netloc==pu.netloc,'archive host mismatch')
         if pu.path.endswith('/current/manifest.json'):
-            require(url.path==pu.path[:-len('current/manifest.json')]+p['version']+'/'+p['archive_filename'],'archive project prefix mismatch')
+            base=pu.path[:-len('current/manifest.json')]; tail=p['version']+'/'+p['archive_filename']
+            require(url.path in (base+tail, base+'releases/'+tail),'archive project prefix mismatch')  # архивы: <проект>/releases/<версия>/ (с 1.9.1) или <проект>/<версия>/
     return p
 
 RUNTIME=('engine/node_modules',)

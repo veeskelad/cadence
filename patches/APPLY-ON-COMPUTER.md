@@ -35,8 +35,8 @@ Run the independent checks before touching maintained source:
 
 ```sh
 node --test tests/*.test.mjs
-python3 tests/install-prompt-smoke/test_install_prompt.py --archive 1.2/cadence-1.2.zip
-python3 tools/check-runtime-patch.py 1.2/cadence-1.2.zip
+python3 tests/install-prompt-smoke/test_install_prompt.py --archive releases/1.2/cadence-1.2.zip
+python3 tools/check-runtime-patch.py releases/1.2/cadence-1.2.zip
 ```
 
 In a clean source worktree, inspect the patch, then:
