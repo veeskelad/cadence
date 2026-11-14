@@ -115,7 +115,7 @@ if (filmPath) {
   collect(film);
 
   let seconds;
-  if (film.music && film.reel !== false && id === 'beat-reel') {
+  if (film.music && film.reel !== false && ['beat-reel', 'one-shape'].includes(id)) {
     // Ролик в бит: сетка — от трека.
     const track = origin.get(film.music.src);
     const map = JSON.parse(run('python3', [path.join(root, 'scripts/track_structure.py'), track, '--quiet-json']).toString());

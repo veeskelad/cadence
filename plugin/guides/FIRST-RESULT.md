@@ -31,6 +31,7 @@ python3 scripts/new_project.py first-reel --copy "<путь к треку>" --fi
 
 ```bash
 python3 scripts/new_project.py first-reel --film beat-reel
+# или «одна форма» — девять плиток перестраиваются на каждую долю: --film one-shape, и ниже build.mjs one-shape
 python3 scripts/demo_beat.py --out "$W/in/demo-beat.wav"
 ```
 

@@ -16,8 +16,7 @@
 1. Поставь Cadence одним из способов:
    - **плагин Claude Code** (обновляется сам):
      ```bash
-     claude plugin marketplace add veeskelad/cadence
-     claude plugin install cadence@cadence
+     claude plugin install cadence --marketplace veeskelad/cadence
      ```
      Чтобы новые версии приходили сами, включи автообновление этого marketplace в `/plugin` → Marketplaces.
      Твоя рабочая папка — `~/Cadence/work` (другую можно указать в `~/.config/cadence/config.json`: `{"work": "<папка>"}`).
@@ -56,7 +55,7 @@
 [guides/FIRST-CUT.md](guides/FIRST-CUT.md). Перед публикацией —
 [guides/BEFORE-POSTING.md](guides/BEFORE-POSTING.md).
 
-В версии 1.8 — 26 навыков и 18 карточек элементов с входами, слоями, формулами и проверкой. Выбор дополнительных модулей — [маршрутизация](knowledge/system/ROUTING.md); согласование правил — [совместимость](knowledge/system/compatibility.md).
+В версии 1.9 — 26 навыков и 18 карточек элементов с входами, слоями, формулами и проверкой. Выбор дополнительных модулей — [маршрутизация](knowledge/system/ROUTING.md); согласование правил — [совместимость](knowledge/system/compatibility.md).
 
 ## Как устроен набор
 
