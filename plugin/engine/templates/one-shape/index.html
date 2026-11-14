@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — одна форма</title>
+    <!--
+      Одна форма на весь ролик. Девять плиток всё время в кадре и на сетке долей трека (сборщик считает её по треку):
+      1) хук — заголовок и одна точка, которая дышит на долях до дропа;
+      2) дроп — на каждую долю плитки перестраиваются в новую фигуру: линия, полосы по бочке трека, кольцо,
+         сетка, волна, крест, ромб, спираль, столбик; в последнем такте — на полдоли; каждая смена — своей пружиной по роли;
+      3) знак — плитки встают строкой под названием, буквы входят хлопком, подпись и кнопка.
+      Кадр — чистая функция времени: render(t) рисует всё заново.
+    -->
+    <!-- cadence:fonts -->
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+      }
+      html, body { margin: 0; background: #000; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--canvas); }
+      #c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="one-shape" data-start="0" data-width="1080" data-height="1920" data-duration="12" data-no-timeline>
+      <section id="scene" class="clip" data-start="0" data-duration="12" data-track-index="1">
+        <canvas id="c" width="1080" height="1920"></canvas>
+      </section>
+      <!-- cadence:audio -->
+    </div>
+    <script type="application/json" id="film">
+{"hook": {"title": "Одна форма", "accent": "весь ролик", "sub": "нарисовано кодом"}, "mark": {"name": "Cadence", "tag": "дизайн · моушн · монтаж · звук", "cta": "Забирай скилл бесплатно"},
+ "reel": {"bpm": 100, "beat": 0.6, "total": 20, "hook": 3, "cuts": 12, "mark": 5, "perBeat": 16, "kick": []}}
+    </script>
+    <script type="module">
+      import {bindSeek, clamp, springRole, STAGGER} from './lib/motion.js';
+      import {safeArea} from './lib/reel-layout.js';
+
+      const film = JSON.parse(document.getElementById('film').textContent);
+      const R = film.reel, B = R.beat;
+      const root = document.getElementById('root');
+      const W = Number(root.dataset.width), H = Number(root.dataset.height);
+      const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+      const g = cv.getContext('2d');
+      const A = safeArea(W, H);
+      const css = getComputedStyle(root), C = (n) => css.getPropertyValue(n).trim();
+      const P = {bg: C('--canvas'), surface: C('--surface'), ink: C('--ink'), muted: C('--muted'), signal: C('--signal'), signal2: C('--signal-2')};
+      const CYR = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя—·';
+      await Promise.all(['400 200px "Literata Variable"', '600 80px Manrope', '500 44px Manrope'].map((f) => document.fonts.load(f, CYR + 'ABCabc0123456789')));
+      const SERIF = '"Literata Variable", Georgia, serif', SANS = 'Manrope, sans-serif';
+
+      const N = 9, U = Math.min(A.width, H * 0.5);                 // U — масштаб фигур по безопасной ширине
+      const CX = A.cx, CY = A.top + A.height * 0.46;
+      const kickAt = (beat) => (R.kick.length ? R.kick[clamp(Math.floor(beat * R.perBeat), 0, R.kick.length - 1)] : 0);
+      const tile = (x, y, w, h, r, a = 0) => ({x, y, w, h, r, a, o: 1});
+      const each = (f) => Array.from({length: N}, (_, i) => f(i));
+
+      // Фигуры: девять плиток, центр — CX, CY. Полосы берут высоту из бочки трека на этой доле.
+      const SHAPES = {
+        dot: () => each(() => tile(CX, CY, U * 0.12, U * 0.12, U * 0.06)),
+        line: () => each((i) => tile(CX + (i - 4) * U * 0.1, CY, U * 0.102, U * 0.022, U * 0.011)),
+        bars: (beat) => each((i) => { const h = U * (0.16 + 0.62 * kickAt(beat + i / N)); return tile(CX + (i - 4) * U * 0.1, CY + U * 0.3 - h / 2, U * 0.068, h, U * 0.016); }),
+        ring: () => each((i) => { const t = -Math.PI / 2 + (i * 2 * Math.PI) / N; return tile(CX + U * 0.32 * Math.cos(t), CY + U * 0.32 * Math.sin(t), U * 0.12, U * 0.12, U * 0.03, t + Math.PI / 2); }),
+        grid: () => each((i) => tile(CX + ((i % 3) - 1) * U * 0.22, CY + (Math.floor(i / 3) - 1) * U * 0.22, U * 0.2, U * 0.2, U * 0.032, Math.PI * 2)),
+        wave: () => each((i) => tile(CX + (i - 4) * U * 0.1, CY + Math.sin(i * 0.9) * U * 0.14, U * 0.07, U * 0.07, U * 0.035, Math.PI * 2)),
+        cross: () => { const pts = [[0, 0], [1, 0], [2, 0], [-1, 0], [-2, 0], [0, 1], [0, 2], [0, -1], [0, -2]];
+          return each((i) => tile(CX + pts[i][0] * U * 0.13, CY + pts[i][1] * U * 0.13, U * 0.12, U * 0.12, U * 0.02, Math.PI * 2)); },
+        diamond: () => each((i) => { const gx = (i % 3) - 1, gy = Math.floor(i / 3) - 1, q = Math.PI / 4;
+          return tile(CX + (gx * Math.cos(q) - gy * Math.sin(q)) * U * 0.22, CY + (gx * Math.sin(q) + gy * Math.cos(q)) * U * 0.22, U * 0.17, U * 0.17, U * 0.03, Math.PI * 2 + q); }),
+        spiral: () => each((i) => { const t = i * 0.95, r = U * (0.05 + i * 0.045); return tile(CX + r * Math.cos(t), CY + r * Math.sin(t), U * (0.05 + i * 0.012), U * (0.05 + i * 0.012), U * 0.03, t); }),
+        column: () => each((i) => tile(CX, CY + (i - 4) * U * 0.075, U * (0.2 + 0.05 * Math.abs(i - 4)), U * 0.05, U * 0.025, Math.PI * 2)),
+        row: () => each((i) => tile(CX + (i - 4) * U * 0.075, 0, U * 0.045, U * 0.045, U * 0.0225, Math.PI * 2)),
+      };
+      const SEQ = ['line', 'bars', 'ring', 'grid', 'wave', 'cross', 'diamond', 'spiral', 'column', 'bars', 'ring', 'grid'];
+      const ROLES = ['settle', 'pop', 'soft', 'settle', 'fade', 'pop', 'soft', 'soft', 'settle'];
+      const ORDERS = [[4, 3, 5, 2, 6, 1, 7, 0, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8], [8, 7, 6, 5, 4, 3, 2, 1, 0]];
+
+      // Смены: точка — в начале хука, дальше на каждую долю, в последнем такте — на полдоли, в конце — строка под знаком.
+      const T_DROP = R.hook * B, T_MARK = (R.hook + R.cuts) * B;
+      const nameY = A.top + A.height * 0.44, rowY = nameY + U * 0.17;
+      const events = [{at: 0.15, shape: SHAPES.dot(), role: 'pop', order: ORDERS[0]}];
+      let k = 0;
+      for (let c = 0; c < R.cuts; c++) {
+        const beats = c >= R.cuts - 4 ? [c, c + 0.5] : [c];
+        for (const bt of beats) {
+          const name = SEQ[k % SEQ.length];
+          events.push({at: T_DROP + bt * B, shape: SHAPES[name](R.hook + bt), role: ROLES[k % ROLES.length], order: ORDERS[k % ORDERS.length]});
+          k++;
+        }
+      }
+      events.push({at: T_MARK, shape: SHAPES.row().map((s) => ({...s, y: rowY})), role: 'soft', order: ORDERS[0]});
+      const zero = each(() => ({x: CX, y: CY, w: 0, h: 0, r: 0, a: 0, o: 0}));
+      const KEYS = ['x', 'y', 'w', 'h', 'r', 'a', 'o'];
+      function state(i, t) {
+        const v = {...zero[i]};
+        let prev = zero[i];
+        for (const e of events) {
+          if (t < e.at) break;
+          const p = springRole(t - e.at - e.order.indexOf(i) * STAGGER, e.role);
+          for (const key of KEYS) v[key] += (e.shape[i][key] - prev[key]) * p;
+          prev = e.shape[i];
+        }
+        return v;
+      }
+
+      function rr(s) {
+        const w = Math.max(0, s.w), h = Math.max(0, s.h), r = clamp(s.r, 0, Math.min(w, h) / 2);
+        g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, r); g.fill();
+      }
+      function text(str, x, y, font, color, alpha, align = 'center') {
+        if (alpha <= 0.001 || !str) return;
+        g.save(); g.globalAlpha = clamp(alpha); g.font = font; g.fillStyle = color; g.textAlign = align; g.textBaseline = 'alphabetic';
+        g.fillText(str, x, y); g.restore();
+      }
+      function fit(str, font, size, maxW) {
+        g.font = font(size); const w = g.measureText(str).width; return w > maxW ? size * (maxW / w) : size;
+      }
+
+      function render(t) {
+        const beat = t / B;
+        g.fillStyle = P.bg; g.fillRect(0, 0, W, H);
+        // мягкое пятно акцента за фигурой: дышит на бочке трека
+        const glow = 0.1 + 0.16 * kickAt(beat) * clamp((t - T_DROP + 0.3) / 0.3);
+        const gr = g.createRadialGradient(CX, CY, 0, CX, CY, U * 0.75);
+        gr.addColorStop(0, P.signal + Math.round(glow * 255).toString(16).padStart(2, '0')); gr.addColorStop(1, P.signal + '00');
+        g.fillStyle = gr; g.fillRect(0, 0, W, H);
+
+        // хук: заголовок над точкой, уходит вверх на дропе
+        const hookIn = springRole(t - 0.1, 'fade'), hookOut = springRole(t - T_DROP + 0.05, 'soft');
+        const hy = A.top + A.height * 0.18 - hookOut * U * 0.25;
+        const titleSize = fit(film.hook.title, (s) => `600 ${s}px ${SANS}`, 92, A.width);
+        text(film.hook.title, CX, hy + 30 * (1 - hookIn), `600 ${titleSize}px ${SANS}`, P.ink, hookIn * (1 - hookOut));
+        const acc = springRole(t - 0.45, 'fade');
+        text(film.hook.accent, CX, hy + titleSize * 1.15 + 30 * (1 - acc), `600 ${titleSize}px ${SANS}`, P.signal, acc * (1 - hookOut));
+        text(film.hook.sub, CX, hy + titleSize * 2.1, `500 40px ${SANS}`, P.muted, springRole(t - 0.85, 'fade') * (1 - hookOut));
+
+        // плитки; до дропа точка дышит на долях, после — бочка качает масштаб
+        const breathe = t < T_DROP ? 1 + 0.12 * Math.exp(-((beat % 1) * 6)) : 1 + 0.06 * kickAt(beat) * (t < T_MARK ? 1 : 0);
+        for (let i = 0; i < N; i++) {
+          const s = state(i, t);
+          g.save(); g.globalAlpha = clamp(s.o); g.translate(s.x, s.y); g.rotate(s.a); g.scale(breathe, breathe);
+          g.fillStyle = i === 4 ? P.signal2 : P.signal; rr(s); g.restore();
+        }
+
+        // знак: буквы названия хлопком по очереди, подпись и кнопка
+        if (t >= T_MARK) {
+          const m = film.mark, size = fit(m.name, (s) => `400 ${s}px ${SERIF}`, 190, A.width * 0.92);
+          g.font = `400 ${size}px ${SERIF}`;
+          const chars = [...m.name], widths = chars.map((ch) => g.measureText(ch).width);
+          let x = CX - widths.reduce((a, b) => a + b, 0) / 2;
+          chars.forEach((ch, j) => {
+            const p = springRole(t - T_MARK - 0.12 - j * STAGGER, 'pop');
+            if (p > 0) {
+              g.save(); g.globalAlpha = clamp(p * 1.3); g.fillStyle = P.ink; g.font = `400 ${size}px ${SERIF}`;
+              g.translate(x + widths[j] / 2, nameY); g.scale(p, p); g.textAlign = 'center'; g.fillText(ch, 0, 0); g.restore();
+            }
+            x += widths[j];
+          });
+          const tg = springRole(t - T_MARK - 0.55, 'fade');
+          text(m.tag, CX, rowY + U * 0.14 + 16 * (1 - tg), `500 38px ${SANS}`, P.muted, tg);
+          const ct = springRole(t - T_MARK - 0.9, 'pop');
+          if (ct > 0 && m.cta) {
+            g.save(); g.font = `600 44px ${SANS}`; const cw = g.measureText(m.cta).width + 96, ch = 104, cy = rowY + U * 0.32;
+            g.translate(CX, cy); g.scale(ct, ct); g.fillStyle = P.signal; g.beginPath(); g.roundRect(-cw / 2, -ch / 2, cw, ch, ch / 2); g.fill();
+            g.fillStyle = P.bg; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(m.cta, 0, 2); g.restore();
+          }
+        }
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>
