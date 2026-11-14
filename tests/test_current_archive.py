@@ -9,11 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 class CurrentArchive(unittest.TestCase):
     def setUp(self):
         self.pointer=json.loads((ROOT/'current/manifest.json').read_text())
-        self.archive=ROOT/self.pointer['version']/self.pointer['archive_filename']
+        self.archive=ROOT/'releases'/self.pointer['version']/self.pointer['archive_filename']
     def test_pointer_sha_and_immutable_previous_release(self):
         self.assertEqual(self.archive.stat().st_size,self.pointer['archive_size_bytes'])
         self.assertEqual(hashlib.sha256(self.archive.read_bytes()).hexdigest(),self.pointer['sha256'])
-        self.assertEqual(hashlib.sha256((ROOT/'1.3/cadence-1.3.zip').read_bytes()).hexdigest(),
+        self.assertEqual(hashlib.sha256((ROOT/'releases/1.3/cadence-1.3.zip').read_bytes()).hexdigest(),
                          '2184ace1ce4f3706b55f418b8ae7580cc55cdd2bddba48ab89ba70f3e2e42406')
     def test_exact_verified_payload_and_free_boundary(self):
         prefix=self.pointer['release_id']+'/'

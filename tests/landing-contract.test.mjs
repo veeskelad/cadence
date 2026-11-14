@@ -36,6 +36,6 @@ test('clipboard error status is accessible', () => {
   assert.match(html,/id="copy-status" role="status" aria-live="polite"/);
 });
 test('published 1.2 archive remains the immutable patch baseline', () => {
-  const archive=readFileSync(new URL('../1.2/cadence-1.2.zip',import.meta.url));
+  const archive=readFileSync(new URL('../releases/1.2/cadence-1.2.zip',import.meta.url));
   assert.equal(createHash('sha256').update(archive).digest('hex'),'aea11c3d5cd85a61c4a7e826fa34eede10837d9bdfcf07ad09102be8d573cc88');
 });

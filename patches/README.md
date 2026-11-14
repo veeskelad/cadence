@@ -5,7 +5,7 @@ is maintained separately. `cadence-1.2-runtime.patch` is a reviewable source pat
 **only on the already-public 1.2 ZIP**, not a new release or a replacement archive.
 
 **Merging this PR does not fix the engine downloaded by existing users.** The public
-`1.2/cadence-1.2.zip` and `current/manifest.json` are deliberately unchanged. Apply/review
+`releases/1.2/cadence-1.2.zip` and `current/manifest.json` are deliberately unchanged. Apply/review
 the runtime changes in the maintained source, run its full release checks, and issue a
 new version separately when authorized. Do not overwrite 1.2 or change its recorded hash.
 
@@ -30,8 +30,8 @@ From this repository, with Python 3.11+, Node 22+, and git:
 
 ```sh
 node --test tests/*.test.mjs
-python3 tests/install-prompt-smoke/test_install_prompt.py --archive 1.2/cadence-1.2.zip
-python3 tools/check-runtime-patch.py 1.2/cadence-1.2.zip
+python3 tests/install-prompt-smoke/test_install_prompt.py --archive releases/1.2/cadence-1.2.zip
+python3 tools/check-runtime-patch.py releases/1.2/cadence-1.2.zip
 ```
 
 The third command verifies the original ZIP's size, SHA-256 and every manifest entry,
