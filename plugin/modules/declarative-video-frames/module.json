@@ -1,0 +1,55 @@
+{
+  "id": "declarative-video-frames",
+  "family": "cadence-motion",
+  "title": "Блоки и приёмы для движка hyperframes",
+  "what": "Библиотека из 209 готовых блоков сцен и 238 компонентов (HTML, CSS, JS) плюс справки по контракту композиции, командам движка, цвету, швам и переходам.",
+  "when": [
+    "нужен готовый переход, титр, плашка или шейдерный фон, не собирай с нуля",
+    "найди в библиотеке блок для заголовка из стеклянных осколков",
+    "как правильно сделать бесшовный переход между сценами",
+    "что можно взять для карусели, чата, уведомлений или графика",
+    "перенеси мой ролик с другого видеокода на движок Cadence"
+  ],
+  "not_for": "Сборку и рендер самого ролика ведёт `cadence-motion` через `engine/`; звук и музыку делает `cadence-sound`; эффекты на живом видео делает `cadence-resolve`.",
+  "capabilities": [
+    "block-library"
+  ],
+  "inputs": [
+    "описание нужного эффекта словами",
+    "тип или тег (блок, компонент, пример)"
+  ],
+  "outputs": [
+    "список подходящих блоков и компонентов с путями",
+    "папка блока для копирования в проект ролика"
+  ],
+  "run": "node modules/declarative-video-frames/scripts/registry.mjs <слово ...> [--type block|component|example] [--tag <тег>]",
+  "engine": "hyperframes",
+  "deps": {
+    "system": [
+      "node"
+    ]
+  },
+  "install_mb": 0,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "docs",
+  "payload": {
+    "paths": [
+      "docs",
+      "kits",
+      "registry",
+      "scripts",
+      "themes"
+    ],
+    "file": "declarative-video-frames-87e776e9f558.zip",
+    "sha256": "87e776e9f558dc4140c63837a8cbed7b0d84574df2ed3180b1baf92394f9145f",
+    "bytes": 47648515,
+    "expanded_bytes": 112509752,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/declarative-video-frames-87e776e9f558.zip"
+  }
+}

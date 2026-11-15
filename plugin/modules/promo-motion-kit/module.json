@@ -1,0 +1,60 @@
+{
+  "id": "promo-motion-kit",
+  "family": "cadence-structures",
+  "title": "Скриншоты и превью-видео приложения для магазинов",
+  "what": "Скриншоты в рамке устройства с подписями и видео-превью мобильного приложения для App Store и Google Play, снятые автоматически с симулятора.",
+  "when": [
+    "сделай скриншоты моего приложения для App Store",
+    "нужно видео-превью приложения для магазина",
+    "обнови подписи и фон на скриншотах магазина, поменяй рамку телефона",
+    "собери витрину приложения: пять экранов и ролик показа"
+  ],
+  "not_for": "рекламный ролик о приложении со сценарием и музыкой — promo-showcase; ролик «приложение на телефоне как в рекламе» из своего скриншота — cadence-structures (device-stage); анимация интерфейса для сайта — cadence-web-comps",
+  "capabilities": [
+    "store-screenshots"
+  ],
+  "inputs": [
+    "собранное приложение (Release-сборка для симулятора или APK)",
+    "заголовки на экранах (можно доверить агенту)",
+    "запущенный iOS-симулятор или Android-эмулятор"
+  ],
+  "outputs": [
+    "$WORK/<проект>/out/screenshots/ (PNG в рамке, размеры магазина)",
+    "$WORK/<проект>/out/previews/ (видео-превью)",
+    "$WORK/<проект>/out/store.json (описание для студии)"
+  ],
+  "run": "GOLDIE_CONFIG=$WORK/<проект>/goldie.config.ts bun modules/promo-motion-kit/src/cli.ts all",
+  "engine": "node",
+  "deps": {
+    "node": ".",
+    "system": [
+      "bun",
+      "node",
+      "ffmpeg"
+    ]
+  },
+  "install_mb": 200,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "assets",
+      "goldie.config.example.ts",
+      "package.json",
+      "src",
+      "studio",
+      "tsconfig.json"
+    ],
+    "file": "promo-motion-kit-d9f7bccc7b05.zip",
+    "sha256": "d9f7bccc7b05661da4c29423158c2ffd85a24973bd86cbbc1a432cb86bff9956",
+    "bytes": 2015435,
+    "expanded_bytes": 3427943,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/promo-motion-kit-d9f7bccc7b05.zip"
+  }
+}

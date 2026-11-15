@@ -41,6 +41,16 @@ Cadence распространяется по лицензии MIT (`LICENSE.txt
 | Whisper (субтитры, по желанию) | ставишь сам: `pip install openai-whisper` или `faster-whisper` | MIT |
 | Навыки HyperFrames и Remotion (по желанию) | `npx skills add …` из первоисточника | у каждого своя; Remotion бесплатен для одиночек и команд до 3 человек |
 
+## Модули
+
+Модули `modules/<id>/` — часть Cadence под той же лицензией MIT. Чужие части, которые в них
+остались, перечислены в файлах модуля: `NOTICE*`, `THIRD_PARTY*`, `CREDITS.md`, `licenses/` и
+лицензии шрифтов рядом со шрифтами. Зависимости модулей (pip, npm, модели) в архив не входят и
+ставятся `python3 scripts/module_setup.py install <id>` по согласию; у каждой своя лицензия. Модель
+вырезки человека в `video-editing-skills` (RobustVideoMatting) — GPL-3.0, скачивается только флагом
+`--allow-download`. Модуль `shorts-studio` рендерит через Remotion: бесплатен для одиночек и команд
+до 3 человек.
+
 ## Источники знаний
 
 Словарь приёмов `knowledge/techniques/` — пересказ своими словами открытого каталога

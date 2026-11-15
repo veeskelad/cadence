@@ -1,0 +1,9 @@
+{
+  "media_start": 0.04,
+  "assets": {
+    "banana-heels.jpg": "my-banana-heels.jpg",
+    "explainer.mp4": "my-explainer.mp4",
+    "pixel-burger.jpg": "my-pixel-burger.jpg",
+    "pixel-fruit.jpg": "my-pixel-fruit.jpg"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "expressive-voice-synth",
+  "family": "cadence-sound",
+  "title": "Озвучка с тембром из образца и манерой словами",
+  "what": "Нейросеть читает текст тембром из короткого образца, на другом языке или в заданной манере («быстро», «шёпотом»); расчёт на видеокарте NVIDIA, результат wav.",
+  "when": [
+    "прочитай этот текст моим голосом на другом языке",
+    "озвучь голосом из моего образца записи",
+    "сделай озвучку в нужной манере: быстро, медленно, с улыбкой"
+  ],
+  "not_for": "Озвучка на Mac без NVIDIA: модуль mlx-audio-engine. Простая озвучка русским голосом без видеокарты NVIDIA: voice-synthesis-toolkit (идёт и на Mac). Голос по описанию словами без образца: neural-tts-engine. Музыка и сведение: навык cadence-sound.",
+  "capabilities": [
+    "voice-clone"
+  ],
+  "inputs": [
+    "текст или файл с текстом (utf-8)",
+    "образец голоса (локальный wav, 3–30 секунд) и, для zero-shot, слова из него; только с согласия владельца голоса",
+    "папка с весами модели"
+  ],
+  "outputs": [
+    "<имя>.wav в $WORK/<проект>/out/"
+  ],
+  "run": "python3 modules/expressive-voice-synth/run.py --mode cross-lingual --text-file <сценарий.txt> --prompt-wav <образец.wav> --project <проект>",
+  "engine": "python",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "python3"
+    ]
+  },
+  "install_mb": 12000,
+  "platform": [
+    "linux"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta"
+}

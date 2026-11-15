@@ -1,0 +1,52 @@
+{
+  "id": "ffmpeg-toolkit",
+  "family": "cadence-cut",
+  "title": "Набор инструментов ffmpeg (42 команды)",
+  "what": "Режет, склеивает, вписывает под формат, накладывает субтитры и графику, чистит и мерит звук, переводит HDR в SDR и собирает выгрузку под площадку локальным ffmpeg.",
+  "when": [
+    "обрежь видео с 1:20 до 2:05",
+    "сделай вертикальную версию 9:16 с размытыми полями",
+    "склей эти клипы с кроссфейдом",
+    "iPhone-видео в HDR выглядит блёклым, исправь",
+    "положи логотип в угол и вшей готовый SRT",
+    "приведи громкость к -14 LUFS"
+  ],
+  "not_for": [
+    "Вырезать паузы из речи по умолчанию: scripts/silence_cut.py (функция pauses)",
+    "Эффекты на живом видео уровня кино (замедление, вспышка, тряска): scripts/video_fx.py",
+    "Работа внутри открытого проекта DaVinci Resolve: навык cadence-resolve",
+    "Ролик, нарисованный кодом без съёмки: навык cadence-motion",
+    "Проверка ролика перед публикацией (громкость, чёрные кадры, вспышки, поля): scripts/check_reel.py (функция pre-publish)",
+    "Субтитры по речи — распознать и вшить: scripts/captions_whisper.py (функция captions)"
+  ],
+  "capabilities": [
+    "ffmpeg-ops"
+  ],
+  "inputs": [
+    "видео или звук",
+    "что сделать словами",
+    "по желанию SRT, логотип, brand.json"
+  ],
+  "outputs": [
+    "новый видео- или аудиофайл в $WORK/<проект>/out/",
+    "JSON-отчёт инструмента (--json)",
+    "проверка выгрузки (check.py)"
+  ],
+  "run": "python3 modules/ffmpeg-toolkit/scripts/_cadence_run.py cut <видео> --start 0:10 --end 0:40",
+  "engine": "python",
+  "deps": {
+    "system": [
+      "ffmpeg",
+      "python3"
+    ]
+  },
+  "install_mb": 0,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "none",
+  "keys": [],
+  "status": "ready"
+}

@@ -1,0 +1,2371 @@
+{
+  "modules": [
+    {
+      "id": "animation-scaffold",
+      "family": "cadence-motion",
+      "title": "Рисованный мультик с героем: позы, эмоции, сцены",
+      "what": "Короткий мультик кистью, как нарисованный от руки: герой с 31 эмоцией, пятью ракурсами, шляпами и жестами, сцены по таймлайну, листы проверки кадров и MP4.",
+      "when": [
+        "нарисуй мультик про моего героя, чтобы он выглядел нарисованным от руки",
+        "сделай короткую анимацию с персонажем, который переживает: удивляется, грустит, радуется",
+        "мне нужен милый ролик с талисманом без текста в кадре, только действие и эмоции",
+        "посмотри, как герой поворачивается и идёт, и покажи раскадровку листом"
+      ],
+      "not_for": "Живое видео, нарезка и субтитры: `cadence-cut`. Ролик в бит под трек, титры и графика с текстом: движок `engine/` и навык `cadence-motion` без этого модуля. Лёгкая схематичная анимация без кисти: остальные модули семейства. Здесь нет текста в кадре, 3D и фотографий.",
+      "capabilities": [
+        "character-animation"
+      ],
+      "inputs": [
+        "идея ролика и раскадровка по шотам",
+        "темп музыки (bpm) и время первой доли, если есть трек",
+        "по желанию свой звуковой файл"
+      ],
+      "outputs": [
+        "MP4 с мультиком",
+        "контактные листы и полосы кадров для проверки",
+        "PNG-кадры и циклы",
+        "$WORK/<проект>/out/"
+      ],
+      "run": "python3 modules/animation-scaffold/run.py <проект> --clip --out=out/video.mp4",
+      "engine": "node",
+      "deps": {
+        "node": ".",
+        "system": [
+          "node",
+          "ffmpeg"
+        ]
+      },
+      "install_mb": 45,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "character-animation"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "b-roll-toolkit",
+      "family": "cadence-cut",
+      "title": "Перебивки под речь",
+      "what": "К ролику с говорящим человеком добавляет графику поверх него и на весь кадр по тому, что он говорит; запись не режется, звук остаётся.",
+      "when": [
+        "добавь перебивки к видео, где я говорю в камеру",
+        "оживи ролик с говорящей головой графикой и цифрами",
+        "сделай b-roll под мою речь",
+        "нужен слой графики с прозрачностью, чтобы положить на дорожку в монтажке"
+      ],
+      "not_for": "Живые кадры вместо графики и нарезка по смыслу — модуль video-editing-skills и навык cadence-cut; сцены по словам для готового ролика без говорящего — навык cadence-motion; тишина и паузы — scripts/silence_cut.py.",
+      "capabilities": [
+        "b-roll-overlay"
+      ],
+      "inputs": [
+        "видео с человеком, говорящим в камеру (mp4, mov)"
+      ],
+      "outputs": [
+        "transcript.json со словами и временем",
+        "page.html с планом сцен",
+        "film.mp4 — запись с перебивками и своим звуком",
+        "b-roll.mov или b-roll.webm — только слой графики с прозрачностью"
+      ],
+      "run": "node modules/b-roll-toolkit/scripts/transcribe.mjs work/<проект>/in/talk.mp4 work/<проект>/in/transcript.json",
+      "engine": "node",
+      "deps": {
+        "node": "scripts",
+        "system": [
+          "ffmpeg",
+          "node"
+        ]
+      },
+      "install_mb": 5,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "ready",
+      "primary_for": [
+        "b-roll-overlay"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "calligraphy-art-motion",
+      "family": "cadence-motion",
+      "title": "Анимация в стиле художников и эпох, объясняющие фрагменты",
+      "what": "Ролик или фрагмент, нарисованный кодом на Canvas: 36 готовых художественных стилей и 16 исследовательских рецептов, 8 грамматик объясняющей анимации, проверка кадров и выдача с вердиктом.",
+      "when": [
+        "сделай анимацию в стиле Ван Гога или Моне",
+        "нужна история искусства за минуту: эпохи сменяются в одной комнате",
+        "нарисуй кодом объясняющий фрагмент: белая доска, формулы, график",
+        "динамическая типографика под мою фразу",
+        "воспроизведи эту анимацию кодом по моему видео-образцу"
+      ],
+      "not_for": [
+        "рисованная история по страницам и картинкам: модуль story-to-sketch-animation",
+        "дудл или росчерки: модуль doodle-animator",
+        "ролик в бит под свой трек, шоурил, заставка: навык cadence-motion (движок Cadence)",
+        "кино-эффекты на живом видео: навык cadence-cut"
+      ],
+      "capabilities": [
+        "art-style-motion"
+      ],
+      "inputs": [
+        "тема и раскадровка (таблица кадров)",
+        "спецификация фрагмента spec.json",
+        "образец-видео для разбора (по желанию)"
+      ],
+      "outputs": [
+        "MP4 или кадры PNG",
+        "отчёт проверки кадров",
+        "карточка выдачи с вердиктом"
+      ],
+      "run": "python3 modules/calligraphy-art-motion/scripts/engine/render.py --spec <spec.json> --out \"$WORK/<проект>/out/clip.mp4\"",
+      "engine": "python",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "python3",
+          "ffmpeg"
+        ]
+      },
+      "install_mb": 450,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "references",
+          "requirements.txt",
+          "scripts"
+        ],
+        "file": "calligraphy-art-motion-0b74c65398b4.zip",
+        "sha256": "0b74c65398b4ef2522e40115435e83e368b284ba0c327e3e62829dec143cae33",
+        "bytes": 10188945,
+        "expanded_bytes": 12167479,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/calligraphy-art-motion-0b74c65398b4.zip"
+      },
+      "primary_for": [
+        "art-style-motion"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "cinematic-motion-skill",
+      "family": "cadence-motion",
+      "title": "Фильм-рассказ под голос, нарисованный кодом",
+      "what": "Из сценария и записи голоса собирает фильм 30 секунд – 4 минуты: сцены на пружинах по сетке голоса, настоящий интерфейс, субтитры, музыка, проверка критиками; на выходе 16:9 и 9:16.",
+      "when": [
+        "сделай фильм про наш продукт под мою озвучку, всё нарисовано кодом",
+        "нужен ролик в стиле шоурила моушн-дизайнера со сценарием и раундами проверки",
+        "собери объяснялку по цифрам и схемам с красивой анимацией под голос",
+        "сделай вертикальную и горизонтальную версию фильма с субтитрами и музыкой"
+      ],
+      "not_for": "Ролик в бит под готовый трек без голоса, заставки и титры собирает движок `engine/` через `cadence-motion` (`word-scenes` и соседние модули); готовую озвучку с пересборкой на видео делает `cadence-sound`; обычные субтитры по речи делает `cadence-cut`.",
+      "capabilities": [
+        "voice-film"
+      ],
+      "inputs": [
+        "бриф и источники материала",
+        "записи голоса по строкам сценария (audio/vo/<id>.wav)",
+        "скриншоты и бренд-материалы по желанию"
+      ],
+      "outputs": [
+        "фильмы 16:9 и 9:16 (mp4, 60 к/с)",
+        "сценарий, раскадровка и журнал критики",
+        "стоп-кадры и контрольные листы"
+      ],
+      "run": "sh modules/cinematic-motion-skill/scripts/init.sh \"$WORK/<проект>/film\" --preset blank",
+      "engine": "node",
+      "deps": {
+        "python": "requirements.txt",
+        "node": "toolchain",
+        "system": [
+          "ffmpeg",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 900,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "VERSION",
+          "defaults.json",
+          "docs",
+          "engine",
+          "examples",
+          "library",
+          "presets",
+          "reference",
+          "requirements.lock",
+          "requirements.txt",
+          "scripts",
+          "templates",
+          "tests",
+          "toolchain"
+        ],
+        "file": "cinematic-motion-skill-30bfdc5bbadf.zip",
+        "sha256": "30bfdc5bbadf2c1bb041c9120fa27cf2a5529f3357f04e5623ec03214f5e09a9",
+        "bytes": 3702446,
+        "expanded_bytes": 7219467,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/cinematic-motion-skill-30bfdc5bbadf.zip"
+      },
+      "primary_for": [
+        "voice-film"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "code-to-film-engine",
+      "family": "cadence-motion",
+      "title": "Фильм кодом в одном из 56 стилей: от страницы до MP4",
+      "what": "Короткий фильм, нарисованный кодом на странице, в одном из 56 образцов стиля (доска, чертёж, пиксели, пластилин, гравюра, интерфейс и другие): общий рендерер снимает страницу покадрово в MP4, рядом инструменты звука, субтитров и проверки текста.",
+      "when": [
+        "сделай мне мини-фильм в стиле чертежа или школьной доски",
+        "нужно объяснение моей идеи анимацией, нарисованной кодом, в стиле гравюры",
+        "покажи, какие бывают визуальные стили для такого видео, и сделай одно",
+        "собери кинематографичный ролик на несколько минут с голосом и музыкой кодом",
+        "проверь, что текст в моём ролике успевают прочитать"
+      ],
+      "not_for": "Десять секунд по готовому стилю из пятнадцати: `motion-graphics-presets`. Ролик в бит под трек, анонс и шоурил по шаблонам Cadence: движок `engine/` и навык `cadence-motion` без этого модуля. Эффекты на живом видео: `cadence-cut` и `cadence-resolve`. Фильмы из архивных съёмок и новостные подборки: примеров в модуле нет, нужны свои кадры.",
+      "capabilities": [
+        "style-film",
+        "style-mini-film"
+      ],
+      "inputs": [
+        "идея и текст фильма",
+        "выбранный стиль-образец (список: run.py --styles)",
+        "по желанию озвучка и музыка"
+      ],
+      "outputs": [
+        "$WORK/<проект>/film/ с твоей страницей",
+        "MP4 без звука и кадры в $WORK/<проект>/out/",
+        "события звука и отчёт о читаемости текста"
+      ],
+      "run": "python3 modules/code-to-film-engine/run.py <проект> video",
+      "engine": "node",
+      "deps": {
+        "python": "requirements.txt",
+        "node": ".",
+        "system": [
+          "node",
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 380,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "REUSE.toml",
+          "core",
+          "package-lock.json",
+          "package.json",
+          "requirements-music.txt",
+          "requirements-voice.txt",
+          "requirements.txt",
+          "run.py",
+          "styles"
+        ],
+        "file": "code-to-film-engine-fb05d75b57b6.zip",
+        "sha256": "fb05d75b57b6c53a73a39e21134b144bc9b5b2ee573bb0b0b94e34f108fc814d",
+        "bytes": 3765321,
+        "expanded_bytes": 9805499,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/code-to-film-engine-fb05d75b57b6.zip"
+      },
+      "primary_for": [
+        "style-mini-film"
+      ],
+      "fallback_for": [
+        "style-film"
+      ]
+    },
+    {
+      "id": "data-motion-graphics",
+      "family": "cadence-motion",
+      "title": "Кадры из таблицы CSV (панель Data Driver)",
+      "what": "Панель для редактора EffectCraft: по шаблонной композиции и таблице CSV собирает серию кадров с подставленными текстами, цветами и картинками.",
+      "when": [
+        "собери серию плашек с именами из таблицы",
+        "подставь данные из CSV в шаблон титра",
+        "нужно двадцать одинаковых кадров, отличающихся только текстом и цветом"
+      ],
+      "not_for": "Графики, диаграммы и инфографика с анимацией данных: их рисует движок Cadence (`engine/`) через навык cadence-motion; этот модуль работает только внутри EffectCraft и в движок не встроен.",
+      "capabilities": [
+        "csv-templates"
+      ],
+      "inputs": [
+        "шаблонная композиция в EffectCraft",
+        "CSV с заголовками (текст, цвет #RRGGBB, путь к картинке)"
+      ],
+      "outputs": [
+        "серия композиций в проекте EffectCraft",
+        "собранный файл панели `Data Driver.jsx` с контрольной суммой"
+      ],
+      "run": "node modules/data-motion-graphics/build.mjs --out \"$WORK/<проект>/out\"",
+      "engine": "node",
+      "deps": {
+        "system": [
+          "node"
+        ]
+      },
+      "install_mb": 0,
+      "platform": [
+        "macos",
+        "windows"
+      ],
+      "network": "none",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "csv-templates"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "declarative-frames-community-skills",
+      "family": "cadence-motion",
+      "title": "Авторские наборы рукодельного видео",
+      "what": "Шесть готовых наборов: рукописный текст и живая картина мазками, 3D-субтитры вокруг говорящего, фильм о сессии с агентом, ролик по музыкальному коду, объяснялка-коллаж.",
+      "when": [
+        "сделай, чтобы текст писался от руки, как карандашом",
+        "перерисуй фото или клип как живую картину мазками",
+        "хочу субтитры в 3D вокруг говорящего, чтобы слова прятались за ним",
+        "сделай рисованный фильм о том, как мы работаем с агентом",
+        "собери объяснялку-коллаж на минуту про то, что все видят каждый день",
+        "сделай видео трека, где код горит под ноты"
+      ],
+      "not_for": "Обычные субтитры по речи делает `cadence-cut` (captions); типовые заставки, титры и ролик в бит под трек собирает движок `engine/` через `cadence-motion`; эффекты на живом видео делает `cadence-resolve`.",
+      "capabilities": [
+        "art-films"
+      ],
+      "inputs": [
+        "фраза, фото или короткий клип (для рукописного и живописного набора)",
+        "ролик с говорящим (для 3D-субтитров)",
+        "тема или документы (для объяснялки)",
+        "локальная история сессий (для фильмов о сессии)",
+        "трек Strudel (для ролика по коду)"
+      ],
+      "outputs": [
+        "PNG или MP4 с анимацией",
+        "проект с композицией для движка hyperframes в папке, которую назвал человек"
+      ],
+      "run": "node modules/declarative-frames-community-skills/kits/p5-paint-animation/scripts/render.mjs <sketch.js> [out.png]",
+      "engine": "hyperframes",
+      "deps": {
+        "system": [
+          "node",
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 600,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "art-films"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "declarative-video-frames",
+      "family": "cadence-motion",
+      "title": "Блоки и приёмы для движка hyperframes",
+      "what": "Библиотека из 209 готовых блоков сцен и 238 компонентов (HTML, CSS, JS) плюс справки по контракту композиции, командам движка, цвету, швам и переходам.",
+      "when": [
+        "нужен готовый переход, титр, плашка или шейдерный фон, не собирай с нуля",
+        "найди в библиотеке блок для заголовка из стеклянных осколков",
+        "как правильно сделать бесшовный переход между сценами",
+        "что можно взять для карусели, чата, уведомлений или графика",
+        "перенеси мой ролик с другого видеокода на движок Cadence"
+      ],
+      "not_for": "Сборку и рендер самого ролика ведёт `cadence-motion` через `engine/`; звук и музыку делает `cadence-sound`; эффекты на живом видео делает `cadence-resolve`.",
+      "capabilities": [
+        "block-library"
+      ],
+      "inputs": [
+        "описание нужного эффекта словами",
+        "тип или тег (блок, компонент, пример)"
+      ],
+      "outputs": [
+        "список подходящих блоков и компонентов с путями",
+        "папка блока для копирования в проект ролика"
+      ],
+      "run": "node modules/declarative-video-frames/scripts/registry.mjs <слово ...> [--type block|component|example] [--tag <тег>]",
+      "engine": "hyperframes",
+      "deps": {
+        "system": [
+          "node"
+        ]
+      },
+      "install_mb": 0,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "docs",
+      "payload": {
+        "paths": [
+          "docs",
+          "kits",
+          "registry",
+          "scripts",
+          "themes"
+        ],
+        "file": "declarative-video-frames-87e776e9f558.zip",
+        "sha256": "87e776e9f558dc4140c63837a8cbed7b0d84574df2ed3180b1baf92394f9145f",
+        "bytes": 47648515,
+        "expanded_bytes": 112509752,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/declarative-video-frames-87e776e9f558.zip"
+      },
+      "primary_for": [
+        "block-library"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "doodle-animator",
+      "family": "cadence-motion",
+      "title": "Рисованная анимация и иллюстрации кодом (дудл, 32 стиля, 2D и 3D)",
+      "what": "Иллюстрации, зацикленные анимации, рисующиеся на глазах картинки, фильмы, эксплейнеры и 3D-графика, нарисованные целиком кодом в одном из 32 стилей, со своей музыкой, звуковыми эффектами и субтитрами.",
+      "when": [
+        "нарисуй мне дудл-анимацию про эту идею",
+        "сделай картинку, которая рисуется на глазах, как таймлапс",
+        "нужен короткий фильм в стиле гравюры, акварели или бумажной аппликации",
+        "анимированный логотип или зацикленный стикер",
+        "объясни тему рисованной инфографикой",
+        "научи рисовать вот это пошагово"
+      ],
+      "not_for": [
+        "рисованная история по готовым страницам или тексту с подписями: модуль story-to-sketch-animation",
+        "объяснялка палочными человечками: модуль stick-figure-animator",
+        "анимация в стиле художников и эпох на Canvas с грамматиками объяснения: модуль calligraphy-art-motion",
+        "ролик в бит под свой трек, шоурил, заставка: навык cadence-motion (движок Cadence)"
+      ],
+      "capabilities": [
+        "doodle-motion"
+      ],
+      "inputs": [
+        "идея и короткая заметка-бриф (стиль, формат, длина, звук)",
+        "картинки человека для встраивания или образец стиля (по желанию)",
+        "собственные записи голоса (по желанию)"
+      ],
+      "outputs": [
+        "рабочий проект в work/",
+        "картинки PNG",
+        "MP4, GIF, WebM или самодостаточная HTML-страница",
+        "отчёты проверок"
+      ],
+      "run": "node modules/doodle-animator/engine/tools/scaffold.mjs \"$WORK/<проект>/doodle\" --film intro --format 9x16 --duration 12",
+      "engine": "node",
+      "deps": {
+        "node": "engine",
+        "system": [
+          "node",
+          "ffmpeg"
+        ]
+      },
+      "install_mb": 400,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "runtime",
+      "keys": [
+        "FIGMA_TOKEN"
+      ],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "engine",
+          "example",
+          "references",
+          "styles"
+        ],
+        "file": "doodle-animator-98b6a7562c08.zip",
+        "sha256": "98b6a7562c08088082acbbed9d1e286c40bb0d4ba56398ff21d45e06a1783ca0",
+        "bytes": 4679849,
+        "expanded_bytes": 10884173,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/doodle-animator-98b6a7562c08.zip"
+      },
+      "primary_for": [
+        "doodle-motion"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "effortless-cuts",
+      "family": "cadence-cut",
+      "title": "Говорящая голова под ключ: нарезка и пакет публикации",
+      "what": "Из сырых дублей говорящей головы получается готовый ролик с титрами, звуком и пакетом: мастер, варианты под площадки, обложка, строки для поста.",
+      "when": [
+        "собери из моих дублей готовый ролик целиком",
+        "смонтируй говорящую голову с титрами, звуком и обложкой",
+        "сделай вертикальную и квадратную версию из одного монтажа",
+        "хочу пакет для публикации: мастер, обложка, варианты заголовка",
+        "режь как профессиональный монтажёр, без вопросов про шрифты и переходы"
+      ],
+      "not_for": "Только убрать паузы: scripts/silence_cut.py (cadence-cut). Склейка лучших дублей без оформления: scripts/takes_cut.py. Ролик с готовым оформлением под именованный стиль: модуль phantom-editor. Работа внутри проекта DaVinci Resolve: cadence-resolve.",
+      "capabilities": [
+        "publish-package",
+        "styled-reel"
+      ],
+      "inputs": [
+        "папка с сырыми дублями (mp4, mov)",
+        "язык речи",
+        "по желанию: картинка или адрес страницы для кадров-доказательств"
+      ],
+      "outputs": [
+        "studio/out/master.mp4",
+        "варианты под площадки",
+        "кандидаты обложки",
+        "студийные файлы: расшифровка, takes.md, edl.json"
+      ],
+      "run": "python3 modules/effortless-cuts/scripts/scan.py --json",
+      "engine": "python",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "ffmpeg",
+          "node",
+          "python3",
+          "whisper-cli"
+        ]
+      },
+      "install_mb": 450,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "publish-package"
+      ],
+      "fallback_for": [
+        "styled-reel"
+      ]
+    },
+    {
+      "id": "explainer-engine",
+      "family": "cadence-structures",
+      "title": "Эксплейнер с голосом и демо продукта",
+      "what": "Из текста сценария и файла сцен делает ролик с дикторским голосом: локальная озвучка или своя запись, анимация по словам, субтитры, обложка, вертикальные версии.",
+      "when": [
+        "сделай объяснялку с озвучкой про то, как это работает",
+        "нужен обучающий ролик: диктор, схемы и подсветка по словам",
+        "собери демо моего продукта: запись экрана сайта и голос за кадром",
+        "хочу короткое вертикальное видео с диктором и субтитрами",
+        "смонтируй мою запись по словам: убери слова и паузы"
+      ],
+      "not_for": "Ролик под готовую озвучку без своего сценария собирает `motion-graphics-pipeline`; ролик в бит под трек, заставки и титры — движок `engine/` через `cadence-motion`; озвучка и сведение звука в готовом ролике — `cadence-sound`.",
+      "capabilities": [
+        "explainer"
+      ],
+      "inputs": [
+        "тема или готовый текст (script.md)",
+        "по желанию: своя запись голоса, музыка, скриншоты, адрес сайта для захвата"
+      ],
+      "outputs": [
+        "MP4 с озвучкой, субтитрами и обложкой",
+        "web-плеер",
+        "папка для ручной загрузки на площадку"
+      ],
+      "run": "node modules/explainer-engine/bin/explainroo.js init \"$WORK/<проект>/video\"",
+      "engine": "node",
+      "deps": {
+        "node": ".",
+        "system": [
+          "node",
+          "ffmpeg"
+        ]
+      },
+      "install_mb": 450,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "AGENTS.md",
+          "bin",
+          "dev",
+          "docs",
+          "engine",
+          "examples",
+          "fonts",
+          "formats",
+          "package-lock.json",
+          "package.json",
+          "scripts",
+          "src",
+          "templates"
+        ],
+        "file": "explainer-engine-ee74187c2659.zip",
+        "sha256": "ee74187c265946f6b084fa5f93ec37348af9d09e4f9ca6bc08a919428726dcc3",
+        "bytes": 2484183,
+        "expanded_bytes": 4399593,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/explainer-engine-ee74187c2659.zip"
+      },
+      "primary_for": [
+        "explainer"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "expressive-voice-synth",
+      "family": "cadence-sound",
+      "title": "Озвучка с тембром из образца и манерой словами",
+      "what": "Нейросеть читает текст тембром из короткого образца, на другом языке или в заданной манере («быстро», «шёпотом»); расчёт на видеокарте NVIDIA, результат wav.",
+      "when": [
+        "прочитай этот текст моим голосом на другом языке",
+        "озвучь голосом из моего образца записи",
+        "сделай озвучку в нужной манере: быстро, медленно, с улыбкой"
+      ],
+      "not_for": "Озвучка на Mac без NVIDIA: модуль mlx-audio-engine. Простая озвучка русским голосом без видеокарты NVIDIA: voice-synthesis-toolkit (идёт и на Mac). Голос по описанию словами без образца: neural-tts-engine. Музыка и сведение: навык cadence-sound.",
+      "capabilities": [
+        "voice-clone"
+      ],
+      "inputs": [
+        "текст или файл с текстом (utf-8)",
+        "образец голоса (локальный wav, 3–30 секунд) и, для zero-shot, слова из него; только с согласия владельца голоса",
+        "папка с весами модели"
+      ],
+      "outputs": [
+        "<имя>.wav в $WORK/<проект>/out/"
+      ],
+      "run": "python3 modules/expressive-voice-synth/run.py --mode cross-lingual --text-file <сценарий.txt> --prompt-wav <образец.wav> --project <проект>",
+      "engine": "python",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "python3"
+        ]
+      },
+      "install_mb": 12000,
+      "platform": [
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "voice-clone"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "ffmpeg-toolkit",
+      "family": "cadence-cut",
+      "title": "Набор инструментов ffmpeg (42 команды)",
+      "what": "Режет, склеивает, вписывает под формат, накладывает субтитры и графику, чистит и мерит звук, переводит HDR в SDR и собирает выгрузку под площадку локальным ffmpeg.",
+      "when": [
+        "обрежь видео с 1:20 до 2:05",
+        "сделай вертикальную версию 9:16 с размытыми полями",
+        "склей эти клипы с кроссфейдом",
+        "iPhone-видео в HDR выглядит блёклым, исправь",
+        "положи логотип в угол и вшей готовый SRT",
+        "приведи громкость к -14 LUFS"
+      ],
+      "not_for": [
+        "Вырезать паузы из речи по умолчанию: scripts/silence_cut.py (функция pauses)",
+        "Эффекты на живом видео уровня кино (замедление, вспышка, тряска): scripts/video_fx.py",
+        "Работа внутри открытого проекта DaVinci Resolve: навык cadence-resolve",
+        "Ролик, нарисованный кодом без съёмки: навык cadence-motion",
+        "Проверка ролика перед публикацией (громкость, чёрные кадры, вспышки, поля): scripts/check_reel.py (функция pre-publish)",
+        "Субтитры по речи — распознать и вшить: scripts/captions_whisper.py (функция captions)"
+      ],
+      "capabilities": [
+        "ffmpeg-ops"
+      ],
+      "inputs": [
+        "видео или звук",
+        "что сделать словами",
+        "по желанию SRT, логотип, brand.json"
+      ],
+      "outputs": [
+        "новый видео- или аудиофайл в $WORK/<проект>/out/",
+        "JSON-отчёт инструмента (--json)",
+        "проверка выгрузки (check.py)"
+      ],
+      "run": "python3 modules/ffmpeg-toolkit/scripts/_cadence_run.py cut <видео> --start 0:10 --end 0:40",
+      "engine": "python",
+      "deps": {
+        "system": [
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 0,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "none",
+      "keys": [],
+      "status": "ready",
+      "primary_for": [
+        "ffmpeg-ops"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "frame-inspector-plugin",
+      "family": "cadence-resolve",
+      "title": "Монтаж в Resolve по анализу кадров",
+      "what": "Собирает или перемонтирует таймлайн DaVinci Resolve по анализу клипов (что в кадре, лучшие дубли, безопасные точки реза), делает вертикальный кадр 9:16 с наводкой на героя и ставит маркеры.",
+      "when": [
+        "посмотри мой таймлайн в Резолве и скажи, что в клипах",
+        "собери монтаж из моих исходников по смыслу, а не по порядку файлов",
+        "переделай горизонтальный монтаж в вертикальный 9:16, чтобы герой оставался в кадре",
+        "расставь в Резолве маркеры по главам и сильным моментам",
+        "найди в моей библиотеке кадры, где закат и люди, и положи на таймлайн"
+      ],
+      "not_for": [
+        "Безопасная работа с проектом Resolve, импорт EDL, переходы и эффекты без анализа кадров: навык cadence-resolve",
+        "Сам анализ видео и поиск по библиотеке: модуль resolve-frame-pipeline (приложение, без него этот модуль не работает)",
+        "Нарезка пауз и дублей без Resolve: навык cadence-cut"
+      ],
+      "capabilities": [
+        "resolve-reframe"
+      ],
+      "inputs": [
+        "открытый проект DaVinci Resolve Studio",
+        "запущенное приложение анализа кадров (модуль resolve-frame-pipeline) с проанализированными клипами",
+        "список монтажа (edit list) для вертикального кадра"
+      ],
+      "outputs": [
+        "новый таймлайн в Resolve (исходный не трогается)",
+        "план вертикального кадра plan.json и скрипты b2_*.py",
+        "листы проверки кадров (контактные листы с рамкой кропа)"
+      ],
+      "run": "python3 modules/frame-inspector-plugin/tools/reframe.py <edit-list.json> <папка-результата> --width 1080 --height 1920 --subject mammal",
+      "engine": "python",
+      "deps": {
+        "system": [
+          "python3"
+        ]
+      },
+      "install_mb": 0,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "SECURITY.md",
+          "mcp.example.json",
+          "reference",
+          "tools"
+        ],
+        "file": "frame-inspector-plugin-968846944697.zip",
+        "sha256": "968846944697f01ccd63ea9fa12465b712aeace2ca7d70bfc47eeff02a52c5a0",
+        "bytes": 30918,
+        "expanded_bytes": 78512,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/frame-inspector-plugin-968846944697.zip"
+      },
+      "primary_for": [
+        "resolve-reframe"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "logo-craft-skill",
+      "family": "cadence-identity-system",
+      "title": "Логотип и фирменный знак",
+      "what": "Знак в SVG от брифа до файлов: обзор концептов, тест-лист, презентация с макетами, варианты и набор иконок для сайта.",
+      "when": [
+        "нарисуй логотип для моего проекта",
+        "сделай знак и монограмму, чтобы читались на 16 пикселей",
+        "проверь мой логотип и скажи, что в нём не так",
+        "сделай из моего знака чёрную, белую версии и фавикон",
+        "подготовь презентацию логотипа с макетами"
+      ],
+      "not_for": "Как вести бренд целиком (палитра, носители, правила применения) — навык cadence-identity-system; раскрытие знака в ролике — cadence-structures (liquid-mark) и cadence-motion; выбор цветов для ролика — cadence-style; юридическая проверка уникальности знака не делается.",
+      "capabilities": [
+        "logo"
+      ],
+      "inputs": [
+        "название и краткий бриф (чем занимается, 3-5 прилагательных, конкуренты)",
+        "готовый знак в SVG для проверки, вариантов и иконок (необязательно)"
+      ],
+      "outputs": [
+        "$WORK/<проект>/out/: концепты concepts.png, тест-лист logo-preview.html, презентация presentation.html, чёрная/белая/одноцветная версии, favicon.ico и иконки, PNG нужных размеров"
+      ],
+      "run": "python3 modules/logo-craft-skill/scripts/svg_audit.py <знак.svg>",
+      "engine": "python",
+      "deps": {
+        "system": [
+          "python3"
+        ]
+      },
+      "install_mb": 0,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "none",
+      "keys": [],
+      "status": "ready",
+      "primary_for": [
+        "logo"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "mlx-audio-engine",
+      "family": "cadence-sound",
+      "title": "Озвучка и распознавание речи на Mac (Apple Silicon)",
+      "what": "На Mac с чипом M1 и новее озвучивает текст и распознаёт речь локальными моделями: русский голос, образец тембра, субтитры и время слов; видеокарта NVIDIA не нужна.",
+      "when": [
+        "озвучь текст на моём Маке, без видеокарты",
+        "сделай закадровый голос для ролика без микрофона",
+        "расшифруй запись в субтитры на Маке быстро"
+      ],
+      "not_for": "Озвучка на компьютере с NVIDIA: voice-synthesis-toolkit, neural-tts-engine или expressive-voice-synth. Основной путь к субтитрам: scripts/captions_whisper.py. Музыка, эффекты, сведение: навык cadence-sound.",
+      "capabilities": [
+        "voice-clone",
+        "voiceover"
+      ],
+      "inputs": [
+        "текст или файл с текстом (озвучка)",
+        "или звук/видео с речью (распознавание)",
+        "по желанию: образец голоса и слова из него; только с согласия владельца голоса"
+      ],
+      "outputs": [
+        "озвучка: <имя>.wav в $WORK/<проект>/out/",
+        "распознавание: <имя>.srt, .vtt, .txt или .json (со временем слов) там же"
+      ],
+      "run": "python3 modules/mlx-audio-engine/run.py tts --text-file <сценарий.txt> --lang ru --ref-audio <образец.wav> --project <проект>",
+      "engine": "python",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 3000,
+      "platform": [
+        "macos"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "docs",
+          "examples",
+          "mlx_audio",
+          "pyproject.toml",
+          "requirements.txt",
+          "run.py"
+        ],
+        "file": "mlx-audio-engine-9e34ae4ba5bd.zip",
+        "sha256": "9e34ae4ba5bd85908cf816cac878be45c8c2be775f8deb9f4cdd66736bd57886",
+        "bytes": 2240416,
+        "expanded_bytes": 7827212,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/mlx-audio-engine-9e34ae4ba5bd.zip"
+      },
+      "primary_for": [
+        "voiceover"
+      ],
+      "fallback_for": [
+        "voice-clone"
+      ]
+    },
+    {
+      "id": "montage-toolkit",
+      "family": "cadence-cut",
+      "title": "Монтаж говорящей головы по транскрипту",
+      "what": "Ведёт запись человека от расшифровки до готового монтажа: срезает паузы и ошибки по словам, планирует графику, берёт карточки из библиотеки на 406 вариантов и проверяет результат перед рендером общим движком.",
+      "when": [
+        "смонтируй мою запись: убери паузы и оговорки и добавь графику",
+        "убери из видео неудачные дубли и заикания по тексту",
+        "подбери оформление для объяснялки и поставь карточки по ходу речи",
+        "проверь план шортса и футаж до рендера"
+      ],
+      "not_for": [
+        "Просто убрать паузы без графики — scripts/silence_cut.py",
+        "шортсы из длинной записи — модуль shorts-studio",
+        "перебивки поверх речи в горизонтальном видео — модуль b-roll-toolkit",
+        "рилс из папки своих кадров — модуль reels-crafter",
+        "цвет и эффекты на живом видео — навык cadence-resolve"
+      ],
+      "capabilities": [
+        "talking-head-edit"
+      ],
+      "inputs": [
+        "запись человека (mp4, mov)",
+        "слова с временем (локальный Whisper) или готовый транскрипт",
+        "кратко: цель, площадка, длительность, бренд"
+      ],
+      "outputs": [
+        "транскрипты после срезов с новой временной шкалой",
+        "список решений по срезам",
+        "проект HyperFrames в work/<проект>/",
+        "готовый mp4 из общего движка Cadence"
+      ],
+      "run": "node modules/montage-toolkit/scripts/new-video.mjs <проект>",
+      "engine": "hyperframes",
+      "deps": {
+        "node": ".",
+        "system": [
+          "ffmpeg",
+          "ffprobe",
+          "node"
+        ]
+      },
+      "install_mb": 5,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "examples",
+          "package.json",
+          "scripts",
+          "style-library",
+          "style-templates",
+          "tests",
+          "workflows"
+        ],
+        "file": "montage-toolkit-d3d7c92a0772.zip",
+        "sha256": "d3d7c92a07721659c476334f2b7e10109bc4d2f5e5dcc999c88f5b8db721458e",
+        "bytes": 1280133,
+        "expanded_bytes": 4193974,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/montage-toolkit-d3d7c92a0772.zip"
+      },
+      "primary_for": [
+        "talking-head-edit"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "motion-graphics-pipeline",
+      "family": "cadence-motion",
+      "title": "Анимационный ролик под озвучку",
+      "what": "Из готовой озвучки (музыка по желанию) делает ролик без живой съёмки: анимация рисуется кодом покадрово, на выходе 16:9 и 9:16 плюс обложки 3:4 и 4:3.",
+      "when": [
+        "вот озвучка, сделай под неё анимационный ролик без съёмки",
+        "собери ролик с новостями или разбором кейса под мой голос",
+        "нужен обучающий ролик: окна, курсор, шаги, подсветка",
+        "сделай вертикальную версию с заголовком сверху и обложками"
+      ],
+      "not_for": "Ролик в бит под готовый трек, заставки и титры собирает движок `engine/` через `cadence-motion`; озвучку и сведение звука делает `cadence-sound`; ролик из живого видео собирает `cadence-cut`.",
+      "capabilities": [
+        "explainer",
+        "voice-film"
+      ],
+      "inputs": [
+        "озвучка (mp3/wav)",
+        "музыка (по желанию, иначе синтезируется)",
+        "тема и нужные пропорции"
+      ],
+      "outputs": [
+        "ролики 16:9 и/или 9:16 (mp4)",
+        "обложки 3:4 и 4:3 (jpg)",
+        "раскадровка и список источников материалов"
+      ],
+      "run": "cp -R modules/motion-graphics-pipeline/motion-kit \"$WORK/<проект>/src\" && cd \"$WORK/<проект>/src\" && bash tools/setup.sh",
+      "engine": "python",
+      "deps": {
+        "python": "motion-kit/requirements.txt",
+        "system": [
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 700,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [],
+      "fallback_for": [
+        "explainer",
+        "voice-film"
+      ]
+    },
+    {
+      "id": "motion-graphics-presets",
+      "family": "cadence-motion",
+      "title": "Десять секунд мотиона в готовом стиле: 15 образцов кодом",
+      "what": "Готовые десятисекундные мотион-фильмы в пятнадцати стилях (плоский вектор, линия, изометрия, 3D, нарисованный от руки, коллаж, жидкость, форма, баухаус, синтвейв, стекло, цветной текст, мультяшная справка, пиксели, интерфейс с экрана) с кодом, подсказками и звуком: взять образец и переделать под свою тему.",
+      "when": [
+        "сделай десять секунд анимации в стиле плоской векторной графики",
+        "хочу ролик как неоновый синтвейв восьмидесятых",
+        "покажи варианты стилей мотиона и сделай один из них про мой продукт",
+        "нужна заставка в стиле пиксельной игры или бумажного коллажа",
+        "сделай интерфейс как в кино про хакеров с наведением на цель"
+      ],
+      "not_for": "Ролик в бит под свой трек, шоурил, анонс продукта по шаблонам Cadence: движок `engine/` и навык `cadence-motion` без этого модуля. Цвета и шрифты бренда: `cadence-style`. Эффекты на живом видео: `cadence-cut` и `cadence-resolve`. Рисованный мультик с героем: модуль `animation-scaffold`. Звук к чужому ролику: `cadence-sound`.",
+      "capabilities": [
+        "style-film"
+      ],
+      "inputs": [
+        "тема и текст ролика",
+        "выбранный стиль (номер или имя из списка в MODULE.md)",
+        "по желанию свой трек или готовая дорожка"
+      ],
+      "outputs": [
+        "MP4 1920x1080 (одна вертикальная версия 1080x1920) в $WORK/<проект>/out/",
+        "кадры-превью (PNG)",
+        "рабочая копия фильма в $WORK/<проект>/mg/demos/<фильм>/"
+      ],
+      "run": "python3 modules/motion-graphics-presets/run.py <фильм> render --noaudio",
+      "engine": "node",
+      "deps": {
+        "python": "requirements.txt",
+        "node": ".",
+        "system": [
+          "node",
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 420,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "assets",
+          "demos",
+          "harness",
+          "lib",
+          "package.json",
+          "prompts",
+          "requirements-prep.txt",
+          "requirements.txt",
+          "run.py"
+        ],
+        "file": "motion-graphics-presets-d727fda11d84.zip",
+        "sha256": "d727fda11d847372a54ed8ecb3f6788e69d8d7b17bcf8e66106a18574a7c3e61",
+        "bytes": 10033289,
+        "expanded_bytes": 12472542,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/motion-graphics-presets-d727fda11d84.zip"
+      },
+      "primary_for": [
+        "style-film"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "neural-tts-engine",
+      "family": "cadence-sound",
+      "title": "Озвучка: готовый диктор, голос по описанию или по образцу",
+      "what": "Нейросеть озвучивает текст голосом диктора, голосом, описанным словами («спокойный низкий мужской»), или тембром из образца; расчёт на видеокарте NVIDIA, результат wav.",
+      "when": [
+        "озвучь текст голосом, который я опишу словами",
+        "сделай голос низким и спокойным, как у диктора документалки",
+        "озвучь с эмоцией: радостно, строго, шёпотом",
+        "прочитай текст голосом выбранного диктора"
+      ],
+      "not_for": "Озвучка на Mac без NVIDIA: модуль mlx-audio-engine. Простая озвучка с русским, английским и ещё 21 языком и образцом голоса: модуль voice-synthesis-toolkit. Музыка, эффекты, сведение: навык cadence-sound. Субтитры: scripts/captions_whisper.py.",
+      "capabilities": [
+        "voiceover"
+      ],
+      "inputs": [
+        "текст или файл с текстом (utf-8)",
+        "режим: custom (диктор), design (описание голоса), clone (образец)",
+        "для clone: wav-образец и слова из него; только с согласия владельца голоса"
+      ],
+      "outputs": [
+        "<имя>.wav в $WORK/<проект>/out/"
+      ],
+      "run": "python3 modules/neural-tts-engine/run.py --mode design --text-file <сценарий.txt> --language Russian --instruct \"<описание голоса>\" --project <проект>",
+      "engine": "python",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "python3"
+        ]
+      },
+      "install_mb": 6000,
+      "platform": [
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [],
+      "fallback_for": [
+        "voiceover"
+      ]
+    },
+    {
+      "id": "papercraft-explainer",
+      "family": "cadence-structures",
+      "title": "Вертикальный эксплейнер из бумажной аппликации",
+      "what": "Короткий вертикальный ролик 9:16 из слоёв цветной бумаги: стратегия, хук, сценарий, раскадровка, озвучка, сборка в Remotion и проверка кадров.",
+      "when": [
+        "сделай ролик в стиле бумажной аппликации",
+        "объясни эту тему вырезанной из бумаги анимацией",
+        "нужен вертикальный эксплейнер из бумаги по ссылке на продукт",
+        "перестрой одну сцену бумажного ролика"
+      ],
+      "not_for": [
+        "объяснялка палочными человечками: модуль stick-figure-animator",
+        "рисованная история по раскадровке: модуль story-to-sketch-animation",
+        "дудл или карандашный рисунок: модуль doodle-animator",
+        "ролик в бит под музыку, заставка, шоурил: навык cadence-motion"
+      ],
+      "capabilities": [
+        "papercut"
+      ],
+      "inputs": [
+        "ссылка на источник (репозиторий, сайт, анонс) или готовый сценарий",
+        "ключевое слово призыва",
+        "голос (свой, синтез или заглушка)"
+      ],
+      "outputs": [
+        "папка серии с episodes/NN-slug",
+        "сценарий и раскадровка",
+        "MP4 9:16",
+        "кадры и контактные листы для проверки"
+      ],
+      "run": "PAPERCUT_LIB=\"$PWD/modules/papercraft-explainer/library\" bash modules/papercraft-explainer/library/new_episode.sh \"$WORK/<проект>/papercut\" 01-slug CompId out-name",
+      "engine": "remotion",
+      "deps": {
+        "node": "library/papercut/template",
+        "system": [
+          "node",
+          "ffmpeg",
+          "python3",
+          "rsync"
+        ]
+      },
+      "install_mb": 700,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "examples",
+          "library"
+        ],
+        "file": "papercraft-explainer-dc054ebe881d.zip",
+        "sha256": "dc054ebe881d3de3b972a4ed2e9f521ff61e52b1e1d310d575e17acb58d046b1",
+        "bytes": 10722716,
+        "expanded_bytes": 11426471,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/papercraft-explainer-dc054ebe881d.zip"
+      },
+      "primary_for": [
+        "papercut"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "phantom-editor",
+      "family": "cadence-cut",
+      "title": "Говорящая голова в вертикальный ролик в именованном стиле",
+      "what": "Из сырой записи с дублями получается вертикальный ролик 1080x1920: лучшие дубли, титры по словам, сцены на слове, звук и проверенный B-roll в одном из готовых стилей.",
+      "when": [
+        "выбери лучшие дубли и собери из записи ролик с оформлением",
+        "сделай рилс из моей записи в стиле доски или кинетического документального",
+        "убери паузы, подбери дубли и добавь титры, сцены и звуки на слова",
+        "перемонтируй так же, как в том ролике, который я показал",
+        "добавь в разговорный ролик мемы, эффекты и B-roll на нужных словах"
+      ],
+      "not_for": "Только убрать паузы или только склеить дубли без оформления: scripts/silence_cut.py и scripts/takes_cut.py (cadence-cut). Готовый пакет публикации с вариантами под площадки: модуль effortless-cuts. Ролик кодом без съёмки по готовому сценарию: cadence-motion. Работа внутри проекта DaVinci Resolve: cadence-resolve.",
+      "capabilities": [
+        "styled-reel"
+      ],
+      "inputs": [
+        "сырая запись говорящего в камеру (mov, mp4)",
+        "по желанию: сценарий",
+        "имя стиля из docs/PLAYBOOK.md"
+      ],
+      "outputs": [
+        "$P/assets/talk.mp4 (1080x1920, голос -16 LUFS)",
+        "$P/reel.json",
+        "предпросмотр 720x1280",
+        "итоговый ролик и отчёты проверок"
+      ],
+      "run": "bash modules/phantom-editor/scripts/prep.sh <запись> <папка проекта>",
+      "engine": "hyperframes",
+      "deps": {
+        "python": "scripts/venvs/media.txt",
+        "system": [
+          "ffmpeg",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 2200,
+      "platform": [
+        "macos"
+      ],
+      "network": "runtime",
+      "keys": [
+        "GEMINI_API_KEY"
+      ],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "docs",
+          "examples",
+          "library",
+          "people-rules.example.json",
+          "people-rules.json",
+          "recipes",
+          "references",
+          "scripts",
+          "styles",
+          "taste.json",
+          "templates",
+          "tests",
+          "tools"
+        ],
+        "file": "phantom-editor-ab0f22960fbc.zip",
+        "sha256": "ab0f22960fbcffff3cf7d5c0c88c09eb6e5de58d487c1cca3c29f57b4239314d",
+        "bytes": 2729190,
+        "expanded_bytes": 5187806,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/phantom-editor-ab0f22960fbc.zip"
+      },
+      "primary_for": [
+        "styled-reel"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "promo-motion-kit",
+      "family": "cadence-structures",
+      "title": "Скриншоты и превью-видео приложения для магазинов",
+      "what": "Скриншоты в рамке устройства с подписями и видео-превью мобильного приложения для App Store и Google Play, снятые автоматически с симулятора.",
+      "when": [
+        "сделай скриншоты моего приложения для App Store",
+        "нужно видео-превью приложения для магазина",
+        "обнови подписи и фон на скриншотах магазина, поменяй рамку телефона",
+        "собери витрину приложения: пять экранов и ролик показа"
+      ],
+      "not_for": "рекламный ролик о приложении со сценарием и музыкой — promo-showcase; ролик «приложение на телефоне как в рекламе» из своего скриншота — cadence-structures (device-stage); анимация интерфейса для сайта — cadence-web-comps",
+      "capabilities": [
+        "store-screenshots"
+      ],
+      "inputs": [
+        "собранное приложение (Release-сборка для симулятора или APK)",
+        "заголовки на экранах (можно доверить агенту)",
+        "запущенный iOS-симулятор или Android-эмулятор"
+      ],
+      "outputs": [
+        "$WORK/<проект>/out/screenshots/ (PNG в рамке, размеры магазина)",
+        "$WORK/<проект>/out/previews/ (видео-превью)",
+        "$WORK/<проект>/out/store.json (описание для студии)"
+      ],
+      "run": "GOLDIE_CONFIG=$WORK/<проект>/goldie.config.ts bun modules/promo-motion-kit/src/cli.ts all",
+      "engine": "node",
+      "deps": {
+        "node": ".",
+        "system": [
+          "bun",
+          "node",
+          "ffmpeg"
+        ]
+      },
+      "install_mb": 200,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "assets",
+          "goldie.config.example.ts",
+          "package.json",
+          "src",
+          "studio",
+          "tsconfig.json"
+        ],
+        "file": "promo-motion-kit-d9f7bccc7b05.zip",
+        "sha256": "d9f7bccc7b05661da4c29423158c2ffd85a24973bd86cbbc1a432cb86bff9956",
+        "bytes": 2015435,
+        "expanded_bytes": 3427943,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/promo-motion-kit-d9f7bccc7b05.zip"
+      },
+      "primary_for": [
+        "store-screenshots"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "promo-showcase",
+      "family": "cadence-structures",
+      "title": "Промо-ролик продукта из настоящих экранов",
+      "what": "Короткий ролик 15–25 с о продукте из его настоящих экранов, текстов и цветов, с музыкой, эффектами, обложкой и подписью к посту.",
+      "when": [
+        "сделай промо-ролик моего сайта или приложения",
+        "хочу короткий ролик-анонс о том, что я сделал, чтобы выложить в соцсети",
+        "собери ролик из настоящего интерфейса моего продукта и напиши подпись к посту",
+        "нужен запуск-ролик на 20 секунд под музыку для моего проекта"
+      ],
+      "not_for": "ролик по готовой форме (чат, устройство на сцене, лонч кода) — cadence-structures; ролик в бит под трек — cadence-beat-reel; нарезка записи экрана или говорящего видео — cadence-cut; озвучка и сведение звука — cadence-sound",
+      "capabilities": [
+        "promo-video"
+      ],
+      "inputs": [
+        "папка проекта продукта или его страницы",
+        "по желанию свой трек и тон ролика (одним словом)"
+      ],
+      "outputs": [
+        "$WORK/<проект>/out/promo.mp4",
+        "$WORK/<проект>/out/promo.jpg (обложка)",
+        "$WORK/<проект>/out/share-copy.txt",
+        "promo-plan.md и composition-brief.md в $WORK/<проект>/"
+      ],
+      "run": "python3 modules/promo-showcase/scripts/analyze_music_cues.py <трек> --output-json $WORK/<проект>/build/assets/music/cues.json --output-md $WORK/<проект>/build/assets/music/cues.md",
+      "engine": "hyperframes",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "ffmpeg",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 350,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "promo-video"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "reels-crafter",
+      "family": "cadence-cut",
+      "title": "Рилс из своих кадров",
+      "what": "Собирает вертикальный рилс 1080x1920 из папки своих клипов и голоса: сценарий, раскадровка, субтитры, эффекты, музыка, обложка и подпись; отдельно монтаж говорящей головы по словам.",
+      "when": [
+        "собери рилс из моих кадров в этой папке",
+        "напиши сценарий рилса и смонтируй под него видео",
+        "сделай обложку и подпись к рилсу",
+        "смонтируй мне говорящую голову: субтитры на каждое слово, смена раскладок",
+        "посмотри мой рилс как режиссёр и критик и скажи, что поправить"
+      ],
+      "not_for": "Шортсы из длинной записи — модуль shorts-studio; готовые приёмы оформления (экран пополам, рейтинг, графика за человеком) — модуль video-editing-skills; графика поверх речи — модуль b-roll-toolkit; только убрать паузы — scripts/silence_cut.py.",
+      "capabilities": [
+        "reel-from-clips"
+      ],
+      "inputs": [
+        "папка своих клипов и фото",
+        "голос (своя запись mp3 или wav) или сценарий",
+        "reel.json с планом сегментов (шаблон создаёт команда new)"
+      ],
+      "outputs": [
+        "out/reel.mp4 1080x1920 с субтитрами и эффектами",
+        "out/cover.jpg",
+        "out/caption.txt",
+        "out/qa_sheet.jpg с зонами интерфейса площадки и отчёт проверок удержания"
+      ],
+      "run": "bash modules/reels-crafter/bin/reel new work/<проект>",
+      "engine": "node",
+      "deps": {
+        "python": "requirements.txt",
+        "node": ".",
+        "system": [
+          "ffmpeg",
+          "ffprobe",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 400,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "reel-from-clips"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "resolve-frame-pipeline",
+      "family": "cadence-resolve",
+      "title": "Анализ кадров своей библиотеки и связь с Resolve",
+      "what": "Локально разбирает видео (планы, речь, кто и что в кадре, лучшие моменты, безопасные точки реза), ищет по библиотеке и отдаёт всё агенту и DaVinci Resolve через MCP.",
+      "when": [
+        "разбери мои исходники: что в каждом клипе и где лучшие моменты",
+        "найди в моей библиотеке кадры, где человек говорит на фоне заката",
+        "посмотри мой таймлайн в Резолве и скажи, какие клипы слабые",
+        "где в этом видео безопасно резать, чтобы не обрывать слово",
+        "подготовь клипы так, чтобы агент мог по ним собирать монтаж"
+      ],
+      "not_for": [
+        "Сама сборка и перемонтаж таймлайна, вертикальный кадр: модуль frame-inspector-plugin",
+        "Технический паспорт одного файла (длительность, кодек, громкость): scripts/inspect_video.py",
+        "Субтитры и расшифровка для готового ролика: scripts/captions_whisper.py",
+        "Работа с проектом Resolve без анализа кадров: навык cadence-resolve"
+      ],
+      "capabilities": [
+        "footage-analysis"
+      ],
+      "inputs": [
+        "папка с видео человека",
+        "по желанию открытый проект DaVinci Resolve Studio",
+        "модель зрения в LM Studio или совместимом сервере"
+      ],
+      "outputs": [
+        "локальная база анализа (планы, речь, объекты, главы, моменты)",
+        "веб-интерфейс на 127.0.0.1:8765 и MCP-сервер на /mcp",
+        "маркеры и метаданные в клипах Resolve по команде"
+      ],
+      "run": "sh modules/resolve-frame-pipeline/run.command",
+      "engine": "python",
+      "deps": {
+        "system": [
+          "python3",
+          "uv",
+          "node",
+          "ffmpeg",
+          "exiftool"
+        ]
+      },
+      "install_mb": 8000,
+      "platform": [
+        "macos",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "SECURITY.md",
+          "backend",
+          "docs",
+          "frontend",
+          "install.bat",
+          "install.command",
+          "install.sh",
+          "justfile",
+          "run.bat",
+          "run.command",
+          "scripts"
+        ],
+        "file": "resolve-frame-pipeline-a0d57c6353b7.zip",
+        "sha256": "a0d57c6353b7740840f176a5b905419842069e38cfb2ffb07354c48b5b59ea40",
+        "bytes": 1483632,
+        "expanded_bytes": 4497353,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/resolve-frame-pipeline-a0d57c6353b7.zip"
+      },
+      "primary_for": [
+        "footage-analysis"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "shorts-studio",
+      "family": "cadence-cut",
+      "title": "Шортсы из длинного видео",
+      "what": "Из длинной записи выбирает лучшие куски, режет их по границам фраз, делает вертикальные 1080x1920 с анимированными субтитрами и кодирует под Shorts, TikTok и Reels.",
+      "when": [
+        "нарежь из этого длинного видео шортсы",
+        "вытащи из подкаста самые сильные куски в вертикальные клипы",
+        "сделай из часовой записи несколько рилсов с субтитрами",
+        "найди моменты, которые зайдут как шортс, и отрендери их"
+      ],
+      "not_for": "Один готовый вертикальный ролик из папки своих кадров — модуль reels-crafter; хайлайт длинного видео без речи — scripts/highlight_cut.py; только субтитры на готовый ролик — scripts/captions_whisper.py; убрать паузы — scripts/silence_cut.py.",
+      "capabilities": [
+        "shorts-from-long"
+      ],
+      "inputs": [
+        "длинное видео с речью (mp4, mov, mkv)"
+      ],
+      "outputs": [
+        "таблица кандидатов с оценкой",
+        "вертикальные клипы short_NN.mp4 1080x1920 с субтитрами",
+        "варианты под YouTube Shorts, TikTok и Instagram Reels"
+      ],
+      "run": "bash modules/shorts-studio/scripts/preflight.sh <видео> work/<проект>/out/shorts",
+      "engine": "remotion",
+      "deps": {
+        "python": "requirements.txt",
+        "node": "remotion",
+        "system": [
+          "ffmpeg",
+          "ffprobe",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 1000,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "ready",
+      "primary_for": [
+        "shorts-from-long"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "smart-cutter",
+      "family": "cadence-cut",
+      "title": "Быстрая нарезка и экспорт таймлайна (auto-editor, Nim)",
+      "what": "Вырезает тишину, неподвижность и чёрные кадры или режет по словам, и отдаёт новый ролик либо таймлайн для Resolve, Premiere, Final Cut, Shotcut, Kdenlive и EDL.",
+      "when": [
+        "вырежи паузы и тишину, но с экспортом в Resolve или Premiere",
+        "убери неподвижные куски и чёрные кадры из записи",
+        "нарежи по словам: оставь только места, где я говорю определённое слово",
+        "собери проект для монтажной программы из этой нарезки",
+        "разрежь запись на отдельные клипы по кускам речи"
+      ],
+      "not_for": [
+        "Просто вырезать паузы из речи без сборки программы: scripts/silence_cut.py (функция pauses)",
+        "Собрать ролик из дублей: scripts/takes_cut.py",
+        "Работа внутри открытого проекта DaVinci Resolve: навык cadence-resolve"
+      ],
+      "capabilities": [
+        "timeline-export"
+      ],
+      "inputs": [
+        "видео или звук",
+        "метод разметки (--edit audio|motion|blackdetect|subtitle|word)",
+        "по желанию формат --export"
+      ],
+      "outputs": [
+        "новый MP4 или звук",
+        "таймлайн .fcpxml/.xml/.mlt/.kdenlive/.edl/.v3",
+        "клипы по кускам"
+      ],
+      "run": "python3 modules/smart-cutter/scripts/ae_run.py <видео> --edit audio:threshold=0.04 --export resolve",
+      "engine": "nim",
+      "deps": {
+        "system": [
+          "nim",
+          "ffmpeg"
+        ]
+      },
+      "install_mb": 400,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "timeline-export"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "speech-transcriber",
+      "family": "cadence-cut",
+      "title": "Распознавание речи: субтитры и время слов",
+      "what": "Локальная модель Whisper превращает речь из видео или звука в SRT, VTT, TXT и список слов с временем; ничего не уходит в сеть.",
+      "when": [
+        "сделай субтитры к видео, но основной способ не завёлся",
+        "расшифруй запись в текст с таймкодами",
+        "мне нужен файл со словами и временем каждого слова",
+        "распознай речь моделью побольше, чтобы было точнее",
+        "сделай субтитры в формате VTT"
+      ],
+      "not_for": "Субтитры в обычном порядке и вшивание их в ролик: scripts/captions_whisper.py (capability captions, основной путь). Сцены и графика по словам: scripts/word_anchors.py (cadence-motion). Озвучка текста голосом: модули семейства cadence-sound.",
+      "capabilities": [
+        "captions",
+        "transcribe"
+      ],
+      "inputs": [
+        "видео или звук с речью (mp4, mov, wav, mp3, m4a)",
+        "язык речи (ru по умолчанию) и размер модели"
+      ],
+      "outputs": [
+        "<имя>.srt, .vtt, .txt, .json в $WORK/<проект>/out/",
+        "<имя>.words.json: слова с временем, формат как у captions_whisper.py (годится для его --words-in)"
+      ],
+      "run": "python3 modules/speech-transcriber/run.py <видео или звук> --language ru --project <проект>",
+      "engine": "python",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 1200,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "ready",
+      "payload": {
+        "paths": [
+          "model-card.md",
+          "pyproject.toml",
+          "requirements.txt",
+          "run.py",
+          "whisper"
+        ],
+        "file": "speech-transcriber-36641b14d910.zip",
+        "sha256": "36641b14d91071012c7ca9a2977fe1d17b49cc04749309b3e5400050bbb5a946",
+        "bytes": 804781,
+        "expanded_bytes": 1880072,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/speech-transcriber-36641b14d910.zip"
+      },
+      "primary_for": [
+        "transcribe"
+      ],
+      "fallback_for": [
+        "captions"
+      ]
+    },
+    {
+      "id": "stick-figure-animator",
+      "family": "cadence-structures",
+      "title": "Объяснялка со стик-фигурами",
+      "what": "Мультяшный ролик-объяснялка с человечками из текста, сценария, субтитров или чужого видео, со своими эффектами, музыкой и подгонкой под записанный голос.",
+      "when": [
+        "сделай объяснялку человечками",
+        "нужен мультяшный ролик со стикменами по моему сценарию",
+        "анимируй этот текст палочными человечками под мою озвучку",
+        "перескажи видео рисованными человечками"
+      ],
+      "not_for": [
+        "рисованная история с раскадровкой и стилем рисунка: модуль story-to-sketch-animation",
+        "объяснялка из бумажной аппликации: модуль papercraft-explainer",
+        "дудл-анимация: модуль doodle-animator",
+        "ролик в бит под музыку, шоурил, заставка: навык cadence-motion"
+      ],
+      "capabilities": [
+        "stickman"
+      ],
+      "inputs": [
+        "тема, сценарий или .srt",
+        "ссылка на видео для пересказа (по желанию)",
+        "записанный голос (по желанию)"
+      ],
+      "outputs": [
+        "проект Remotion со сценами человечков",
+        "MP4 ролика",
+        "voiceover.srt для записи голоса",
+        "storyboard.md"
+      ],
+      "run": "python3 modules/stick-figure-animator/scripts/find_remotion.py --path \"$WORK/<проект>/remotion\"",
+      "engine": "remotion",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "node",
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 150,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "runtime",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "stickman"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "story-to-sketch-animation",
+      "family": "cadence-structures",
+      "title": "Рисованная история из текста или страниц",
+      "what": "Тихий рисованный ролик 3:4 из истории (по-китайски) или готовых страниц: подписи от руки, 327 стилей и палитр, стиль по картинке-образцу, появление слоями или перелистывание.",
+      "when": [
+        "сделай рисованное видео из этой истории",
+        "оживи мои страницы комикса: пусть листаются как книга",
+        "нужен ролик в стиле цветных карандашей или акварели из моего рассказа",
+        "нарисуй историю в стиле вот этой картинки",
+        "покажи меню стилей рисунка"
+      ],
+      "not_for": [
+        "объяснялка палочными человечками: модуль stick-figure-animator",
+        "бумажная аппликация: модуль papercraft-explainer",
+        "дудл-анимация и росчерки: модуль doodle-animator",
+        "готовая озвучка и музыка под ролик: навык cadence-sound"
+      ],
+      "capabilities": [
+        "sketch-story"
+      ],
+      "inputs": [
+        "текст истории или страницы по порядку",
+        "стиль (номер, имя, палитра) или картинка-образец",
+        "готовые картинки от инструмента изображений агента"
+      ],
+      "outputs": [
+        "рабочая копия проекта в work/",
+        "план и задания на картинки",
+        "тихий MP4 1080×1440 (превью 720×960)"
+      ],
+      "run": "python3 modules/story-to-sketch-animation/scripts/new_workdir.py --project <проект>",
+      "engine": "remotion",
+      "deps": {
+        "node": ".",
+        "system": [
+          "node",
+          "ffmpeg",
+          "python3"
+        ]
+      },
+      "install_mb": 600,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "examples",
+          "package-lock.json",
+          "package.json",
+          "public",
+          "references",
+          "remotion.config.ts",
+          "scripts",
+          "src",
+          "storyboard.json",
+          "storyboard.uploaded.json",
+          "tsconfig.json"
+        ],
+        "file": "story-to-sketch-animation-7b22292d3734.zip",
+        "sha256": "7b22292d3734a721c712ba1b044603c688ba1dcba8c2697a80b3fbf2c0c7fc99",
+        "bytes": 4394142,
+        "expanded_bytes": 5329477,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/story-to-sketch-animation-7b22292d3734.zip"
+      },
+      "primary_for": [
+        "sketch-story"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "video-copilot-skills",
+      "family": "cadence-cut",
+      "title": "Говорящий ролик под ключ: сценарий, монтаж, нарезка, B-roll",
+      "what": "Из одной записи человека делает готовый вертикальный ролик 1080x1920 (также 1:1 и 16:9): режет паузы, ставит доски с графикой на бумажную сцену над камерой, пословные субтитры, музыку, звук и текст поста; рядом справки по сценарию, нарезке длинного видео и своему B-roll.",
+      "when": [
+        "смонтируй мою запись в короткий ролик с субтитрами и графикой",
+        "напиши сценарии на неделю в моём голосе",
+        "нарежь это длинное видео на вертикальные шортсы",
+        "поставь мои B-roll на этот ролик",
+        "сделай из фото анимацию бумажным коллажем"
+      ],
+      "not_for": [
+        "Шортсы из длинного подкаста с оценкой кусков и рендером Remotion: модуль shorts-studio",
+        "Ролик из папки готовых кадров: модуль reels-crafter",
+        "Только убрать паузы или только субтитры: scripts/silence_cut.py и scripts/captions_whisper.py (навык cadence-cut)",
+        "Ролик без съёмки, весь из кода: навык cadence-motion и его структуры",
+        "Публикация и загрузка в соцсети, разбор чужих аккаунтов: в модуль не входят"
+      ],
+      "capabilities": [
+        "styled-reel"
+      ],
+      "inputs": [
+        "запись, где человек говорит (mp4, mov), или длинное видео для нарезки",
+        "по желанию свои B-roll, свой стиль style.json, лого, фото для коллажа"
+      ],
+      "outputs": [
+        "short-<слаг>.mp4 с постером и .srt",
+        "post.md с названием, подписью и хештегами",
+        "справочные файлы: сценарии недели, план нарезки, библиотека B-roll"
+      ],
+      "run": "python3 modules/video-copilot-skills/scripts/short_run.py <проект> all video-agent/edits/short-<слаг>",
+      "engine": "node",
+      "deps": {
+        "node": "engine",
+        "system": [
+          "ffmpeg",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 700,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "assets",
+          "engine",
+          "examples",
+          "scripts"
+        ],
+        "file": "video-copilot-skills-1facaa5edc80.zip",
+        "sha256": "1facaa5edc80e4f17505ccfd937934a778ec16ebfc21b7b0e3a29506d31d1796",
+        "bytes": 1808492,
+        "expanded_bytes": 3784477,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/video-copilot-skills-1facaa5edc80.zip"
+      },
+      "primary_for": [],
+      "fallback_for": [
+        "styled-reel"
+      ]
+    },
+    {
+      "id": "video-director-skills",
+      "family": "cadence-visual-direction",
+      "title": "Режиссура ролика: сценарий, план битов, графика Remotion",
+      "what": "Сценарий и раскадровка ролика по битам, графика-шаблоны, субтитры, камера и звук поверх говорящего видео или голоса за кадром, рендер в MP4 на Remotion.",
+      "when": [
+        "напиши сценарий короткого ролика по моей идее",
+        "сделай раскадровку и план графики под мой голос",
+        "собери ролик без лица: только голос и графика",
+        "добавь графику, субтитры и наезды в моё говорящее видео",
+        "смонтируй длинное видео 16:9 с графикой-объяснениями"
+      ],
+      "not_for": [
+        "готовые формы ролика без съёмки (стинг, лонч, чат → результат): cadence-structures",
+        "нарезка пауз и дублей, субтитры без графики: cadence-cut",
+        "ролик в бит под трек одним кодом: cadence-beat-reel и cadence-motion",
+        "публикация и загрузка в соцсети: вне набора"
+      ],
+      "capabilities": [
+        "beat-plan"
+      ],
+      "inputs": [
+        "готовая нарезка видео 9:16 или 16:9 (маршруты A и B) либо запись голоса (маршрут C) либо идея и заметки (только сценарий)",
+        "свои логотипы, скриншоты, музыка и звуки (в модуле их нет)"
+      ],
+      "outputs": [
+        "сценарий по битам (guides/reel-script.md)",
+        "план битов broll_plan.json",
+        "превью и финальный MP4 с субтитрами, графикой и звуком в $WORK/<проект>/out/"
+      ],
+      "run": "OUT_DIR=\"$WORK/<проект>/out\" bash modules/video-director-skills/routes/video-edit/scripts/render.sh <нарезка.mp4>",
+      "engine": "remotion",
+      "deps": {
+        "python": "requirements.txt",
+        "node": "routes/video-edit-longform/remotion",
+        "system": [
+          "ffmpeg",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 3000,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "payload": {
+        "paths": [
+          "assets",
+          "requirements.txt",
+          "routes"
+        ],
+        "file": "video-director-skills-944c5493f63e.zip",
+        "sha256": "944c5493f63ea9ab0ecc9ab89e72293af9afc506a932c3540858d0847d6f1f3a",
+        "bytes": 1067041,
+        "expanded_bytes": 2903744,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/video-director-skills-944c5493f63e.zip"
+      },
+      "primary_for": [
+        "beat-plan"
+      ],
+      "fallback_for": [
+        "b-roll-overlay"
+      ]
+    },
+    {
+      "id": "video-editing-skills",
+      "family": "cadence-cut",
+      "title": "Приёмы монтажа вертикального ролика",
+      "what": "Готовые приёмы для вертикального ролика с говорящим: экран пополам, графика за человеком, рейтинг, сторителлинг, объяснялка, три варианта для пробных рилсов и пять фото-стилей.",
+      "when": [
+        "сделай экран пополам: сверху картинки, снизу я",
+        "поставь графику за мной, чтобы я был перед ней",
+        "сделай рейтинг по уровням, как тир-лист, поверх моего видео",
+        "нужны три разных варианта этого ролика для пробных рилсов",
+        "сделай ролик в духе «три картинки и заголовок»"
+      ],
+      "not_for": "Перебивки под речь с графикой поверх горизонтального видео — модуль b-roll-toolkit; шортсы из длинной записи — модуль shorts-studio; ролик из папки своих кадров — модуль reels-crafter; рендер без живого видео — навык cadence-motion.",
+      "capabilities": [
+        "talking-layouts"
+      ],
+      "inputs": [
+        "вертикальное видео 9:16 с говорящим человеком",
+        "картинки и скриншоты для графики",
+        "файл спецификации JSON (описан в справке приёма)"
+      ],
+      "outputs": [
+        "готовый mp4 1080x1920",
+        "контактный лист кадров с зонами интерфейса площадки",
+        "редактируемая композиция HTML"
+      ],
+      "run": "python3 modules/video-editing-skills/styles/<приём>/build.py work/<проект>/<приём>.json",
+      "engine": "hyperframes",
+      "deps": {
+        "python": "kit/requirements.txt",
+        "node": "kit",
+        "system": [
+          "ffmpeg",
+          "ffprobe",
+          "node",
+          "python3"
+        ]
+      },
+      "install_mb": 350,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [
+        "talking-layouts"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "visual-fx-renderer",
+      "family": "cadence-structures",
+      "title": "Запись экрана приложения для промо-ролика",
+      "what": "Правила и команды, как снять запись экрана приложения на симуляторе или эмуляторе так, чтобы она годилась в промо: чистое начало, нужная длина, без лишнего на экране.",
+      "when": [
+        "запиши экран моего приложения, как оно работает",
+        "мне нужна запись экрана с телефона для рекламного ролика",
+        "сними демонстрацию приложения на симуляторе",
+        "сделай видео прохода по экранам приложения"
+      ],
+      "not_for": "Видеоэффекты и шейдеры: движок `engine/` и навык `cadence-motion`. Рисование макета экрана без приложения: `cadence-mobile-comps`. Монтаж записи в ролик (устройство на сцене, чек-лист на записи): остальные структуры семейства. Запись экрана компьютера: средства самой системы, модуль только про телефон.",
+      "capabilities": [
+        "app-screen-recording"
+      ],
+      "inputs": [
+        "запущенный симулятор iOS, эмулятор или подключённое устройство Android с приложением в нужном состоянии"
+      ],
+      "outputs": [
+        "запись экрана (.mov или .mp4) в $WORK/<проект>/in/",
+        "заметка о том, что на записи видно лишнего"
+      ],
+      "run": "xcrun simctl io <UDID> recordVideo --codec=h264 \"$WORK/<проект>/in/screen.mov\"",
+      "engine": "docs",
+      "deps": {
+        "system": []
+      },
+      "install_mb": 0,
+      "platform": [
+        "macos",
+        "linux"
+      ],
+      "network": "none",
+      "keys": [],
+      "status": "docs",
+      "primary_for": [
+        "app-screen-recording"
+      ],
+      "fallback_for": []
+    },
+    {
+      "id": "voice-synthesis-toolkit",
+      "family": "cadence-sound",
+      "title": "Озвучка текста локальным голосом (русский, 23 языка)",
+      "what": "Нейросеть читает текст голосом по-русски и ещё на 22 языках, по желанию берёт тембр из 10-секундного образца; всё считается на этой машине и записывается в wav.",
+      "when": [
+        "озвучь этот текст по-русски",
+        "прочитай мой сценарий голосом, чтобы прикинуть тайминг",
+        "озвучь текст на английском выразительно"
+      ],
+      "not_for": "Музыка, эффекты и сведение голоса с музыкой: навык cadence-sound и scripts/voice_music_mix.py. Субтитры и распознавание речи: scripts/captions_whisper.py или модуль speech-transcriber. Озвучка на Mac быстрее и без NVIDIA через модуль mlx-audio-engine; голос по текстовому описанию вместо образца: модуль neural-tts-engine. Озвучка своим голосом по образцу записи (клон голоса) — основной модуль expressive-voice-synth (функция voice-clone).",
+      "capabilities": [
+        "voiceover"
+      ],
+      "inputs": [
+        "текст или файл с текстом (utf-8)",
+        "язык (ru по умолчанию)",
+        "по желанию: образец голоса 10 секунд, только с согласия владельца"
+      ],
+      "outputs": [
+        "<имя>.wav в $WORK/<проект>/out/ (24 кГц, моно, с неслышимым водяным знаком модели)"
+      ],
+      "run": "python3 modules/voice-synthesis-toolkit/run.py --text-file <сценарий.txt> --language ru --project <проект>",
+      "engine": "python",
+      "deps": {
+        "python": "requirements.txt",
+        "system": [
+          "python3"
+        ]
+      },
+      "install_mb": 4000,
+      "platform": [
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "network": "install",
+      "keys": [],
+      "status": "beta",
+      "primary_for": [],
+      "fallback_for": [
+        "voiceover"
+      ]
+    }
+  ],
+  "capabilities": {
+    "pauses": {
+      "skill": "cadence-cut",
+      "title": "убрать паузы и тишину",
+      "primary": "script:scripts/silence_cut.py",
+      "fallback": []
+    },
+    "takes": {
+      "skill": "cadence-cut",
+      "title": "собрать ролик из дублей",
+      "primary": "script:scripts/takes_cut.py",
+      "fallback": []
+    },
+    "highlight": {
+      "skill": "cadence-cut",
+      "title": "хайлайт длинного видео без речи",
+      "primary": "script:scripts/highlight_cut.py",
+      "fallback": []
+    },
+    "captions": {
+      "skill": "cadence-cut",
+      "title": "субтитры по речи",
+      "primary": "script:scripts/captions_whisper.py",
+      "fallback": [
+        "module:speech-transcriber"
+      ]
+    },
+    "word-scenes": {
+      "skill": "cadence-motion",
+      "title": "сцены и графика по словам",
+      "primary": "script:scripts/word_anchors.py",
+      "fallback": []
+    },
+    "video-fx": {
+      "skill": "cadence-cut",
+      "title": "кино-эффекты на живом видео",
+      "primary": "script:scripts/video_fx.py",
+      "fallback": []
+    },
+    "voice-music": {
+      "skill": "cadence-sound",
+      "title": "голос и музыка вместе",
+      "primary": "script:scripts/voice_music_mix.py",
+      "fallback": []
+    },
+    "pre-publish": {
+      "skill": "cadence-cut",
+      "title": "проверка ролика перед публикацией",
+      "primary": "script:scripts/check_reel.py",
+      "fallback": []
+    },
+    "resolve-handoff": {
+      "skill": "cadence-resolve",
+      "title": "передать монтаж в DaVinci Resolve",
+      "primary": "skill:cadence-resolve",
+      "fallback": []
+    },
+    "timeline-export": {
+      "skill": "cadence-cut",
+      "title": "нарезка таймлайном для Resolve, Premiere, Final Cut, Kdenlive",
+      "primary": "module:smart-cutter",
+      "fallback": []
+    },
+    "styled-reel": {
+      "skill": "cadence-cut",
+      "title": "оформленный ролик из разговорной записи в выбранном стиле",
+      "primary": "module:phantom-editor",
+      "fallback": [
+        "module:effortless-cuts",
+        "module:video-copilot-skills"
+      ]
+    },
+    "publish-package": {
+      "skill": "cadence-cut",
+      "title": "пакет к публикации: мастер, обложка, варианты заголовка",
+      "primary": "module:effortless-cuts",
+      "fallback": []
+    },
+    "ffmpeg-ops": {
+      "skill": "cadence-cut",
+      "title": "любая операция ffmpeg: кроп, вертикаль, громкость, склейка, конверт",
+      "primary": "module:ffmpeg-toolkit",
+      "fallback": []
+    },
+    "resolve-reframe": {
+      "skill": "cadence-resolve",
+      "title": "вертикальный кадр и сборка таймлайна в Resolve по анализу кадров",
+      "primary": "module:frame-inspector-plugin",
+      "fallback": []
+    },
+    "footage-analysis": {
+      "skill": "cadence-resolve",
+      "title": "разбор своих исходников: что в клипах, лучшие моменты, поиск",
+      "primary": "module:resolve-frame-pipeline",
+      "fallback": []
+    },
+    "transcribe": {
+      "skill": "cadence-cut",
+      "title": "расшифровка речи с таймингами слов",
+      "primary": "module:speech-transcriber",
+      "fallback": [
+        "script:scripts/captions_whisper.py"
+      ]
+    },
+    "voiceover": {
+      "skill": "cadence-sound",
+      "title": "закадровый голос из текста локальной моделью",
+      "primary": "module:mlx-audio-engine",
+      "fallback": [
+        "module:voice-synthesis-toolkit",
+        "module:neural-tts-engine"
+      ]
+    },
+    "voice-clone": {
+      "skill": "cadence-sound",
+      "title": "озвучка голосом по образцу записи (с согласия владельца голоса)",
+      "primary": "module:expressive-voice-synth",
+      "fallback": [
+        "module:mlx-audio-engine"
+      ]
+    },
+    "explainer": {
+      "skill": "cadence-structures",
+      "title": "эксплейнер с озвучкой по сценарию",
+      "primary": "module:explainer-engine",
+      "fallback": [
+        "module:motion-graphics-pipeline"
+      ]
+    },
+    "voice-film": {
+      "skill": "cadence-motion",
+      "title": "фильм-рассказ под готовый голос, нарисованный кодом",
+      "primary": "module:cinematic-motion-skill",
+      "fallback": [
+        "module:motion-graphics-pipeline"
+      ]
+    },
+    "block-library": {
+      "skill": "cadence-motion",
+      "title": "готовый блок, переход или компонент из библиотеки",
+      "primary": "module:declarative-video-frames",
+      "fallback": []
+    },
+    "art-films": {
+      "skill": "cadence-motion",
+      "title": "художественные приёмы: рукописный текст, живая картина, 3D-субтитры",
+      "primary": "module:declarative-frames-community-skills",
+      "fallback": []
+    },
+    "csv-templates": {
+      "skill": "cadence-motion",
+      "title": "серия кадров из таблицы в шаблоне редактора",
+      "primary": "module:data-motion-graphics",
+      "fallback": []
+    },
+    "stickman": {
+      "skill": "cadence-structures",
+      "title": "объяснялка палочными человечками",
+      "primary": "module:stick-figure-animator",
+      "fallback": []
+    },
+    "papercut": {
+      "skill": "cadence-structures",
+      "title": "эксплейнер из бумажной аппликации",
+      "primary": "module:papercraft-explainer",
+      "fallback": []
+    },
+    "sketch-story": {
+      "skill": "cadence-structures",
+      "title": "рисованная история из текста или страниц",
+      "primary": "module:story-to-sketch-animation",
+      "fallback": []
+    },
+    "art-style-motion": {
+      "skill": "cadence-motion",
+      "title": "анимация в стиле художников и эпох",
+      "primary": "module:calligraphy-art-motion",
+      "fallback": []
+    },
+    "doodle-motion": {
+      "skill": "cadence-motion",
+      "title": "дудл: картинка рисуется на глазах",
+      "primary": "module:doodle-animator",
+      "fallback": []
+    },
+    "character-animation": {
+      "skill": "cadence-motion",
+      "title": "рисованный герой: позы и эмоции",
+      "primary": "module:animation-scaffold",
+      "fallback": []
+    },
+    "style-film": {
+      "skill": "cadence-motion",
+      "title": "10 секунд моушна в готовом визуальном стиле",
+      "primary": "module:motion-graphics-presets",
+      "fallback": [
+        "module:code-to-film-engine"
+      ]
+    },
+    "style-mini-film": {
+      "skill": "cadence-motion",
+      "title": "мини-фильм кодом в стиле-образце (чертёж, доска, микроскоп…)",
+      "primary": "module:code-to-film-engine",
+      "fallback": []
+    },
+    "promo-video": {
+      "skill": "cadence-structures",
+      "title": "промо-ролик продукта из настоящих экранов и текст поста",
+      "primary": "module:promo-showcase",
+      "fallback": []
+    },
+    "store-screenshots": {
+      "skill": "cadence-structures",
+      "title": "скриншоты и превью-видео приложения для магазинов",
+      "primary": "module:promo-motion-kit",
+      "fallback": []
+    },
+    "app-screen-recording": {
+      "skill": "cadence-structures",
+      "title": "запись экрана приложения на симуляторе",
+      "primary": "module:visual-fx-renderer",
+      "fallback": []
+    },
+    "logo": {
+      "skill": "cadence-identity-system",
+      "title": "логотип: варианты SVG, PNG, иконки, проверка 16 px",
+      "primary": "module:logo-craft-skill",
+      "fallback": []
+    },
+    "beat-plan": {
+      "skill": "cadence-visual-direction",
+      "title": "план битов и графика поверх говорящего видео",
+      "primary": "module:video-director-skills",
+      "fallback": []
+    },
+    "b-roll-overlay": {
+      "skill": "cadence-cut",
+      "title": "графика поверх говорящего и на весь кадр по смыслу речи",
+      "primary": "module:b-roll-toolkit",
+      "fallback": [
+        "module:video-director-skills"
+      ]
+    },
+    "reel-from-clips": {
+      "skill": "cadence-cut",
+      "title": "рилс из папки своих клипов и голоса: сценарий, монтаж, обложка, подпись",
+      "primary": "module:reels-crafter",
+      "fallback": []
+    },
+    "shorts-from-long": {
+      "skill": "cadence-cut",
+      "title": "нарезка вертикальных шортсов с субтитрами из длинной записи с речью",
+      "primary": "module:shorts-studio",
+      "fallback": [
+        "script:scripts/highlight_cut.py"
+      ]
+    },
+    "talking-layouts": {
+      "skill": "cadence-cut",
+      "title": "раскладки говорящего: экран пополам, графика за человеком, тир-лист",
+      "primary": "module:video-editing-skills",
+      "fallback": []
+    },
+    "talking-head-edit": {
+      "skill": "cadence-cut",
+      "title": "монтаж говорящей головы по транскрипту: паузы, оговорки, графика, проверка до рендера",
+      "primary": "module:montage-toolkit",
+      "fallback": [
+        "script:scripts/silence_cut.py"
+      ]
+    }
+  }
+}

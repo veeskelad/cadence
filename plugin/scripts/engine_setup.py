@@ -31,6 +31,19 @@ def ready(modules: Path) -> bool:
     return (modules / ".bin/hyperframes").exists()
 
 
+def locked_version() -> str:
+    return json.loads(LOCK.read_text())["packages"]["node_modules/hyperframes"]["version"]
+
+
+def current(modules: Path) -> bool:
+    """Движок на месте и той версии, что в package-lock: ссылка на кэш прежней версии не считается."""
+    try:
+        installed = json.loads((modules / "hyperframes/package.json").read_text())["version"]
+    except (OSError, ValueError, KeyError):
+        return False
+    return ready(modules) and installed == locked_version()
+
+
 def link(target: Path) -> None:
     nm = ENGINE / "node_modules"
     if nm.is_symlink():
@@ -40,21 +53,21 @@ def link(target: Path) -> None:
 
 def status() -> dict:
     nm, cache = ENGINE / "node_modules", cache_dir()
-    if ready(nm):
+    if current(nm):
         return {"engine": "ready", "shared": nm.is_symlink()}
-    if ready(cache / "node_modules"):
+    if current(cache / "node_modules"):
         return {"engine": "cached", "note": "движок уже скачан для этой версии зависимостей: install подключит без сети"}
     return {"engine": "missing", "note": "нужна установка: сеть, около 300 МБ, с согласия человека"}
 
 
 def install() -> dict:
     nm, cache = ENGINE / "node_modules", cache_dir()
-    if ready(nm):
+    if current(nm):
         return {"engine": "ready", "downloaded": False}
     if nm.exists() and not nm.is_symlink():
-        raise SystemExit(json.dumps({"engine": "error", "reason": "engine/node_modules — неполная папка: удалить её вручную и повторить"}, ensure_ascii=False))
+        raise SystemExit(json.dumps({"engine": "error", "reason": "engine/node_modules — своя папка, неполная или другой версии: удалить её вручную и повторить"}, ensure_ascii=False))
     downloaded = False
-    if not ready(cache / "node_modules"):
+    if not current(cache / "node_modules"):
         tmp = cache.with_name(cache.name + ".partial")
         shutil.rmtree(tmp, ignore_errors=True)
         tmp.mkdir(parents=True)
@@ -66,7 +79,7 @@ def install() -> dict:
         tmp.rename(cache)
         downloaded = True
     link(cache / "node_modules")
-    return {"engine": "ready" if ready(nm) else "error", "downloaded": downloaded}
+    return {"engine": "ready" if current(nm) else "error", "downloaded": downloaded}
 
 
 def main() -> int:

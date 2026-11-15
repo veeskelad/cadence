@@ -1,0 +1,4 @@
+{
+  "paths": { "blocks": "compositions", "components": "compositions/components", "assets": "assets" },
+  "media": { "autoProxy": true }
+}

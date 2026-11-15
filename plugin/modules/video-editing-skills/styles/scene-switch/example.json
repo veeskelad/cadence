@@ -1,0 +1,9 @@
+{
+  "media_start": 0.04,
+  "assets": {
+    "blue-stairs.jpg": "my-blue-stairs.jpg",
+    "cactus.jpg": "my-cactus.jpg",
+    "explainer_cut.webm": "my-explainer_cut.webm",
+    "red-stairs.jpg": "my-red-stairs.jpg"
+  }
+}
