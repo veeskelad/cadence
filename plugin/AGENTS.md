@@ -16,7 +16,7 @@
 Проект хранит `in/`, `build/` и `out/`. Не называй пробный результат финальным:
 готовое проверяется по выбранному формату. Для видео осмотри реальные кадры MP4 и громкость (`scripts/deliver.py`).
 
-Для первого запроса используй навык `cadence`. Для отдельной задачи выбери подходящий
+Для первого запроса используй навык `cadence`. Готовый код под отдельные задачи лежит в `modules/`: модуль берётся только из раздела «Модули» нужного навыка или из таблицы «Просьба → навык → модуль» в `knowledge/system/ROUTING.md`, инструкция — его `MODULE.md`, зависимости — `python3 scripts/module_setup.py status <id>` (установка с согласия). Для отдельной задачи выбери подходящий
 навык из `.agents/skills/`: `cadence-beat-reel`, `cadence-showreel`, `cadence-motion`,
 `cadence-structures`, `cadence-sound`, `cadence-style`, `cadence-cut`, `cadence-resolve`,
 `cadence-breakdown`, `cadence-generate`.

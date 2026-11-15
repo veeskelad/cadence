@@ -1,0 +1,9 @@
+{
+  "media_start": 0.04,
+  "assets": {
+    "camera.jpg": "my-camera.jpg",
+    "explainer_cut.webm": "my-explainer_cut.webm",
+    "orange.jpg": "my-orange.jpg",
+    "record.jpg": "my-record.jpg"
+  }
+}

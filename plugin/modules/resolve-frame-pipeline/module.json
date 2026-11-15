@@ -1,0 +1,71 @@
+{
+  "id": "resolve-frame-pipeline",
+  "family": "cadence-resolve",
+  "title": "Анализ кадров своей библиотеки и связь с Resolve",
+  "what": "Локально разбирает видео (планы, речь, кто и что в кадре, лучшие моменты, безопасные точки реза), ищет по библиотеке и отдаёт всё агенту и DaVinci Resolve через MCP.",
+  "when": [
+    "разбери мои исходники: что в каждом клипе и где лучшие моменты",
+    "найди в моей библиотеке кадры, где человек говорит на фоне заката",
+    "посмотри мой таймлайн в Резолве и скажи, какие клипы слабые",
+    "где в этом видео безопасно резать, чтобы не обрывать слово",
+    "подготовь клипы так, чтобы агент мог по ним собирать монтаж"
+  ],
+  "not_for": [
+    "Сама сборка и перемонтаж таймлайна, вертикальный кадр: модуль frame-inspector-plugin",
+    "Технический паспорт одного файла (длительность, кодек, громкость): scripts/inspect_video.py",
+    "Субтитры и расшифровка для готового ролика: scripts/captions_whisper.py",
+    "Работа с проектом Resolve без анализа кадров: навык cadence-resolve"
+  ],
+  "capabilities": [
+    "footage-analysis"
+  ],
+  "inputs": [
+    "папка с видео человека",
+    "по желанию открытый проект DaVinci Resolve Studio",
+    "модель зрения в LM Studio или совместимом сервере"
+  ],
+  "outputs": [
+    "локальная база анализа (планы, речь, объекты, главы, моменты)",
+    "веб-интерфейс на 127.0.0.1:8765 и MCP-сервер на /mcp",
+    "маркеры и метаданные в клипах Resolve по команде"
+  ],
+  "run": "sh modules/resolve-frame-pipeline/run.command",
+  "engine": "python",
+  "deps": {
+    "system": [
+      "python3",
+      "uv",
+      "node",
+      "ffmpeg",
+      "exiftool"
+    ]
+  },
+  "install_mb": 8000,
+  "platform": [
+    "macos",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "SECURITY.md",
+      "backend",
+      "docs",
+      "frontend",
+      "install.bat",
+      "install.command",
+      "install.sh",
+      "justfile",
+      "run.bat",
+      "run.command",
+      "scripts"
+    ],
+    "file": "resolve-frame-pipeline-a0d57c6353b7.zip",
+    "sha256": "a0d57c6353b7740840f176a5b905419842069e38cfb2ffb07354c48b5b59ea40",
+    "bytes": 1483632,
+    "expanded_bytes": 4497353,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/resolve-frame-pipeline-a0d57c6353b7.zip"
+  }
+}

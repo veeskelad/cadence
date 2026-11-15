@@ -1,0 +1,6 @@
+sherpa-onnx
+soundfile
+librosa
+playwright
+numpy
+pillow

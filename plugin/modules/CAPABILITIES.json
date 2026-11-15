@@ -1,0 +1,272 @@
+{
+  "pauses": {
+    "skill": "cadence-cut",
+    "title": "убрать паузы и тишину",
+    "primary": "script:scripts/silence_cut.py",
+    "fallback": []
+  },
+  "takes": {
+    "skill": "cadence-cut",
+    "title": "собрать ролик из дублей",
+    "primary": "script:scripts/takes_cut.py",
+    "fallback": []
+  },
+  "highlight": {
+    "skill": "cadence-cut",
+    "title": "хайлайт длинного видео без речи",
+    "primary": "script:scripts/highlight_cut.py",
+    "fallback": []
+  },
+  "captions": {
+    "skill": "cadence-cut",
+    "title": "субтитры по речи",
+    "primary": "script:scripts/captions_whisper.py",
+    "fallback": [
+      "module:speech-transcriber"
+    ]
+  },
+  "word-scenes": {
+    "skill": "cadence-motion",
+    "title": "сцены и графика по словам",
+    "primary": "script:scripts/word_anchors.py",
+    "fallback": []
+  },
+  "video-fx": {
+    "skill": "cadence-cut",
+    "title": "кино-эффекты на живом видео",
+    "primary": "script:scripts/video_fx.py",
+    "fallback": []
+  },
+  "voice-music": {
+    "skill": "cadence-sound",
+    "title": "голос и музыка вместе",
+    "primary": "script:scripts/voice_music_mix.py",
+    "fallback": []
+  },
+  "pre-publish": {
+    "skill": "cadence-cut",
+    "title": "проверка ролика перед публикацией",
+    "primary": "script:scripts/check_reel.py",
+    "fallback": []
+  },
+  "resolve-handoff": {
+    "skill": "cadence-resolve",
+    "title": "передать монтаж в DaVinci Resolve",
+    "primary": "skill:cadence-resolve",
+    "fallback": []
+  },
+  "timeline-export": {
+    "skill": "cadence-cut",
+    "title": "нарезка таймлайном для Resolve, Premiere, Final Cut, Kdenlive",
+    "primary": "module:smart-cutter",
+    "fallback": []
+  },
+  "styled-reel": {
+    "skill": "cadence-cut",
+    "title": "оформленный ролик из разговорной записи в выбранном стиле",
+    "primary": "module:phantom-editor",
+    "fallback": [
+      "module:effortless-cuts",
+      "module:video-copilot-skills"
+    ]
+  },
+  "publish-package": {
+    "skill": "cadence-cut",
+    "title": "пакет к публикации: мастер, обложка, варианты заголовка",
+    "primary": "module:effortless-cuts",
+    "fallback": []
+  },
+  "ffmpeg-ops": {
+    "skill": "cadence-cut",
+    "title": "любая операция ffmpeg: кроп, вертикаль, громкость, склейка, конверт",
+    "primary": "module:ffmpeg-toolkit",
+    "fallback": []
+  },
+  "resolve-reframe": {
+    "skill": "cadence-resolve",
+    "title": "вертикальный кадр и сборка таймлайна в Resolve по анализу кадров",
+    "primary": "module:frame-inspector-plugin",
+    "fallback": []
+  },
+  "footage-analysis": {
+    "skill": "cadence-resolve",
+    "title": "разбор своих исходников: что в клипах, лучшие моменты, поиск",
+    "primary": "module:resolve-frame-pipeline",
+    "fallback": []
+  },
+  "transcribe": {
+    "skill": "cadence-cut",
+    "title": "расшифровка речи с таймингами слов",
+    "primary": "module:speech-transcriber",
+    "fallback": [
+      "script:scripts/captions_whisper.py"
+    ]
+  },
+  "voiceover": {
+    "skill": "cadence-sound",
+    "title": "закадровый голос из текста локальной моделью",
+    "primary": "module:mlx-audio-engine",
+    "fallback": [
+      "module:voice-synthesis-toolkit",
+      "module:neural-tts-engine"
+    ]
+  },
+  "voice-clone": {
+    "skill": "cadence-sound",
+    "title": "озвучка голосом по образцу записи (с согласия владельца голоса)",
+    "primary": "module:expressive-voice-synth",
+    "fallback": [
+      "module:mlx-audio-engine"
+    ]
+  },
+  "explainer": {
+    "skill": "cadence-structures",
+    "title": "эксплейнер с озвучкой по сценарию",
+    "primary": "module:explainer-engine",
+    "fallback": [
+      "module:motion-graphics-pipeline"
+    ]
+  },
+  "voice-film": {
+    "skill": "cadence-motion",
+    "title": "фильм-рассказ под готовый голос, нарисованный кодом",
+    "primary": "module:cinematic-motion-skill",
+    "fallback": [
+      "module:motion-graphics-pipeline"
+    ]
+  },
+  "block-library": {
+    "skill": "cadence-motion",
+    "title": "готовый блок, переход или компонент из библиотеки",
+    "primary": "module:declarative-video-frames",
+    "fallback": []
+  },
+  "art-films": {
+    "skill": "cadence-motion",
+    "title": "художественные приёмы: рукописный текст, живая картина, 3D-субтитры",
+    "primary": "module:declarative-frames-community-skills",
+    "fallback": []
+  },
+  "csv-templates": {
+    "skill": "cadence-motion",
+    "title": "серия кадров из таблицы в шаблоне редактора",
+    "primary": "module:data-motion-graphics",
+    "fallback": []
+  },
+  "stickman": {
+    "skill": "cadence-structures",
+    "title": "объяснялка палочными человечками",
+    "primary": "module:stick-figure-animator",
+    "fallback": []
+  },
+  "papercut": {
+    "skill": "cadence-structures",
+    "title": "эксплейнер из бумажной аппликации",
+    "primary": "module:papercraft-explainer",
+    "fallback": []
+  },
+  "sketch-story": {
+    "skill": "cadence-structures",
+    "title": "рисованная история из текста или страниц",
+    "primary": "module:story-to-sketch-animation",
+    "fallback": []
+  },
+  "art-style-motion": {
+    "skill": "cadence-motion",
+    "title": "анимация в стиле художников и эпох",
+    "primary": "module:calligraphy-art-motion",
+    "fallback": []
+  },
+  "doodle-motion": {
+    "skill": "cadence-motion",
+    "title": "дудл: картинка рисуется на глазах",
+    "primary": "module:doodle-animator",
+    "fallback": []
+  },
+  "character-animation": {
+    "skill": "cadence-motion",
+    "title": "рисованный герой: позы и эмоции",
+    "primary": "module:animation-scaffold",
+    "fallback": []
+  },
+  "style-film": {
+    "skill": "cadence-motion",
+    "title": "10 секунд моушна в готовом визуальном стиле",
+    "primary": "module:motion-graphics-presets",
+    "fallback": [
+      "module:code-to-film-engine"
+    ]
+  },
+  "style-mini-film": {
+    "skill": "cadence-motion",
+    "title": "мини-фильм кодом в стиле-образце (чертёж, доска, микроскоп…)",
+    "primary": "module:code-to-film-engine",
+    "fallback": []
+  },
+  "promo-video": {
+    "skill": "cadence-structures",
+    "title": "промо-ролик продукта из настоящих экранов и текст поста",
+    "primary": "module:promo-showcase",
+    "fallback": []
+  },
+  "store-screenshots": {
+    "skill": "cadence-structures",
+    "title": "скриншоты и превью-видео приложения для магазинов",
+    "primary": "module:promo-motion-kit",
+    "fallback": []
+  },
+  "app-screen-recording": {
+    "skill": "cadence-structures",
+    "title": "запись экрана приложения на симуляторе",
+    "primary": "module:visual-fx-renderer",
+    "fallback": []
+  },
+  "logo": {
+    "skill": "cadence-identity-system",
+    "title": "логотип: варианты SVG, PNG, иконки, проверка 16 px",
+    "primary": "module:logo-craft-skill",
+    "fallback": []
+  },
+  "beat-plan": {
+    "skill": "cadence-visual-direction",
+    "title": "план битов и графика поверх говорящего видео",
+    "primary": "module:video-director-skills",
+    "fallback": []
+  },
+  "b-roll-overlay": {
+    "skill": "cadence-cut",
+    "title": "графика поверх говорящего и на весь кадр по смыслу речи",
+    "primary": "module:b-roll-toolkit",
+    "fallback": [
+      "module:video-director-skills"
+    ]
+  },
+  "reel-from-clips": {
+    "skill": "cadence-cut",
+    "title": "рилс из папки своих клипов и голоса: сценарий, монтаж, обложка, подпись",
+    "primary": "module:reels-crafter",
+    "fallback": []
+  },
+  "shorts-from-long": {
+    "skill": "cadence-cut",
+    "title": "нарезка вертикальных шортсов с субтитрами из длинной записи с речью",
+    "primary": "module:shorts-studio",
+    "fallback": [
+      "script:scripts/highlight_cut.py"
+    ]
+  },
+  "talking-layouts": {
+    "skill": "cadence-cut",
+    "title": "раскладки говорящего: экран пополам, графика за человеком, тир-лист",
+    "primary": "module:video-editing-skills",
+    "fallback": []
+  },
+  "talking-head-edit": {
+    "skill": "cadence-cut",
+    "title": "монтаж говорящей головы по транскрипту: паузы, оговорки, графика, проверка до рендера",
+    "primary": "module:montage-toolkit",
+    "fallback": [
+      "script:scripts/silence_cut.py"
+    ]
+  }
+}

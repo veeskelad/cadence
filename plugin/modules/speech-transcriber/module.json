@@ -1,0 +1,58 @@
+{
+  "id": "speech-transcriber",
+  "family": "cadence-cut",
+  "title": "Распознавание речи: субтитры и время слов",
+  "what": "Локальная модель Whisper превращает речь из видео или звука в SRT, VTT, TXT и список слов с временем; ничего не уходит в сеть.",
+  "when": [
+    "сделай субтитры к видео, но основной способ не завёлся",
+    "расшифруй запись в текст с таймкодами",
+    "мне нужен файл со словами и временем каждого слова",
+    "распознай речь моделью побольше, чтобы было точнее",
+    "сделай субтитры в формате VTT"
+  ],
+  "not_for": "Субтитры в обычном порядке и вшивание их в ролик: scripts/captions_whisper.py (capability captions, основной путь). Сцены и графика по словам: scripts/word_anchors.py (cadence-motion). Озвучка текста голосом: модули семейства cadence-sound.",
+  "capabilities": [
+    "captions",
+    "transcribe"
+  ],
+  "inputs": [
+    "видео или звук с речью (mp4, mov, wav, mp3, m4a)",
+    "язык речи (ru по умолчанию) и размер модели"
+  ],
+  "outputs": [
+    "<имя>.srt, .vtt, .txt, .json в $WORK/<проект>/out/",
+    "<имя>.words.json: слова с временем, формат как у captions_whisper.py (годится для его --words-in)"
+  ],
+  "run": "python3 modules/speech-transcriber/run.py <видео или звук> --language ru --project <проект>",
+  "engine": "python",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "ffmpeg",
+      "python3"
+    ]
+  },
+  "install_mb": 1200,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "ready",
+  "payload": {
+    "paths": [
+      "model-card.md",
+      "pyproject.toml",
+      "requirements.txt",
+      "run.py",
+      "whisper"
+    ],
+    "file": "speech-transcriber-36641b14d910.zip",
+    "sha256": "36641b14d91071012c7ca9a2977fe1d17b49cc04749309b3e5400050bbb5a946",
+    "bytes": 804781,
+    "expanded_bytes": 1880072,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/speech-transcriber-36641b14d910.zip"
+  }
+}

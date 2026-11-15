@@ -1,0 +1,43 @@
+{
+  "id": "b-roll-toolkit",
+  "family": "cadence-cut",
+  "title": "Перебивки под речь",
+  "what": "К ролику с говорящим человеком добавляет графику поверх него и на весь кадр по тому, что он говорит; запись не режется, звук остаётся.",
+  "when": [
+    "добавь перебивки к видео, где я говорю в камеру",
+    "оживи ролик с говорящей головой графикой и цифрами",
+    "сделай b-roll под мою речь",
+    "нужен слой графики с прозрачностью, чтобы положить на дорожку в монтажке"
+  ],
+  "not_for": "Живые кадры вместо графики и нарезка по смыслу — модуль video-editing-skills и навык cadence-cut; сцены по словам для готового ролика без говорящего — навык cadence-motion; тишина и паузы — scripts/silence_cut.py.",
+  "capabilities": [
+    "b-roll-overlay"
+  ],
+  "inputs": [
+    "видео с человеком, говорящим в камеру (mp4, mov)"
+  ],
+  "outputs": [
+    "transcript.json со словами и временем",
+    "page.html с планом сцен",
+    "film.mp4 — запись с перебивками и своим звуком",
+    "b-roll.mov или b-roll.webm — только слой графики с прозрачностью"
+  ],
+  "run": "node modules/b-roll-toolkit/scripts/transcribe.mjs work/<проект>/in/talk.mp4 work/<проект>/in/transcript.json",
+  "engine": "node",
+  "deps": {
+    "node": "scripts",
+    "system": [
+      "ffmpeg",
+      "node"
+    ]
+  },
+  "install_mb": 5,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "ready"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "motion-graphics-presets",
+  "family": "cadence-motion",
+  "title": "Десять секунд мотиона в готовом стиле: 15 образцов кодом",
+  "what": "Готовые десятисекундные мотион-фильмы в пятнадцати стилях (плоский вектор, линия, изометрия, 3D, нарисованный от руки, коллаж, жидкость, форма, баухаус, синтвейв, стекло, цветной текст, мультяшная справка, пиксели, интерфейс с экрана) с кодом, подсказками и звуком: взять образец и переделать под свою тему.",
+  "when": [
+    "сделай десять секунд анимации в стиле плоской векторной графики",
+    "хочу ролик как неоновый синтвейв восьмидесятых",
+    "покажи варианты стилей мотиона и сделай один из них про мой продукт",
+    "нужна заставка в стиле пиксельной игры или бумажного коллажа",
+    "сделай интерфейс как в кино про хакеров с наведением на цель"
+  ],
+  "not_for": "Ролик в бит под свой трек, шоурил, анонс продукта по шаблонам Cadence: движок `engine/` и навык `cadence-motion` без этого модуля. Цвета и шрифты бренда: `cadence-style`. Эффекты на живом видео: `cadence-cut` и `cadence-resolve`. Рисованный мультик с героем: модуль `animation-scaffold`. Звук к чужому ролику: `cadence-sound`.",
+  "capabilities": [
+    "style-film"
+  ],
+  "inputs": [
+    "тема и текст ролика",
+    "выбранный стиль (номер или имя из списка в MODULE.md)",
+    "по желанию свой трек или готовая дорожка"
+  ],
+  "outputs": [
+    "MP4 1920x1080 (одна вертикальная версия 1080x1920) в $WORK/<проект>/out/",
+    "кадры-превью (PNG)",
+    "рабочая копия фильма в $WORK/<проект>/mg/demos/<фильм>/"
+  ],
+  "run": "python3 modules/motion-graphics-presets/run.py <фильм> render --noaudio",
+  "engine": "node",
+  "deps": {
+    "python": "requirements.txt",
+    "node": ".",
+    "system": [
+      "node",
+      "ffmpeg",
+      "python3"
+    ]
+  },
+  "install_mb": 420,
+  "platform": [
+    "macos",
+    "linux"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "assets",
+      "demos",
+      "harness",
+      "lib",
+      "package.json",
+      "prompts",
+      "requirements-prep.txt",
+      "requirements.txt",
+      "run.py"
+    ],
+    "file": "motion-graphics-presets-d727fda11d84.zip",
+    "sha256": "d727fda11d847372a54ed8ecb3f6788e69d8d7b17bcf8e66106a18574a7c3e61",
+    "bytes": 10033289,
+    "expanded_bytes": 12472542,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/motion-graphics-presets-d727fda11d84.zip"
+  }
+}

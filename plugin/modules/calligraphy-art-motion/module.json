@@ -1,0 +1,62 @@
+{
+  "id": "calligraphy-art-motion",
+  "family": "cadence-motion",
+  "title": "Анимация в стиле художников и эпох, объясняющие фрагменты",
+  "what": "Ролик или фрагмент, нарисованный кодом на Canvas: 36 готовых художественных стилей и 16 исследовательских рецептов, 8 грамматик объясняющей анимации, проверка кадров и выдача с вердиктом.",
+  "when": [
+    "сделай анимацию в стиле Ван Гога или Моне",
+    "нужна история искусства за минуту: эпохи сменяются в одной комнате",
+    "нарисуй кодом объясняющий фрагмент: белая доска, формулы, график",
+    "динамическая типографика под мою фразу",
+    "воспроизведи эту анимацию кодом по моему видео-образцу"
+  ],
+  "not_for": [
+    "рисованная история по страницам и картинкам: модуль story-to-sketch-animation",
+    "дудл или росчерки: модуль doodle-animator",
+    "ролик в бит под свой трек, шоурил, заставка: навык cadence-motion (движок Cadence)",
+    "кино-эффекты на живом видео: навык cadence-cut"
+  ],
+  "capabilities": [
+    "art-style-motion"
+  ],
+  "inputs": [
+    "тема и раскадровка (таблица кадров)",
+    "спецификация фрагмента spec.json",
+    "образец-видео для разбора (по желанию)"
+  ],
+  "outputs": [
+    "MP4 или кадры PNG",
+    "отчёт проверки кадров",
+    "карточка выдачи с вердиктом"
+  ],
+  "run": "python3 modules/calligraphy-art-motion/scripts/engine/render.py --spec <spec.json> --out \"$WORK/<проект>/out/clip.mp4\"",
+  "engine": "python",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "python3",
+      "ffmpeg"
+    ]
+  },
+  "install_mb": 450,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "runtime",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "references",
+      "requirements.txt",
+      "scripts"
+    ],
+    "file": "calligraphy-art-motion-0b74c65398b4.zip",
+    "sha256": "0b74c65398b4ef2522e40115435e83e368b284ba0c327e3e62829dec143cae33",
+    "bytes": 10188945,
+    "expanded_bytes": 12167479,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/calligraphy-art-motion-0b74c65398b4.zip"
+  }
+}

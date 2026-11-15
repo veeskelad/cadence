@@ -1,0 +1,40 @@
+{
+  "id": "neural-tts-engine",
+  "family": "cadence-sound",
+  "title": "Озвучка: готовый диктор, голос по описанию или по образцу",
+  "what": "Нейросеть озвучивает текст голосом диктора, голосом, описанным словами («спокойный низкий мужской»), или тембром из образца; расчёт на видеокарте NVIDIA, результат wav.",
+  "when": [
+    "озвучь текст голосом, который я опишу словами",
+    "сделай голос низким и спокойным, как у диктора документалки",
+    "озвучь с эмоцией: радостно, строго, шёпотом",
+    "прочитай текст голосом выбранного диктора"
+  ],
+  "not_for": "Озвучка на Mac без NVIDIA: модуль mlx-audio-engine. Простая озвучка с русским, английским и ещё 21 языком и образцом голоса: модуль voice-synthesis-toolkit. Музыка, эффекты, сведение: навык cadence-sound. Субтитры: scripts/captions_whisper.py.",
+  "capabilities": [
+    "voiceover"
+  ],
+  "inputs": [
+    "текст или файл с текстом (utf-8)",
+    "режим: custom (диктор), design (описание голоса), clone (образец)",
+    "для clone: wav-образец и слова из него; только с согласия владельца голоса"
+  ],
+  "outputs": [
+    "<имя>.wav в $WORK/<проект>/out/"
+  ],
+  "run": "python3 modules/neural-tts-engine/run.py --mode design --text-file <сценарий.txt> --language Russian --instruct \"<описание голоса>\" --project <проект>",
+  "engine": "python",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "python3"
+    ]
+  },
+  "install_mb": 6000,
+  "platform": [
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "data-motion-graphics",
+  "family": "cadence-motion",
+  "title": "Кадры из таблицы CSV (панель Data Driver)",
+  "what": "Панель для редактора EffectCraft: по шаблонной композиции и таблице CSV собирает серию кадров с подставленными текстами, цветами и картинками.",
+  "when": [
+    "собери серию плашек с именами из таблицы",
+    "подставь данные из CSV в шаблон титра",
+    "нужно двадцать одинаковых кадров, отличающихся только текстом и цветом"
+  ],
+  "not_for": "Графики, диаграммы и инфографика с анимацией данных: их рисует движок Cadence (`engine/`) через навык cadence-motion; этот модуль работает только внутри EffectCraft и в движок не встроен.",
+  "capabilities": [
+    "csv-templates"
+  ],
+  "inputs": [
+    "шаблонная композиция в EffectCraft",
+    "CSV с заголовками (текст, цвет #RRGGBB, путь к картинке)"
+  ],
+  "outputs": [
+    "серия композиций в проекте EffectCraft",
+    "собранный файл панели `Data Driver.jsx` с контрольной суммой"
+  ],
+  "run": "node modules/data-motion-graphics/build.mjs --out \"$WORK/<проект>/out\"",
+  "engine": "node",
+  "deps": {
+    "system": [
+      "node"
+    ]
+  },
+  "install_mb": 0,
+  "platform": [
+    "macos",
+    "windows"
+  ],
+  "network": "none",
+  "keys": [],
+  "status": "beta"
+}

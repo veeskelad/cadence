@@ -1,0 +1,45 @@
+{
+  "id": "promo-showcase",
+  "family": "cadence-structures",
+  "title": "Промо-ролик продукта из настоящих экранов",
+  "what": "Короткий ролик 15–25 с о продукте из его настоящих экранов, текстов и цветов, с музыкой, эффектами, обложкой и подписью к посту.",
+  "when": [
+    "сделай промо-ролик моего сайта или приложения",
+    "хочу короткий ролик-анонс о том, что я сделал, чтобы выложить в соцсети",
+    "собери ролик из настоящего интерфейса моего продукта и напиши подпись к посту",
+    "нужен запуск-ролик на 20 секунд под музыку для моего проекта"
+  ],
+  "not_for": "ролик по готовой форме (чат, устройство на сцене, лонч кода) — cadence-structures; ролик в бит под трек — cadence-beat-reel; нарезка записи экрана или говорящего видео — cadence-cut; озвучка и сведение звука — cadence-sound",
+  "capabilities": [
+    "promo-video"
+  ],
+  "inputs": [
+    "папка проекта продукта или его страницы",
+    "по желанию свой трек и тон ролика (одним словом)"
+  ],
+  "outputs": [
+    "$WORK/<проект>/out/promo.mp4",
+    "$WORK/<проект>/out/promo.jpg (обложка)",
+    "$WORK/<проект>/out/share-copy.txt",
+    "promo-plan.md и composition-brief.md в $WORK/<проект>/"
+  ],
+  "run": "python3 modules/promo-showcase/scripts/analyze_music_cues.py <трек> --output-json $WORK/<проект>/build/assets/music/cues.json --output-md $WORK/<проект>/build/assets/music/cues.md",
+  "engine": "hyperframes",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "ffmpeg",
+      "node",
+      "python3"
+    ]
+  },
+  "install_mb": 350,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta"
+}

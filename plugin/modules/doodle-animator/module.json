@@ -1,0 +1,67 @@
+{
+  "id": "doodle-animator",
+  "family": "cadence-motion",
+  "title": "Рисованная анимация и иллюстрации кодом (дудл, 32 стиля, 2D и 3D)",
+  "what": "Иллюстрации, зацикленные анимации, рисующиеся на глазах картинки, фильмы, эксплейнеры и 3D-графика, нарисованные целиком кодом в одном из 32 стилей, со своей музыкой, звуковыми эффектами и субтитрами.",
+  "when": [
+    "нарисуй мне дудл-анимацию про эту идею",
+    "сделай картинку, которая рисуется на глазах, как таймлапс",
+    "нужен короткий фильм в стиле гравюры, акварели или бумажной аппликации",
+    "анимированный логотип или зацикленный стикер",
+    "объясни тему рисованной инфографикой",
+    "научи рисовать вот это пошагово"
+  ],
+  "not_for": [
+    "рисованная история по готовым страницам или тексту с подписями: модуль story-to-sketch-animation",
+    "объяснялка палочными человечками: модуль stick-figure-animator",
+    "анимация в стиле художников и эпох на Canvas с грамматиками объяснения: модуль calligraphy-art-motion",
+    "ролик в бит под свой трек, шоурил, заставка: навык cadence-motion (движок Cadence)"
+  ],
+  "capabilities": [
+    "doodle-motion"
+  ],
+  "inputs": [
+    "идея и короткая заметка-бриф (стиль, формат, длина, звук)",
+    "картинки человека для встраивания или образец стиля (по желанию)",
+    "собственные записи голоса (по желанию)"
+  ],
+  "outputs": [
+    "рабочий проект в work/",
+    "картинки PNG",
+    "MP4, GIF, WebM или самодостаточная HTML-страница",
+    "отчёты проверок"
+  ],
+  "run": "node modules/doodle-animator/engine/tools/scaffold.mjs \"$WORK/<проект>/doodle\" --film intro --format 9x16 --duration 12",
+  "engine": "node",
+  "deps": {
+    "node": "engine",
+    "system": [
+      "node",
+      "ffmpeg"
+    ]
+  },
+  "install_mb": 400,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "runtime",
+  "keys": [
+    "FIGMA_TOKEN"
+  ],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "engine",
+      "example",
+      "references",
+      "styles"
+    ],
+    "file": "doodle-animator-98b6a7562c08.zip",
+    "sha256": "98b6a7562c08088082acbbed9d1e286c40bb0d4ba56398ff21d45e06a1783ca0",
+    "bytes": 4679849,
+    "expanded_bytes": 10884173,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/doodle-animator-98b6a7562c08.zip"
+  }
+}

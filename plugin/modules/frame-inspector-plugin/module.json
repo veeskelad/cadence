@@ -1,0 +1,60 @@
+{
+  "id": "frame-inspector-plugin",
+  "family": "cadence-resolve",
+  "title": "Монтаж в Resolve по анализу кадров",
+  "what": "Собирает или перемонтирует таймлайн DaVinci Resolve по анализу клипов (что в кадре, лучшие дубли, безопасные точки реза), делает вертикальный кадр 9:16 с наводкой на героя и ставит маркеры.",
+  "when": [
+    "посмотри мой таймлайн в Резолве и скажи, что в клипах",
+    "собери монтаж из моих исходников по смыслу, а не по порядку файлов",
+    "переделай горизонтальный монтаж в вертикальный 9:16, чтобы герой оставался в кадре",
+    "расставь в Резолве маркеры по главам и сильным моментам",
+    "найди в моей библиотеке кадры, где закат и люди, и положи на таймлайн"
+  ],
+  "not_for": [
+    "Безопасная работа с проектом Resolve, импорт EDL, переходы и эффекты без анализа кадров: навык cadence-resolve",
+    "Сам анализ видео и поиск по библиотеке: модуль resolve-frame-pipeline (приложение, без него этот модуль не работает)",
+    "Нарезка пауз и дублей без Resolve: навык cadence-cut"
+  ],
+  "capabilities": [
+    "resolve-reframe"
+  ],
+  "inputs": [
+    "открытый проект DaVinci Resolve Studio",
+    "запущенное приложение анализа кадров (модуль resolve-frame-pipeline) с проанализированными клипами",
+    "список монтажа (edit list) для вертикального кадра"
+  ],
+  "outputs": [
+    "новый таймлайн в Resolve (исходный не трогается)",
+    "план вертикального кадра plan.json и скрипты b2_*.py",
+    "листы проверки кадров (контактные листы с рамкой кропа)"
+  ],
+  "run": "python3 modules/frame-inspector-plugin/tools/reframe.py <edit-list.json> <папка-результата> --width 1080 --height 1920 --subject mammal",
+  "engine": "python",
+  "deps": {
+    "system": [
+      "python3"
+    ]
+  },
+  "install_mb": 0,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "runtime",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "SECURITY.md",
+      "mcp.example.json",
+      "reference",
+      "tools"
+    ],
+    "file": "frame-inspector-plugin-968846944697.zip",
+    "sha256": "968846944697f01ccd63ea9fa12465b712aeace2ca7d70bfc47eeff02a52c5a0",
+    "bytes": 30918,
+    "expanded_bytes": 78512,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/frame-inspector-plugin-968846944697.zip"
+  }
+}

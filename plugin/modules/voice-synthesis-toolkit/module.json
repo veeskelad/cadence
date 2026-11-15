@@ -1,0 +1,40 @@
+{
+  "id": "voice-synthesis-toolkit",
+  "family": "cadence-sound",
+  "title": "Озвучка текста локальным голосом (русский, 23 языка)",
+  "what": "Нейросеть читает текст голосом по-русски и ещё на 22 языках, по желанию берёт тембр из 10-секундного образца; всё считается на этой машине и записывается в wav.",
+  "when": [
+    "озвучь этот текст по-русски",
+    "прочитай мой сценарий голосом, чтобы прикинуть тайминг",
+    "озвучь текст на английском выразительно"
+  ],
+  "not_for": "Музыка, эффекты и сведение голоса с музыкой: навык cadence-sound и scripts/voice_music_mix.py. Субтитры и распознавание речи: scripts/captions_whisper.py или модуль speech-transcriber. Озвучка на Mac быстрее и без NVIDIA через модуль mlx-audio-engine; голос по текстовому описанию вместо образца: модуль neural-tts-engine. Озвучка своим голосом по образцу записи (клон голоса) — основной модуль expressive-voice-synth (функция voice-clone).",
+  "capabilities": [
+    "voiceover"
+  ],
+  "inputs": [
+    "текст или файл с текстом (utf-8)",
+    "язык (ru по умолчанию)",
+    "по желанию: образец голоса 10 секунд, только с согласия владельца"
+  ],
+  "outputs": [
+    "<имя>.wav в $WORK/<проект>/out/ (24 кГц, моно, с неслышимым водяным знаком модели)"
+  ],
+  "run": "python3 modules/voice-synthesis-toolkit/run.py --text-file <сценарий.txt> --language ru --project <проект>",
+  "engine": "python",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "python3"
+    ]
+  },
+  "install_mb": 4000,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta"
+}

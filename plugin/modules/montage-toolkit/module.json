@@ -1,0 +1,68 @@
+{
+  "id": "montage-toolkit",
+  "family": "cadence-cut",
+  "title": "Монтаж говорящей головы по транскрипту",
+  "what": "Ведёт запись человека от расшифровки до готового монтажа: срезает паузы и ошибки по словам, планирует графику, берёт карточки из библиотеки на 406 вариантов и проверяет результат перед рендером общим движком.",
+  "when": [
+    "смонтируй мою запись: убери паузы и оговорки и добавь графику",
+    "убери из видео неудачные дубли и заикания по тексту",
+    "подбери оформление для объяснялки и поставь карточки по ходу речи",
+    "проверь план шортса и футаж до рендера"
+  ],
+  "not_for": [
+    "Просто убрать паузы без графики — scripts/silence_cut.py",
+    "шортсы из длинной записи — модуль shorts-studio",
+    "перебивки поверх речи в горизонтальном видео — модуль b-roll-toolkit",
+    "рилс из папки своих кадров — модуль reels-crafter",
+    "цвет и эффекты на живом видео — навык cadence-resolve"
+  ],
+  "capabilities": [
+    "talking-head-edit"
+  ],
+  "inputs": [
+    "запись человека (mp4, mov)",
+    "слова с временем (локальный Whisper) или готовый транскрипт",
+    "кратко: цель, площадка, длительность, бренд"
+  ],
+  "outputs": [
+    "транскрипты после срезов с новой временной шкалой",
+    "список решений по срезам",
+    "проект HyperFrames в work/<проект>/",
+    "готовый mp4 из общего движка Cadence"
+  ],
+  "run": "node modules/montage-toolkit/scripts/new-video.mjs <проект>",
+  "engine": "hyperframes",
+  "deps": {
+    "node": ".",
+    "system": [
+      "ffmpeg",
+      "ffprobe",
+      "node"
+    ]
+  },
+  "install_mb": 5,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "examples",
+      "package.json",
+      "scripts",
+      "style-library",
+      "style-templates",
+      "tests",
+      "workflows"
+    ],
+    "file": "montage-toolkit-d3d7c92a0772.zip",
+    "sha256": "d3d7c92a07721659c476334f2b7e10109bc4d2f5e5dcc999c88f5b8db721458e",
+    "bytes": 1280133,
+    "expanded_bytes": 4193974,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/montage-toolkit-d3d7c92a0772.zip"
+  }
+}

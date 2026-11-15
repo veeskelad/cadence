@@ -1,0 +1,71 @@
+{
+  "id": "story-to-sketch-animation",
+  "family": "cadence-structures",
+  "title": "Рисованная история из текста или страниц",
+  "what": "Тихий рисованный ролик 3:4 из истории (по-китайски) или готовых страниц: подписи от руки, 327 стилей и палитр, стиль по картинке-образцу, появление слоями или перелистывание.",
+  "when": [
+    "сделай рисованное видео из этой истории",
+    "оживи мои страницы комикса: пусть листаются как книга",
+    "нужен ролик в стиле цветных карандашей или акварели из моего рассказа",
+    "нарисуй историю в стиле вот этой картинки",
+    "покажи меню стилей рисунка"
+  ],
+  "not_for": [
+    "объяснялка палочными человечками: модуль stick-figure-animator",
+    "бумажная аппликация: модуль papercraft-explainer",
+    "дудл-анимация и росчерки: модуль doodle-animator",
+    "готовая озвучка и музыка под ролик: навык cadence-sound"
+  ],
+  "capabilities": [
+    "sketch-story"
+  ],
+  "inputs": [
+    "текст истории или страницы по порядку",
+    "стиль (номер, имя, палитра) или картинка-образец",
+    "готовые картинки от инструмента изображений агента"
+  ],
+  "outputs": [
+    "рабочая копия проекта в work/",
+    "план и задания на картинки",
+    "тихий MP4 1080×1440 (превью 720×960)"
+  ],
+  "run": "python3 modules/story-to-sketch-animation/scripts/new_workdir.py --project <проект>",
+  "engine": "remotion",
+  "deps": {
+    "node": ".",
+    "system": [
+      "node",
+      "ffmpeg",
+      "python3"
+    ]
+  },
+  "install_mb": 600,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "examples",
+      "package-lock.json",
+      "package.json",
+      "public",
+      "references",
+      "remotion.config.ts",
+      "scripts",
+      "src",
+      "storyboard.json",
+      "storyboard.uploaded.json",
+      "tsconfig.json"
+    ],
+    "file": "story-to-sketch-animation-7b22292d3734.zip",
+    "sha256": "7b22292d3734a721c712ba1b044603c688ba1dcba8c2697a80b3fbf2c0c7fc99",
+    "bytes": 4394142,
+    "expanded_bytes": 5329477,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/story-to-sketch-animation-7b22292d3734.zip"
+  }
+}

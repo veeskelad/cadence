@@ -1,0 +1,69 @@
+{
+  "id": "phantom-editor",
+  "family": "cadence-cut",
+  "title": "Говорящая голова в вертикальный ролик в именованном стиле",
+  "what": "Из сырой записи с дублями получается вертикальный ролик 1080x1920: лучшие дубли, титры по словам, сцены на слове, звук и проверенный B-roll в одном из готовых стилей.",
+  "when": [
+    "выбери лучшие дубли и собери из записи ролик с оформлением",
+    "сделай рилс из моей записи в стиле доски или кинетического документального",
+    "убери паузы, подбери дубли и добавь титры, сцены и звуки на слова",
+    "перемонтируй так же, как в том ролике, который я показал",
+    "добавь в разговорный ролик мемы, эффекты и B-roll на нужных словах"
+  ],
+  "not_for": "Только убрать паузы или только склеить дубли без оформления: scripts/silence_cut.py и scripts/takes_cut.py (cadence-cut). Готовый пакет публикации с вариантами под площадки: модуль effortless-cuts. Ролик кодом без съёмки по готовому сценарию: cadence-motion. Работа внутри проекта DaVinci Resolve: cadence-resolve.",
+  "capabilities": [
+    "styled-reel"
+  ],
+  "inputs": [
+    "сырая запись говорящего в камеру (mov, mp4)",
+    "по желанию: сценарий",
+    "имя стиля из docs/PLAYBOOK.md"
+  ],
+  "outputs": [
+    "$P/assets/talk.mp4 (1080x1920, голос -16 LUFS)",
+    "$P/reel.json",
+    "предпросмотр 720x1280",
+    "итоговый ролик и отчёты проверок"
+  ],
+  "run": "bash modules/phantom-editor/scripts/prep.sh <запись> <папка проекта>",
+  "engine": "hyperframes",
+  "deps": {
+    "python": "scripts/venvs/media.txt",
+    "system": [
+      "ffmpeg",
+      "node",
+      "python3"
+    ]
+  },
+  "install_mb": 2200,
+  "platform": [
+    "macos"
+  ],
+  "network": "runtime",
+  "keys": [
+    "GEMINI_API_KEY"
+  ],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "docs",
+      "examples",
+      "library",
+      "people-rules.example.json",
+      "people-rules.json",
+      "recipes",
+      "references",
+      "scripts",
+      "styles",
+      "taste.json",
+      "templates",
+      "tests",
+      "tools"
+    ],
+    "file": "phantom-editor-ab0f22960fbc.zip",
+    "sha256": "ab0f22960fbcffff3cf7d5c0c88c09eb6e5de58d487c1cca3c29f57b4239314d",
+    "bytes": 2729190,
+    "expanded_bytes": 5187806,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/phantom-editor-ab0f22960fbc.zip"
+  }
+}
