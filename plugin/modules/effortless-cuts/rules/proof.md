@@ -229,7 +229,7 @@ line's coordinates off the crop.
 
 A captured screenshot scaled into the 1080x960 split panel reads as blurry; on
 2026-10-02 every panel of the Promptive reel was rejected for it. Rebuild each
-product screen as a native Flick/Remotion scene at 1080x960:
+product screen as a native designed scene at 1080x960 (`rules/scenes.md`):
 
 - Use the real UI's own text, labels, names and numbers, copied from the
   capture. Restyle the frame (green grid ground, green-bordered cards), not the

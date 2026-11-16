@@ -13,7 +13,7 @@ Run from the Cadence root (module dependencies and the engine are installed once
 python3 modules/video-editing-skills/styles/picture-stack/build.py work/<project>/picture-stack.json
 ```
 
-A spec is required: the module ships no sample photos or footage, so give your own files under `assets` with the keys listed below (see `example.json`). `--prepare-only` builds an editable composition without rendering. Python 3.9+, ffmpeg/ffprobe and Node.js 22+ are required. GSAP comes from the module dependencies, rendering uses the shared Cadence engine. No transcript or API key is needed for these short templates. The result lands in `work/<project>/out/`. [Spec and your own footage](five-photo-styles.md).
+A spec is required: the module ships no sample photos or footage, so give your own files under `assets` with the keys listed below (see `example.json`). `--prepare-only` builds an editable composition without rendering. Python 3.9+, ffmpeg/ffprobe and Node.js 22+ are required. Animation runs on the Cadence Tween engine shipped with Cadence, rendering uses the shared Cadence engine. No transcript or API key is needed for these short templates. The result lands in `work/<project>/out/`. [Spec and your own footage](five-photo-styles.md).
 
 ## Adapt the treatment
 

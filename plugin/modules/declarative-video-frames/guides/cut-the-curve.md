@@ -8,7 +8,7 @@ Five SEAM techniques, one principle: **cut at peak velocity, match direction and
 on both sides of the cut** — plus the two in-scene techniques (§6 arrivals, §7 slides).
 The seam LAW — vector law, the current, the ledger, the Seam Gate — lives in
 `motion-doctrine`; read it first. This skill is the parameters and mechanics.
-All GSAP code templates (worker + registry): `examples/gsap-implementation.md`.
+All Cadence Tween code templates (worker + registry): `examples/cadence-tween-implementation.md`.
 
 ## Catalog
 
@@ -252,6 +252,6 @@ Rules:
 
 ## Code
 
-All GSAP templates — worker-authored versions, registry `gsap_template`s, the combined
+All Cadence Tween templates — worker-authored versions, registry `gsap_template`s, the combined
 cut-the-curve + zoom, waterfall DOM/CSS/JS, rack-focus — live in
-`examples/gsap-implementation.md`.
+`examples/cadence-tween-implementation.md`.

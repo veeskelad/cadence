@@ -1,4 +1,4 @@
-"""Связь модуля с Cadence: общий движок рендера, GSAP из зависимостей модуля, папки результата.
+"""Связь модуля с Cadence: общий движок рендера, движок анимации Cadence Tween, папки результата.
 
 Сети здесь нет. Движок ставится один раз на компьютер (`python3 scripts/engine_setup.py install`, с согласия
 человека), зависимости модуля — `python3 scripts/module_setup.py install video-editing-skills`.
@@ -29,11 +29,11 @@ def hyperframes_cmd():
              'установка берёт сеть (около 300 МБ), только с согласия человека: python3 scripts/engine_setup.py install')
 
 
-def gsap_path():
-    p = KIT / 'node_modules' / 'gsap' / 'dist' / 'gsap.min.js'
+def tween_path():
+    """Движок анимации Cadence (engine/lib/cadence-tween.js): лежит в выпуске, ставить ничего не нужно."""
+    p = ROOT / 'engine' / 'lib' / 'cadence-tween.js'
     if not p.is_file():
-        sys.exit(f'нет GSAP ({p}): python3 scripts/module_setup.py install video-editing-skills '
-                 '(сеть, только с согласия человека)')
+        sys.exit(f'нет движка анимации ({p}): выпуск Cadence неполный, переустановить плагин')
     return p
 
 

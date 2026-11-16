@@ -1,23 +1,104 @@
-MIT License
+ЛИЦЕНЗИЯ CADENCE
 
-Copyright (c) 2026 Cadence authors
+Версия 1.0, действует с выпуска Cadence 1.10.1 (16 ноября 2026 года).
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+© 2026 Cadence. Все права защищены.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Cadence (далее «Набор») — скиллы, инструкции, модули, движок анимации Cadence Tween, шаблоны, библиотеки
+блоков, звуки, скрипты, документация и любые их части в составе этого выпуска. Набор не является свободным
+или открытым программным обеспечением. То, что файлы Набора можно прочитать в выпуске или в репозитории,
+не даёт прав сверх перечисленных ниже.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. ЧТО РАЗРЕШЕНО
 
-Third-party components keep their own licenses: see THIRD-PARTY-NOTICES.md.
+1.1. Лицо, которое получило Набор из официального источника (сайт Cadence, официальный плагин, официальный
+выпуск), может установить его на своих устройствах и использовать для создания собственных роликов, кадров,
+изображений и звука, в том числе для клиентов и в коммерческих целях.
+
+1.2. Возможности, которые относятся к платной подписке (Cadence Pro и Cadence Studio), можно использовать
+только пока подписка действует и только тем, кому выдан ключ доступа.
+
+1.3. Результаты работы Набора (ролики, рендеры, кадры, файлы проекта) принадлежат их автору. Лицензия
+не ограничивает их использование, продажу и публикацию. Звуки и демо-бит Набора можно использовать
+в своих роликах без отдельного разрешения.
+
+2. ЧТО ЗАПРЕЩЕНО
+
+Без письменного разрешения правообладателя нельзя:
+
+2.1. распространять, публиковать, продавать, сдавать в аренду, сублицензировать Набор или его части,
+выкладывать их в открытый доступ, в том числе в изменённом виде;
+
+2.2. включать Набор или его части (скиллы, модули, шаблоны, движок, библиотеки, звуки отдельно от роликов)
+в другие продукты, наборы, курсы, шаблоны и сервисы;
+
+2.3. создавать на основе Набора производные наборы и продукты для передачи другим лицам; изменять Набор
+для собственного использования можно;
+
+2.4. декомпилировать, деминифицировать, восстанавливать исходный код и разбирать устройство движка
+Cadence Tween и других собранных частей Набора, кроме случаев, когда это прямо разрешено применимым
+законом без возможности запрета договором;
+
+2.5. использовать Набор или его части для создания конкурирующего продукта: набора для агентов, движка
+или библиотеки анимации, конструктора анимации, редактора роликов или сервиса с похожими возможностями;
+
+2.6. передавать ключи доступа, обходить проверку доступа к платным возможностям;
+
+2.7. удалять или изменять уведомления о правах, эту лицензию и сведения о чужих компонентах;
+
+2.8. использовать Набор для обучения или донастройки моделей машинного обучения и для наполнения наборов
+данных.
+
+3. ЧУЖИЕ КОМПОНЕНТЫ
+
+3.1. Части Набора, созданные другими авторами, распространяются по своим лицензиям. Их список, лицензии
+и авторы — в THIRD-PARTY-NOTICES.md и в файлах уведомлений модулей. Эта лицензия не ограничивает права,
+которые дают лицензии этих компонентов.
+
+3.2. Внешние сервисы и программы, которые Набор вызывает или предлагает установить, работают по своим
+условиям (THIRD-PARTY-SERVICES.md).
+
+4. ПРЕЖНИЕ ВЕРСИИ
+
+4.1. Выпуски Cadence до версии 1.10 включительно распространялись по лицензии MIT и остаются под ней.
+Эта лицензия действует для версии 1.10.1 и всех следующих.
+
+5. ПРАВА ПРАВООБЛАДАТЕЛЯ И ПРЕКРАЩЕНИЕ
+
+5.1. Все права на Набор, не переданные прямо этой лицензией, остаются у правообладателя.
+
+5.2. Право использования прекращается автоматически при нарушении любого условия лицензии. После прекращения
+Набор нужно удалить вместе со всеми копиями. Уже созданные ролики остаются у автора.
+
+6. ОТКАЗ ОТ ГАРАНТИЙ И ОТВЕТСТВЕННОСТИ
+
+6.1. Набор предоставляется «как есть», без гарантий пригодности для какой-либо цели и без гарантии
+отсутствия ошибок.
+
+6.2. Правообладатель не отвечает за прямые и косвенные убытки от использования или невозможности
+использования Набора в пределах, допустимых применимым законом.
+
+7. ПРОЧЕЕ
+
+7.1. Если какое-либо условие окажется недействительным, остальные условия продолжают действовать.
+
+7.2. Разрешения, лицензии для команд и компаний, вопросы — через официальные контакты Cadence (SUPPORT.md).
+
+----------------------------------------------------------------------------------------------------------
+
+CADENCE LICENSE (English summary)
+
+Version 1.0, effective from Cadence 1.10.1 (November 16, 2026). © 2026 Cadence. All rights reserved.
+
+Cadence is proprietary. The Russian text above is the governing version; this summary is for convenience.
+If you obtained Cadence from an official source, you may install it on your devices and use it to create
+your own videos, frames, images and audio, including for clients and commercial work; your output is yours.
+Paid features (Cadence Pro, Cadence Studio) may be used only while your subscription is active. Without
+prior written permission you may not redistribute, publish, sell or sublicense Cadence or any part of it,
+include its parts in other products, distribute derivative kits, decompile, de-minify or reverse engineer
+the Cadence Tween engine or other built parts (except where applicable law expressly permits this regardless
+of contract), use Cadence to build a competing product, share access keys or bypass access checks, remove
+notices, or use Cadence to train machine learning models. Third-party components remain under their own
+licenses (THIRD-PARTY-NOTICES.md). Releases up to and including 1.10 were MIT-licensed and remain so.
+The license terminates automatically on breach. Provided "as is", without warranty; liability is excluded
+to the extent permitted by law.

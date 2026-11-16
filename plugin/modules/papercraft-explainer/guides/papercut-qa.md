@@ -6,7 +6,7 @@ Compare stills for style, not content, against the Style DNA and the storyboard.
 
 ## Preflight
 
-- Install: **Standard** or Full. Stills need a scaffolded project with Remotion, and the contact sheets need Python with numpy and Pillow (`$PAPERCUT_PY`). Missing pieces: `papercut-setup.md`.
+- Install: **Standard** or Full. Stills need a scaffolded project, the module's packages and the Cadence engine (`qa.sh` builds `out/hf` and takes engine snapshots), and the contact sheets need Python with numpy and Pillow (`$PAPERCUT_PY`). Missing pieces: `papercut-setup.md`.
 - Library: `$PAPERCUT_LIB`, which is `modules/papercraft-explainer/library` (absolute path in Cadence).
 - Read first: Style DNA in `style-guide.md` section 2, and the backdrop sheet `library/papercut/public/bg/backdrops/_sheet.jpg`. Each image costs about 0.7-1.5k tokens, so open only what the step needs.
 - For density, `frame-breakdown.md` ("Pacing stats" at the end): scenes average 2.8 s, 2-4 discrete visual events per scene, one every 0.4-0.8 s on a stressed word, a new caption page about every 0.6 s. Copy the density, not the content.
@@ -21,7 +21,7 @@ $PAPERCUT_LIB/tools/qa.sh NAME FROM-TO NTH [SCALE=0.3] [COLS=9]
 
 - Use 4-6 timestamps per check. For a scene, NTH is about its length in frames divided by 4. Leave `FROM-TO` out for the whole reel and raise NTH.
 - The output is `out/qa/NAME_0.jpg` (and `_1`, `_2` for longer ranges), at most 45 frames per sheet. Read the sheet; keep sheets small.
-- One QA command per scene, and never two renders at once. Keep fixes to two rounds per scene.
+- One QA command per scene, and never two renders at once (the engine also queues them). Keep fixes to two rounds per scene.
 - Check against the storyboard: the scene's frame 0, its key events on their words, nothing clipped, nothing covering the banner or caption bands.
 
 ## 2. Checklist

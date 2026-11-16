@@ -3,11 +3,12 @@
 The code, docs, sound effects, music beds and textures in this repository are MIT-licensed (see `LICENSE`).
 The items below are not ours, or need a note.
 
-## Remotion
+## Renderer and packages
 
-The video pipeline runs on [Remotion](https://www.remotion.dev). Remotion is source-available under its own licence, not MIT.
-It is free for individuals and small teams; companies above its size threshold need a paid licence. Read
-<https://www.remotion.dev/license> before using this commercially. Nothing from Remotion is vendored here; `npm install` fetches it.
+Episodes render with the Cadence engine (HyperFrames, Apache-2.0), shared by the whole set and installed by
+`scripts/engine_setup.py`. The module's own packages are installed by `scripts/module_setup.py`, nothing is vendored:
+React and React DOM (MIT), esbuild (MIT), TypeScript (Apache-2.0), puppeteer-core (Apache-2.0, audio render and
+page captures).
 
 ## Fonts
 

@@ -2,9 +2,9 @@
 (no samples, no licensing issues).
 
 usage:
-    python gen_audio.py --out PROJECT/public/SLUG                 # SFX only
-    python gen_audio.py --out PROJECT/public/SLUG --plan plan.json
-    python gen_audio.py --out PROJECT/public/SLUG --plan "intro:8.7,card:2.2,play:52.6,finale:13"
+    python gen_audio.py --out VIDEO/assets                 # SFX only
+    python gen_audio.py --out VIDEO/assets --plan plan.json
+    python gen_audio.py --out VIDEO/assets --plan "intro:8.7,card:2.2,play:52.6,finale:13"
 
 plan = ordered list of [style, seconds] (JSON file or "style:sec,..." string).
 Styles: intro, play, tense, mystery, hope, finale, card (silence + orchestral hit).
@@ -467,7 +467,7 @@ def load_plan(arg):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", required=True, help="folder inside public/, e.g. my-project/public/my-video")
+    ap.add_argument("--out", required=True, help="assets folder of the video, e.g. work/my-project/stickman/my-video/assets")
     ap.add_argument("--plan", help="music plan (JSON file or style:sec,...)")
     ap.add_argument("--no-sfx", action="store_true")
     a = ap.parse_args()

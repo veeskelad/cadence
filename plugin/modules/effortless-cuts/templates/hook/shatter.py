@@ -3,7 +3,7 @@
 
 Written for this project (see NOTICE.md). Output follows the conventions of
 `scripts/compose.py`: a CSS block, a list of `<div class="clip">` elements and
-a list of GSAP statements appended to the composition's `tl`. Composing the
+a list of Cadence Tween statements appended to the composition's `tl`. Composing the
 word inside the HyperFrames composition keeps the caption layer on top
 (hard rule 20).
 
@@ -271,8 +271,8 @@ def splice(html, fragment):
     html = html.replace("    </style>", fragment["css"] + "    </style>", 1)
     html = html.replace("    </div>\n\n    <script>",
                         "\n".join(fragment["clips"]) + "\n    </div>\n\n    <script>", 1)
-    return html.replace('      window.__timelines["main"] = tl;',
-                        "\n".join(fragment["anims"]) + '\n      window.__timelines["main"] = tl;', 1)
+    return html.replace('      cadence.mount("main", tl);',
+                        "\n".join(fragment["anims"]) + '\n      cadence.mount("main", tl);', 1)
 
 
 def main():

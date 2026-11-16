@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080, height=1080" />
     <title>strudel code video</title>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="/lib/cadence-tween.js"></script>
     <script src="data/events.js"></script>
     <style>
       @font-face { font-family: "JetBrains Mono"; font-weight: 500; src: url("assets/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); }
@@ -57,7 +57,7 @@
   </head>
   <body>
     <!-- build-data.mjs stamps the root data-duration and the audio start/length from the recording -->
-    <div id="root" data-composition-id="main" data-start="0" data-duration="60" data-width="1080" data-height="1080">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="60" data-width="1080" data-height="1080" data-no-timeline>
       <div id="stage">
         <div id="tilt"><div id="cam"><div id="sheet"><div id="caret"></div></div></div></div>
         <div id="fflash" data-layout-allow-occlusion data-layout-allow-overlap></div>
@@ -70,9 +70,10 @@
     </div>
     <script src="app.js"></script>
     <script>
+      var cadence = window.cadence.scope(document);
       Promise.all([document.fonts.ready, document.fonts.load('400 100px "Rubik Mono One"'), document.fonts.load('700 20px "JetBrains Mono"')]).then(() => {
         const tl = window.__svInit();
-        window.__timelines["main"] = tl;
+        cadence.mount("main", tl);
       });
     </script>
   </body>

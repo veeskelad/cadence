@@ -1,11 +1,12 @@
 # Сторонние компоненты
 
-Cadence распространяется по лицензии MIT (`LICENSE.txt`). Чужие компоненты внутри набора
+Cadence с версии 1.10.1 распространяется по собственной лицензии (`LICENSE.txt`), выпуски до 1.10 — по MIT. Чужие компоненты внутри набора
 сохраняют свои лицензии. Их тексты лежат рядом с самими компонентами.
 
 | Компонент | Где | Лицензия | Текст лицензии |
 |---|---|---|---|
 | three.js | `engine/vendor/three/` | MIT, © three.js authors | `engine/vendor/three/LICENSE` |
+| shaders 4.0.0 (WebGPU-шейдеры для блоков библиотеки) | `engine/lib/shaders.iife.js` | MIT, © 2026 Shader Effects Inc. | `engine/lib/shaders.THIRD-PARTY-LICENSES.txt` |
 | Literata | `engine/fonts/literata/` | SIL Open Font License 1.1 | `engine/fonts/literata/LICENSE` |
 | Manrope | `engine/fonts/manrope/` | SIL Open Font License 1.1 | `engine/fonts/manrope/LICENSE` |
 | JetBrains Mono | `engine/fonts/jetbrains-mono/` | SIL Open Font License 1.1 | `engine/fonts/jetbrains-mono/LICENSE` |
@@ -39,17 +40,17 @@ Cadence распространяется по лицензии MIT (`LICENSE.txt
 | HyperFrames | `npm --prefix engine install` | Apache 2.0 |
 | Chrome без окна (рендер) | скачивает HyperFrames при установке | лицензия Chromium и Google |
 | Whisper (субтитры, по желанию) | ставишь сам: `pip install openai-whisper` или `faster-whisper` | MIT |
-| Навыки HyperFrames и Remotion (по желанию) | `npx skills add …` из первоисточника | у каждого своя; Remotion бесплатен для одиночек и команд до 3 человек |
+| Навыки HyperFrames (по желанию) | `npx skills add …` из первоисточника | Apache 2.0 |
 
 ## Модули
 
-Модули `modules/<id>/` — часть Cadence под той же лицензией MIT. Чужие части, которые в них
+Модули `modules/<id>/` — часть Cadence под той же лицензией Cadence. Чужие части, которые в них
 остались, перечислены в файлах модуля: `NOTICE*`, `THIRD_PARTY*`, `CREDITS.md`, `licenses/` и
 лицензии шрифтов рядом со шрифтами. Зависимости модулей (pip, npm, модели) в архив не входят и
-ставятся `python3 scripts/module_setup.py install <id>` по согласию; у каждой своя лицензия. Модель
-вырезки человека в `video-editing-skills` (RobustVideoMatting) — GPL-3.0, скачивается только флагом
-`--allow-download`. Модуль `shorts-studio` рендерит через Remotion: бесплатен для одиночек и команд
-до 3 человек.
+ставятся `python3 scripts/module_setup.py install <id>` по согласию; у каждой своя лицензия. Вырезка
+человека в `video-editing-skills` на macOS — встроенная сегментация Vision, на Linux — MediaPipe 0.10.21
+(Apache-2.0, модель внутри пакета).
+Рендер всех модулей — общий движок HyperFrames.
 
 ## Источники знаний
 
@@ -61,7 +62,7 @@ Cadence распространяется по лицензии MIT (`LICENSE.txt
 ## Звуки и музыка
 
 Звуки в `sounds/` и демо-бит синтезированы кодом этого набора (`scripts/make_sounds.py`,
-`scripts/demo_beat.py`) и распространяются по MIT вместе с ним. Чужой музыки в наборе нет.
+`scripts/demo_beat.py`) и распространяются вместе с ним по лицензии Cadence; в своих роликах их можно использовать без отдельного разрешения. Чужой музыки в наборе нет.
 Права на трек, который ты подкладываешь сам, — на тебе. Для публикации бери свой трек или
 трек из библиотеки площадки.
 

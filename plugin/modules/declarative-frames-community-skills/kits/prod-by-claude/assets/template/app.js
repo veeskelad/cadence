@@ -628,9 +628,9 @@ window.__svInit = () => {
     fadeout.style.opacity = SQ.signoff ? inOut((t - ENDING.fade[0]) / (ENDING.fade[1] - ENDING.fade[0])).toFixed(3) : inOut((t - (DUR - 0.8)) / 0.8).toFixed(3);
   };
 
-  // paint from a setter GSAP writes on every render: seek() suppresses onUpdate callbacks by default
+  // paint from a setter Cadence Tween writes on every render: seek() suppresses onUpdate callbacks by default
   const P = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; paint(v); } };
-  const tl = gsap.timeline({ paused: true });
+  const tl = cadence.timeline({ paused: true });
   tl.fromTo(P, { t: 0 }, { t: DUR, duration: DUR, ease: "none", lazy: false }, 0);
   paint(0);
   return tl;

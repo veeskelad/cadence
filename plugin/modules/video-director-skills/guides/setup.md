@@ -11,10 +11,10 @@ workflow, see **[EXECUTION.md](execution.md)**.
 
 A pipeline that turns a talking-head clip (or a voiceover-only script) into
 a branded, captioned, graphics-rich video — 9:16 shorts, 16:9 long-form, or
-faceless motion-graphics reels. Everything renders through Remotion; ffmpeg
-handles cutting/muxing only (this machine's ffmpeg may be a minimal build
-with no libass — captions and overlays render inside Remotion, never via
-ffmpeg subtitle-burn).
+faceless motion-graphics reels. Everything renders through the Cadence engine
+(HyperFrames, `engine/`); ffmpeg handles cutting/muxing only (this machine's
+ffmpeg may be a minimal build with no libass — captions and overlays render
+inside the composition, never via ffmpeg subtitle-burn).
 
 ## Prerequisites (macOS)
 
@@ -27,19 +27,16 @@ ffmpeg subtitle-burn).
 
 ## Install
 
-Through the Cadence module setup, from the Cadence root. Nothing is installed without the person's consent (network, about 3 GB: WhisperX with torch, Remotion, a browser for Remotion on its first render).
+Through the Cadence module setup, from the Cadence root. Nothing is installed without the person's consent (network, about 3 GB: WhisperX with torch; the composition packages React, esbuild and local fonts are about 30 MB). The renderer is the shared Cadence engine: `python3 scripts/engine_setup.py status`.
 
 ```bash
 python3 scripts/module_setup.py status video-director-skills     # no network
 python3 scripts/module_setup.py install video-director-skills    # with consent
 ```
 
-This puts the Python packages (`requirements.txt`) and the Remotion packages of the main route (`routes/video-edit-longform/remotion`) into the shared cache. The two other routes use the same packages: link them once.
+This puts the Python packages (`requirements.txt`) and the composition packages (`hyperframes/package.json`: React, esbuild, @fontsource fonts) into the shared cache; all three routes build with them (`hyperframes/build.mjs`).
 
 ```bash
-for r in video-edit motion-design-edit; do
-  ln -s ../../video-edit-longform/remotion/node_modules modules/video-director-skills/routes/$r/remotion/node_modules
-done
 PY="$(python3 scripts/module_setup.py python video-director-skills | python3 -c 'import sys,json;print(json.load(sys.stdin)["python"])')"; export VIDEO_DIRECTOR_PYTHON="$PY"
 ```
 
@@ -105,9 +102,9 @@ Don't just drop the two chosen colors in and stop — build a coherent set:
 
 Edit these token files directly (they're the single source of truth — no
 separate brand config the templates read from):
-- `modules/video-director-skills/routes/video-edit/remotion/src/templates/hfBrand.ts` (9:16 shorts)
-- `modules/video-director-skills/routes/video-edit-longform/remotion/src/motion/tokens.ts` (16:9 long-form)
-- `modules/video-director-skills/routes/motion-design-edit/remotion/src/templates/paperBrand.ts`'s
+- `modules/video-director-skills/routes/video-edit/hyperframes/src/templates/hfBrand.ts` (9:16 shorts)
+- `modules/video-director-skills/routes/video-edit-longform/hyperframes/src/motion/tokens.ts` (16:9 long-form)
+- `modules/video-director-skills/routes/motion-design-edit/hyperframes/src/templates/paperBrand.ts`'s
   `visual-os` style, if the user wants that option too — leave the `paper`
   style alone, it's an intentionally separate look (see EXECUTION.md's
   "Visual style" section)
@@ -136,8 +133,9 @@ $WORK/<name>/
 
 ## Verify the install
 ```bash
-cd modules/video-director-skills/routes/video-edit/remotion && npx tsc --noEmit   # templates typecheck
-node -e 'console.log(require("./node_modules/remotion/package.json").version)'  # Remotion present
+bash modules/video-director-skills/routes/video-edit/scripts/setup.sh          # ffmpeg, node, packages, engine
+node modules/video-director-skills/hyperframes/build.mjs modules/video-director-skills/routes/video-edit/hyperframes \
+  --composition StyleShowcase --out /tmp/vd-showcase                            # templates bundle and build
 ```
 
 Then follow **[EXECUTION.md](execution.md)** to edit your first video.
@@ -162,7 +160,7 @@ it up.
 
 | Thing | Where | Notes |
 |---|---|---|
-| **Mascot clips** | drop your own in `$WORK/<name>/refs/`, then stage to `modules/video-director-skills/routes/video-edit/remotion/public/mascots/` | animated `.mp4`s used by `hf_mascot` via `hf_clips`. A still `claude-mascot.png` in `remotion/public/` is used by `hf_mascot` / `hf_callout` when no clips are given — supply your own, or those beats render without a mascot. |
+| **Mascot clips** | drop your own in `$WORK/<name>/refs/`, then stage to `modules/video-director-skills/routes/video-edit/hyperframes/public/mascots/` | animated `.mp4`s used by `hf_mascot` via `hf_clips`. A still `claude-mascot.png` in `hyperframes/public/` is used by `hf_mascot` / `hf_callout` when no clips are given — supply your own, or those beats render without a mascot. |
 | **SFX** | `assets/sfx/` (module root) | Filenames are the contract (extension matters — scripts look for these exact names): `hook-whoosh.wav`, `hook-boom.wav`, `flare-hit.mp3`, `card-pop.wav`, and optionally `timeline-rise.wav`, `caption-tick.wav`, `caption-write.wav`, `click.wav`. None ship; a cue is silently skipped (not an error) if its file is missing. |
 | **Brand logos** | `modules/video-director-skills/routes/video-edit{,-longform}/assets/logos/` | None ship. Put the person's own logo files here; `render.sh` does not download anything. |
 | **Music** | `modules/video-director-skills/routes/video-edit/music/*.mp3` | No bed ships — add your own **licensed** tracks (naming spec in `knowledge/music_library.md`). An empty dir renders unscored, not broken. |

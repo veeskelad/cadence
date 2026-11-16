@@ -7,8 +7,8 @@ actually spoken in the recording and rewrites the timeline with the real times.
 Scenes and beats anchored to cue indices then follow the voice automatically.
 
 usage:
-    python align_voice.py --timeline src/slug/timeline.json --audio public/slug/voice.wav --out src/slug [--lang it]
-    python align_voice.py --timeline src/slug/timeline.json --srt voice_transcript.srt --out src/slug
+    python align_voice.py --timeline <video>/src/timeline.json --audio <video>/assets/voice.wav --out <video>/src [--lang it]
+    python align_voice.py --timeline <video>/src/timeline.json --srt voice_transcript.srt --out <video>/src
 
 --audio  transcribes with word timestamps (pip install faster-whisper, or openai-whisper)
 --srt    uses an existing transcript of the recording (any segmentation; less precise)
@@ -18,7 +18,7 @@ character by character (difflib), so small reading changes, skipped or added
 words and transcription errors do not break the match. Each cue's start/end is
 read from the time of the aligned characters.
 
-Writes timeline.ts / timeline.json (the old plan is kept as timeline.planned.json)
+Writes timeline.js / timeline.json (the old plan is kept as timeline.planned.json)
 and voice.aligned.srt; prints how much each part moved and any chapter cards that
 no longer have a pause in the voice.
 """
@@ -32,7 +32,7 @@ import shutil
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from parse_input import TS_HEADER, fmt_srt, parse_srt  # noqa: E402
+from parse_input import JS_HEADER, fmt_srt, parse_srt  # noqa: E402
 
 
 def transcribe_words(path, lang, model):
@@ -190,8 +190,8 @@ def main():
         shutil.copy2(tj, keep)
     with open(tj, "w", encoding="utf-8") as fh:
         json.dump(tl, fh, ensure_ascii=False, indent=1)
-    with open(os.path.join(a.out, "timeline.ts"), "w", encoding="utf-8") as fh:
-        fh.write(TS_HEADER + json.dumps(tl, ensure_ascii=False, indent=2) + ";\n")
+    with open(os.path.join(a.out, "timeline.js"), "w", encoding="utf-8") as fh:
+        fh.write(JS_HEADER + json.dumps(tl, ensure_ascii=False, indent=2) + ";\n")
     with open(os.path.join(a.out, "voice.aligned.srt"), "w", encoding="utf-8") as fh:
         fh.write("\n".join(f"{c['i'] + 1}\n{fmt_srt(c['start'])} --> {fmt_srt(c['end'])}\n{c['text']}\n" for c in new))
 

@@ -55,10 +55,10 @@
       "requirements.txt",
       "run.py"
     ],
-    "file": "motion-graphics-presets-d727fda11d84.zip",
-    "sha256": "d727fda11d847372a54ed8ecb3f6788e69d8d7b17bcf8e66106a18574a7c3e61",
-    "bytes": 10033289,
-    "expanded_bytes": 12472542,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/motion-graphics-presets-d727fda11d84.zip"
+    "file": "motion-graphics-presets-d0901420e9a8.zip",
+    "sha256": "d0901420e9a8999aa39f40440e7771c33ea9d67ebe88e51aaeb132e58c6885af",
+    "bytes": 9857076,
+    "expanded_bytes": 12011538,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/motion-graphics-presets-d0901420e9a8.zip"
   }
 }

@@ -223,11 +223,11 @@
           "tests",
           "toolchain"
         ],
-        "file": "cinematic-motion-skill-30bfdc5bbadf.zip",
-        "sha256": "30bfdc5bbadf2c1bb041c9120fa27cf2a5529f3357f04e5623ec03214f5e09a9",
-        "bytes": 3702446,
-        "expanded_bytes": 7219467,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/cinematic-motion-skill-30bfdc5bbadf.zip"
+        "file": "cinematic-motion-skill-8f99aaf9b531.zip",
+        "sha256": "8f99aaf9b5318168ef7c1822a26e92093172610d70bda926656857a22d5675bc",
+        "bytes": 3702309,
+        "expanded_bytes": 7219191,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/cinematic-motion-skill-8f99aaf9b531.zip"
       },
       "primary_for": [
         "voice-film"
@@ -292,11 +292,11 @@
           "run.py",
           "styles"
         ],
-        "file": "code-to-film-engine-fb05d75b57b6.zip",
-        "sha256": "fb05d75b57b6c53a73a39e21134b144bc9b5b2ee573bb0b0b94e34f108fc814d",
-        "bytes": 3765321,
-        "expanded_bytes": 9805499,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/code-to-film-engine-fb05d75b57b6.zip"
+        "file": "code-to-film-engine-6d3ec40177a4.zip",
+        "sha256": "6d3ec40177a4db3398bf29562b31c75fdee03d17d89beee2582f5f7f78074cff",
+        "bytes": 3763149,
+        "expanded_bytes": 9801218,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/code-to-film-engine-6d3ec40177a4.zip"
       },
       "primary_for": [
         "style-mini-film"
@@ -445,11 +445,11 @@
           "scripts",
           "themes"
         ],
-        "file": "declarative-video-frames-87e776e9f558.zip",
-        "sha256": "87e776e9f558dc4140c63837a8cbed7b0d84574df2ed3180b1baf92394f9145f",
-        "bytes": 47648515,
-        "expanded_bytes": 112509752,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/declarative-video-frames-87e776e9f558.zip"
+        "file": "declarative-video-frames-5a51f59a0155.zip",
+        "sha256": "5a51f59a015518e51665fe4bcd84f924b712541cc5f2fc436706e7f3db3712b6",
+        "bytes": 34738486,
+        "expanded_bytes": 59358823,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/declarative-video-frames-5a51f59a0155.zip"
       },
       "primary_for": [
         "block-library"
@@ -490,7 +490,7 @@
         "отчёты проверок"
       ],
       "run": "node modules/doodle-animator/engine/tools/scaffold.mjs \"$WORK/<проект>/doodle\" --film intro --format 9x16 --duration 12",
-      "engine": "node",
+      "engine": "hyperframes",
       "deps": {
         "node": "engine",
         "system": [
@@ -498,7 +498,7 @@
           "ffmpeg"
         ]
       },
-      "install_mb": 400,
+      "install_mb": 260,
       "platform": [
         "macos",
         "linux",
@@ -516,11 +516,11 @@
           "references",
           "styles"
         ],
-        "file": "doodle-animator-98b6a7562c08.zip",
-        "sha256": "98b6a7562c08088082acbbed9d1e286c40bb0d4ba56398ff21d45e06a1783ca0",
-        "bytes": 4679849,
-        "expanded_bytes": 10884173,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/doodle-animator-98b6a7562c08.zip"
+        "file": "doodle-animator-73717c26bfef.zip",
+        "sha256": "73717c26bfefc30c0b647ecaabc3939472ce61a6617fad33b78f0d944e96e3dd",
+        "bytes": 4654069,
+        "expanded_bytes": 10773440,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/doodle-animator-73717c26bfef.zip"
       },
       "primary_for": [
         "doodle-motion"
@@ -954,14 +954,13 @@
       "run": "node modules/montage-toolkit/scripts/new-video.mjs <проект>",
       "engine": "hyperframes",
       "deps": {
-        "node": ".",
         "system": [
           "ffmpeg",
           "ffprobe",
           "node"
         ]
       },
-      "install_mb": 5,
+      "install_mb": 0,
       "platform": [
         "macos",
         "linux",
@@ -980,11 +979,11 @@
           "tests",
           "workflows"
         ],
-        "file": "montage-toolkit-d3d7c92a0772.zip",
-        "sha256": "d3d7c92a07721659c476334f2b7e10109bc4d2f5e5dcc999c88f5b8db721458e",
-        "bytes": 1280133,
-        "expanded_bytes": 4193974,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/montage-toolkit-d3d7c92a0772.zip"
+        "file": "montage-toolkit-cef4f8339062.zip",
+        "sha256": "cef4f8339062ac0a70caa98ac6eb189aceba99f2edd8e15c41beaae6ffb04642",
+        "bytes": 1279264,
+        "expanded_bytes": 4190690,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/montage-toolkit-cef4f8339062.zip"
       },
       "primary_for": [
         "talking-head-edit"
@@ -1097,11 +1096,11 @@
           "requirements.txt",
           "run.py"
         ],
-        "file": "motion-graphics-presets-d727fda11d84.zip",
-        "sha256": "d727fda11d847372a54ed8ecb3f6788e69d8d7b17bcf8e66106a18574a7c3e61",
-        "bytes": 10033289,
-        "expanded_bytes": 12472542,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/motion-graphics-presets-d727fda11d84.zip"
+        "file": "motion-graphics-presets-d0901420e9a8.zip",
+        "sha256": "d0901420e9a8999aa39f40440e7771c33ea9d67ebe88e51aaeb132e58c6885af",
+        "bytes": 9857076,
+        "expanded_bytes": 12011538,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/motion-graphics-presets-d0901420e9a8.zip"
       },
       "primary_for": [
         "style-film"
@@ -1156,7 +1155,7 @@
       "id": "papercraft-explainer",
       "family": "cadence-structures",
       "title": "Вертикальный эксплейнер из бумажной аппликации",
-      "what": "Короткий вертикальный ролик 9:16 из слоёв цветной бумаги: стратегия, хук, сценарий, раскадровка, озвучка, сборка в Remotion и проверка кадров.",
+      "what": "Короткий вертикальный ролик 9:16 из слоёв цветной бумаги: стратегия, хук, сценарий, раскадровка, озвучка, сборка на React, рендер движком Cadence (HyperFrames) и проверка кадров.",
       "when": [
         "сделай ролик в стиле бумажной аппликации",
         "объясни эту тему вырезанной из бумаги анимацией",
@@ -1184,9 +1183,9 @@
         "кадры и контактные листы для проверки"
       ],
       "run": "PAPERCUT_LIB=\"$PWD/modules/papercraft-explainer/library\" bash modules/papercraft-explainer/library/new_episode.sh \"$WORK/<проект>/papercut\" 01-slug CompId out-name",
-      "engine": "remotion",
+      "engine": "hyperframes",
       "deps": {
-        "node": "library/papercut/template",
+        "node": "library/papercut/hyperframes",
         "system": [
           "node",
           "ffmpeg",
@@ -1194,7 +1193,7 @@
           "rsync"
         ]
       },
-      "install_mb": 700,
+      "install_mb": 150,
       "platform": [
         "macos",
         "linux"
@@ -1207,11 +1206,11 @@
           "examples",
           "library"
         ],
-        "file": "papercraft-explainer-dc054ebe881d.zip",
-        "sha256": "dc054ebe881d3de3b972a4ed2e9f521ff61e52b1e1d310d575e17acb58d046b1",
-        "bytes": 10722716,
-        "expanded_bytes": 11426471,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/papercraft-explainer-dc054ebe881d.zip"
+        "file": "papercraft-explainer-e7b8cd99ea37.zip",
+        "sha256": "e7b8cd99ea3701ac9a22fe750dbc3c4ddff064c0267fe6534869490a26d269dd",
+        "bytes": 10694857,
+        "expanded_bytes": 11281369,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/papercraft-explainer-e7b8cd99ea37.zip"
       },
       "primary_for": [
         "papercut"
@@ -1280,11 +1279,11 @@
           "tests",
           "tools"
         ],
-        "file": "phantom-editor-ab0f22960fbc.zip",
-        "sha256": "ab0f22960fbcffff3cf7d5c0c88c09eb6e5de58d487c1cca3c29f57b4239314d",
-        "bytes": 2729190,
-        "expanded_bytes": 5187806,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/phantom-editor-ab0f22960fbc.zip"
+        "file": "phantom-editor-c7d045146d51.zip",
+        "sha256": "c7d045146d51401bc08909de5fb3f584c9c6ba294871350ab41b3145ef917f2c",
+        "bytes": 2752647,
+        "expanded_bytes": 5250824,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/phantom-editor-c7d045146d51.zip"
       },
       "primary_for": [
         "styled-reel"
@@ -1555,10 +1554,9 @@
         "варианты под YouTube Shorts, TikTok и Instagram Reels"
       ],
       "run": "bash modules/shorts-studio/scripts/preflight.sh <видео> work/<проект>/out/shorts",
-      "engine": "remotion",
+      "engine": "hyperframes",
       "deps": {
         "python": "requirements.txt",
-        "node": "remotion",
         "system": [
           "ffmpeg",
           "ffprobe",
@@ -1566,7 +1564,7 @@
           "python3"
         ]
       },
-      "install_mb": 1000,
+      "install_mb": 700,
       "platform": [
         "macos",
         "linux"
@@ -1720,13 +1718,13 @@
         "записанный голос (по желанию)"
       ],
       "outputs": [
-        "проект Remotion со сценами человечков",
+        "папка ролика HyperFrames со сценами человечков",
         "MP4 ролика",
         "voiceover.srt для записи голоса",
         "storyboard.md"
       ],
-      "run": "python3 modules/stick-figure-animator/scripts/find_remotion.py --path \"$WORK/<проект>/remotion\"",
-      "engine": "remotion",
+      "run": "python3 modules/stick-figure-animator/scripts/new_video.py --project \"$WORK/<проект>/stickman\" --slug <имя>",
+      "engine": "hyperframes",
       "deps": {
         "python": "requirements.txt",
         "system": [
@@ -1735,7 +1733,7 @@
           "python3"
         ]
       },
-      "install_mb": 150,
+      "install_mb": 80,
       "platform": [
         "macos",
         "linux",
@@ -1781,16 +1779,15 @@
         "тихий MP4 1080×1440 (превью 720×960)"
       ],
       "run": "python3 modules/story-to-sketch-animation/scripts/new_workdir.py --project <проект>",
-      "engine": "remotion",
+      "engine": "hyperframes",
       "deps": {
-        "node": ".",
         "system": [
           "node",
           "ffmpeg",
           "python3"
         ]
       },
-      "install_mb": 600,
+      "install_mb": 5,
       "platform": [
         "macos",
         "linux",
@@ -1802,22 +1799,19 @@
       "payload": {
         "paths": [
           "examples",
-          "package-lock.json",
           "package.json",
           "public",
           "references",
-          "remotion.config.ts",
+          "render",
           "scripts",
-          "src",
           "storyboard.json",
-          "storyboard.uploaded.json",
-          "tsconfig.json"
+          "storyboard.uploaded.json"
         ],
-        "file": "story-to-sketch-animation-7b22292d3734.zip",
-        "sha256": "7b22292d3734a721c712ba1b044603c688ba1dcba8c2697a80b3fbf2c0c7fc99",
-        "bytes": 4394142,
-        "expanded_bytes": 5329477,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/story-to-sketch-animation-7b22292d3734.zip"
+        "file": "story-to-sketch-animation-4689792b46b1.zip",
+        "sha256": "4689792b46b1c2541032647513cb6b45663e23d10d4a45fc387f189e64aca508",
+        "bytes": 4366676,
+        "expanded_bytes": 5226041,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/story-to-sketch-animation-4689792b46b1.zip"
       },
       "primary_for": [
         "sketch-story"
@@ -1837,7 +1831,7 @@
         "сделай из фото анимацию бумажным коллажем"
       ],
       "not_for": [
-        "Шортсы из длинного подкаста с оценкой кусков и рендером Remotion: модуль shorts-studio",
+        "Шортсы из длинного подкаста с оценкой кусков: модуль shorts-studio",
         "Ролик из папки готовых кадров: модуль reels-crafter",
         "Только убрать паузы или только субтитры: scripts/silence_cut.py и scripts/captions_whisper.py (навык cadence-cut)",
         "Ролик без съёмки, весь из кода: навык cadence-motion и его структуры",
@@ -1895,8 +1889,8 @@
     {
       "id": "video-director-skills",
       "family": "cadence-visual-direction",
-      "title": "Режиссура ролика: сценарий, план битов, графика Remotion",
-      "what": "Сценарий и раскадровка ролика по битам, графика-шаблоны, субтитры, камера и звук поверх говорящего видео или голоса за кадром, рендер в MP4 на Remotion.",
+      "title": "Режиссура ролика: сценарий, план битов, графика кодом",
+      "what": "Сценарий и раскадровка ролика по битам, графика-шаблоны, субтитры, камера и звук поверх говорящего видео или голоса за кадром, рендер в MP4 движком Cadence (HyperFrames).",
       "when": [
         "напиши сценарий короткого ролика по моей идее",
         "сделай раскадровку и план графики под мой голос",
@@ -1923,17 +1917,17 @@
         "превью и финальный MP4 с субтитрами, графикой и звуком в $WORK/<проект>/out/"
       ],
       "run": "OUT_DIR=\"$WORK/<проект>/out\" bash modules/video-director-skills/routes/video-edit/scripts/render.sh <нарезка.mp4>",
-      "engine": "remotion",
+      "engine": "hyperframes",
       "deps": {
         "python": "requirements.txt",
-        "node": "routes/video-edit-longform/remotion",
+        "node": "hyperframes",
         "system": [
           "ffmpeg",
           "node",
           "python3"
         ]
       },
-      "install_mb": 3000,
+      "install_mb": 2700,
       "platform": [
         "macos",
         "linux"
@@ -1944,14 +1938,15 @@
       "payload": {
         "paths": [
           "assets",
+          "hyperframes",
           "requirements.txt",
           "routes"
         ],
-        "file": "video-director-skills-944c5493f63e.zip",
-        "sha256": "944c5493f63ea9ab0ecc9ab89e72293af9afc506a932c3540858d0847d6f1f3a",
-        "bytes": 1067041,
-        "expanded_bytes": 2903744,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/video-director-skills-944c5493f63e.zip"
+        "file": "video-director-skills-8e0822392e57.zip",
+        "sha256": "8e0822392e57fee904295264493c707c79be6cfc5df9c9a365f3ae220aa9ea7b",
+        "bytes": 1061951,
+        "expanded_bytes": 2857603,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/video-director-skills-8e0822392e57.zip"
       },
       "primary_for": [
         "beat-plan"
@@ -1990,7 +1985,6 @@
       "engine": "hyperframes",
       "deps": {
         "python": "kit/requirements.txt",
-        "node": "kit",
         "system": [
           "ffmpeg",
           "ffprobe",

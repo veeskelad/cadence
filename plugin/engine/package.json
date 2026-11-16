@@ -13,7 +13,7 @@
     "doctor": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes doctor --json"
   },
   "dependencies": {
-    "hyperframes": "0.9.52"
+    "hyperframes": "0.9.55"
   },
   "engines": {
     "node": ">=22"

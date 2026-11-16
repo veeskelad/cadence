@@ -73,7 +73,7 @@ python3 $PAPERCUT_LIB/tools/build_vo.py     # public/vo/voiceover.wav, public/vo
 python3 $PAPERCUT_LIB/tools/timing_md.py    # Timing section of STORYBOARD.md
 ```
 
-`captions.json` is a Remotion `Caption[]`; scene boundaries come from the word timestamps; the composition length is `plan.json`'s `durationInFrames`. `build_vo.py` flags any scene under 1.2 s. With no library, transcribe the WAV with the Remotion captions skill (whisper.cpp) or any speech-to-text tool that returns word timestamps.
+`captions.json` is a `Caption[]` (`text`, `startMs`, `endMs`, as in the kit's `frame.tsx`); scene boundaries come from the word timestamps; the composition length is `plan.json`'s `durationInFrames`. `build_vo.py` flags any scene under 1.2 s. With no library, transcribe the WAV with `library/voice/asr.py` (whisper) or any speech-to-text tool that returns word timestamps.
 
 Captions are one torn tag per word, pages of 1-3 words, at 3.5-4 words a second (`style-guide.md`, sections 11 and 13).
 

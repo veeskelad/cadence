@@ -698,7 +698,7 @@ def preview(clip, out, lines, accent, mark, t_in, t_out, zone, face=None,
     comp.mkdir(parents=True, exist_ok=True)
     shutil.copy2(clip, comp / clip.name)
     (comp / "hyperframes.json").write_text(_json.dumps(compose.HYPERFRAMES_JSON, indent=2))
-    (comp / "package.json").write_text(_json.dumps(compose.PACKAGE_JSON, indent=2))
+    compose.install_tween(comp)
     fragment = build(lines, accent, mark, t_in, t_out, zone, face,
                      assets_dir=comp / "hl_assets", frame=(width, height), **kw)
     html = compose.build_html(clip.name, width, height, duration, [], {})
@@ -707,11 +707,12 @@ def preview(clip, out, lines, accent, mark, t_in, t_out, zone, face=None,
     for sub in ("check", "render"):
         if sub == "render" and not render:
             break
-        cmd = ["npx", "--yes", compose.HYPERFRAMES_PKG, sub]
+        cmd = (["nice", "-n", "10"] if sub == "render" else []) + compose.hyperframes() + [sub]
         if sub == "render":
-            cmd += [".", "-q", "high", "--crf", "16", "--video-frame-format", "png",
+            cmd += [".", "--workers", "1", "-q", "high", "--crf", "16", "--video-frame-format", "png",
                     "-o", str((Path(out) / "master.mp4").resolve())]
-        r = subprocess.run(cmd, cwd=comp, capture_output=True, text=True, errors="replace")
+        r = subprocess.run(cmd, cwd=comp, env={**__import__("os").environ, **compose.HF_ENV},
+                           capture_output=True, text=True, errors="replace")
         print((r.stdout or r.stderr)[-1800:])
         if r.returncode != 0:
             return 1

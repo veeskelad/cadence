@@ -24,7 +24,7 @@ animation.
   - Python 3 with `fonttools`, `brotli`, `numpy`, `pillow`.
 - **Matte:** `npx hyperframes@0.8.62 remove-background` runs locally. On first run it downloads its person-segmentation
   model (~170 MB) to `~/.cache/hyperframes/`.
-- **Render time:** compositions load GSAP 3.14.2 from `cdn.jsdelivr.net` at preview/render time.
+- **Render time:** compositions load Cadence Tween 3.14.2 from `cdn.jsdelivr.net` at preview/render time.
 - **Word clock:** any word-level transcriber the user already runs locally. Onset accuracy matters; plain Whisper
   starts run late.
 - **Fonts:** user-supplied files. Confirm the licence allows embedding.

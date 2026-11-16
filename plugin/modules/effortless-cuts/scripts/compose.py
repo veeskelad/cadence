@@ -14,6 +14,7 @@ Styling comes entirely from profile.yml. There are no brand values in here.
 import argparse
 import html
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -34,8 +35,6 @@ TRACK_PROOF = 45
 TRACK_CAPTION = 60
 AUDIO_TRACK_CEILING = 40
 
-HYPERFRAMES_VERSION = "0.8.30"
-HYPERFRAMES_PKG = f"hyperframes@{HYPERFRAMES_VERSION}"
 
 HYPERFRAMES_JSON = {
     "registry": "https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry",
@@ -44,14 +43,20 @@ HYPERFRAMES_JSON = {
     "media": {"autoProxy": False},
 }
 
-PACKAGE_JSON = {
-    "name": "effortless-cuts-composition", "private": True, "version": "1.0.0",
-    "scripts": {
-        "dev": f"npx --yes {HYPERFRAMES_PKG} preview",
-        "check": f"npx --yes {HYPERFRAMES_PKG} check",
-        "render": f"npx --yes {HYPERFRAMES_PKG} render",
-    },
-}
+HF_ENV = {"HYPERFRAMES_NO_UPDATE_CHECK": "1", "HYPERFRAMES_NO_TELEMETRY": "1", "DO_NOT_TRACK": "1"}
+
+
+def hyperframes():
+    """CLI общего движка Cadence (engine/), без npx и сети."""
+    from scenes import engine_dir
+    return [str(engine_dir() / "node_modules" / ".bin" / "hyperframes")]
+
+
+def install_tween(comp):
+    """Движок анимации Cadence Tween рядом со страницей: lib/cadence-tween.js."""
+    from scenes import engine_dir
+    (comp / "lib").mkdir(exist_ok=True)
+    shutil.copyfile(engine_dir() / "lib" / "cadence-tween.js", comp / "lib" / "cadence-tween.js")
 
 
 def caption_css(profile, width):
@@ -871,7 +876,7 @@ def build_html(video_name, width, height, duration, chunks, profile, beats=None,
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width={width}, height={height}" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/cadence-tween.js"></script>
     <style>
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{
@@ -921,10 +926,10 @@ def build_html(video_name, width, height, duration, chunks, profile, beats=None,
         document.fonts.ready.then(fitHeadlines);
       }}
 
-      window.__timelines = window.__timelines || {{}};
-      const tl = gsap.timeline({{ paused: true }});
+      var cadence = window.cadence.scope(document);
+      const tl = cadence.timeline({{ paused: true }});
 {chr(10).join(anims)}
-      window.__timelines["main"] = tl;
+      cadence.mount("main", tl);
     </script>
   </body>
 </html>
@@ -991,7 +996,7 @@ def main():
     comp = studio / "composition"
     comp.mkdir(parents=True, exist_ok=True)
     (comp / "hyperframes.json").write_text(json.dumps(HYPERFRAMES_JSON, indent=2))
-    (comp / "package.json").write_text(json.dumps(PACKAGE_JSON, indent=2))
+    install_tween(comp)
     shutil.copy2(video, comp / video.name)
     for b in beats:
         img = Path(json.loads(Path(b["meta"]).read_text())["image"])
@@ -1033,7 +1038,7 @@ def main():
 
     if args.check:
         print("\nchecking…")
-        r = subprocess.run(["npx", "--yes", HYPERFRAMES_PKG, "check"], cwd=comp,
+        r = subprocess.run(hyperframes() + ["check"], cwd=comp, env={**os.environ, **HF_ENV},
                            capture_output=True, text=True, errors="replace")
         tail = (r.stdout or "")[-1500:]
         print(tail.strip() or (r.stderr or "")[-800:])
@@ -1052,12 +1057,12 @@ def main():
         # A 9:16 minute of PNG frames wants tens of GB of scratch space, and
         # the render only discovers that a quarter of the way in. Streaming
         # the frames costs time, not quality.
-        cmd = ["npx", "--yes", HYPERFRAMES_PKG, "render", ".",
+        cmd = ["nice", "-n", "10"] + hyperframes() + ["render", ".", "--workers", "1",
                "-q", "high", "--crf", "16",
                "--video-frame-format", "png"]
         if args.low_memory:
             cmd.append("--low-memory-mode")
-        r = subprocess.run(cmd + ["-o", str((out / "master.mp4").resolve())],
+        r = subprocess.run(cmd + ["-o", str((out / "master.mp4").resolve())], env={**os.environ, **HF_ENV},
                            cwd=comp, capture_output=True, text=True, errors="replace")
         print((r.stdout or "")[-800:].strip() or (r.stderr or "")[-800:])
         if r.returncode != 0:

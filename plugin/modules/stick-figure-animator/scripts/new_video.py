@@ -1,81 +1,39 @@
 #!/usr/bin/env python3
-"""Create a new video folder from the template and register its composition.
+"""Create a new stick-figure video: a HyperFrames project with the engine and the scene template.
 
 usage:
     python new_video.py --project PATH --slug my-video [--size 1920x1080] [--fps 30] [--seconds 60]
 
-* copies assets/template/* to PATH/src/<slug>/ (never overwrites existing files)
-* creates PATH/public/<slug>/ for music, SFX and voiceover
-* writes a placeholder timeline.ts (--seconds long) if parse_input.py has not run yet
-* registers <Composition id="MyVideo"> in src/Root.tsx (at the stickman-video markers if
-  present, otherwise just before the closing fragment of the root component)
+* the video lives in PATH/<slug>/ (setup_project.py prepares it: engine, fonts, index.html, render.mjs)
+* copies assets/template/*.js to PATH/<slug>/src/ (never overwrites existing files)
+* writes a placeholder src/timeline.js (--seconds long) if parse_input.py has not run yet
+* PATH/<slug>/assets/ is for music, sfx/*.wav and the voiceover (gen_audio.py --out PATH/<slug>/assets)
+
+Render from the video folder: node render.mjs (see guides/stickman-video.md).
 """
 import argparse
 import json
-import os
 import re
 import shutil
 import sys
+from pathlib import Path
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-TEMPLATE = os.path.join(os.path.dirname(HERE), "assets", "template")
+HERE = Path(__file__).resolve().parent
+TEMPLATE = HERE.parent / "assets" / "template"
+sys.path.insert(0, str(HERE))
+from parse_input import JS_HEADER  # noqa: E402  same format as the real timeline
+from setup_project import setup  # noqa: E402
 
 
-def pascal(slug):
-    p = "".join(w.capitalize() for w in re.split(r"[^A-Za-z0-9]+", slug) if w)
-    return p if p and p[0].isalpha() else "V" + p
-
-
-def placeholder_timeline(path, seconds, fps):
-    sys.path.insert(0, HERE)
-    from parse_input import TS_HEADER  # same types as the real timeline
-
+def placeholder_timeline(path: Path, seconds: float, fps: int) -> None:
     tl = {"fps": fps, "durationInFrames": int(seconds * fps), "seconds": seconds, "cues": [], "chapters": []}
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(TS_HEADER + json.dumps(tl, indent=2) + ";\n")
+    path.write_text(JS_HEADER + json.dumps(tl, indent=2) + ";\n", encoding="utf-8")
+    path.with_suffix(".json").write_text(json.dumps(tl, indent=1) + "\n", encoding="utf-8")
 
 
-def register(root_path, slug, comp, w, h, fps):
-    with open(root_path, encoding="utf-8") as fh:
-        s = fh.read()
-    if f'id="{comp}"' in s:
-        return "already registered"
-    imp = f'import {{ Video as {comp}, DURATION as {comp}_DURATION }} from "./{slug}/Video";'
-    block = (
-        f"      <Composition\n"
-        f'        id="{comp}"\n'
-        f"        component={{{comp}}}\n"
-        f"        durationInFrames={{{comp}_DURATION}}\n"
-        f"        fps={{{fps}}}\n"
-        f"        width={{{w}}}\n"
-        f"        height={{{h}}}\n"
-        f'        defaultProps={{{{ music: 0.35, sfx: 0.8, voice: "", captions: false }}}}\n'
-        f"      />\n"
-    )
-    if "// stickman-video:imports" in s:
-        s = s.replace("// stickman-video:imports", imp + "\n// stickman-video:imports")
-    else:
-        last_import = list(re.finditer(r"^import .*;\s*$", s, re.M))
-        pos = last_import[-1].end() if last_import else 0
-        s = s[:pos] + "\n" + imp + s[pos:]
-    if "{/* stickman-video:compositions */}" in s:
-        s = s.replace("      {/* stickman-video:compositions */}", block + "      {/* stickman-video:compositions */}")
-    else:
-        i = s.rfind("</>")
-        if i < 0:
-            return "could not find where to register: add the <Composition> by hand:\n" + imp + "\n" + block
-        s = s[:i] + block.replace("      ", "  ", 0) + "    " + s[i:]
-    if "Composition" not in s.split("export")[0] or 'import { Composition' not in s and "Composition," not in s and " Composition " not in s:
-        if not re.search(r"import\s*\{[^}]*\bComposition\b", s):
-            s = 'import { Composition } from "remotion";\n' + s
-    with open(root_path, "w", encoding="utf-8") as fh:
-        fh.write(s)
-    return "registered"
-
-
-def main():
+def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--project", required=True)
+    ap.add_argument("--project", required=True, help="folder that holds the videos of this project")
     ap.add_argument("--slug", required=True)
     ap.add_argument("--size", default="1920x1080")
     ap.add_argument("--fps", type=int, default=30)
@@ -83,28 +41,20 @@ def main():
     a = ap.parse_args()
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", a.slug):
         sys.exit("slug: lowercase letters, digits and dashes only (e.g. petrodollar-explainer)")
-    w, h = (int(x) for x in a.size.lower().split("x"))
-    proj = os.path.abspath(a.project)
-    if not os.path.isdir(os.path.join(proj, "src", "stickman")):
-        sys.exit("engine missing: run setup_project.py --dir " + proj + " first")
-    dst = os.path.join(proj, "src", a.slug)
-    os.makedirs(dst, exist_ok=True)
-    for fn in os.listdir(TEMPLATE):
-        out = os.path.join(dst, fn)
-        if os.path.exists(out):
-            continue
-        with open(os.path.join(TEMPLATE, fn), encoding="utf-8") as fh:
-            body = fh.read().replace("__SLUG__", a.slug)
-        with open(out, "w", encoding="utf-8") as fh:
-            fh.write(body)
-    tl = os.path.join(dst, "timeline.ts")
-    if not os.path.exists(tl):
+    video = Path(a.project).expanduser().resolve() / a.slug
+    info = setup(video, a.size, a.fps, slug=a.slug)
+    src = video / "src"
+    for f in TEMPLATE.iterdir():
+        out = src / f.name
+        if not out.exists():
+            shutil.copy2(f, out)
+    tl = src / "timeline.js"
+    if not tl.exists():
         placeholder_timeline(tl, a.seconds, a.fps)
-    os.makedirs(os.path.join(proj, "public", a.slug), exist_ok=True)
-    comp = pascal(a.slug)
-    status = register(os.path.join(proj, "src", "Root.tsx"), a.slug, comp, w, h, a.fps)
-    print(json.dumps({"folder": dst, "public": os.path.join(proj, "public", a.slug), "composition": comp, "root": status}, indent=2))
+    print(json.dumps({"video": str(video), "src": str(src), "assets": str(video / "assets"),
+                      "render": f"node {video / 'render.mjs'}", "engine_ready": info["engine_ready"]}, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

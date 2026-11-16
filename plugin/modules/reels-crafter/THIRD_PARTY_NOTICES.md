@@ -1,6 +1,6 @@
 # Third-party notices
 
-This module is part of Cadence, MIT (`LICENSE.txt` at the Cadence root). It includes or builds on:
+This module is part of Cadence, under the Cadence license (`LICENSE.txt` at the Cadence root). It includes or builds on:
 
 | Part | Where | Origin | License |
 |---|---|---|---|

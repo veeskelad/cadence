@@ -113,7 +113,7 @@ Three forms, in order of preference:
    it and move on it — `rules/proof.md`.
 2. **A designed scene.** A built visual with structure: a comparison, a
    counter, a mechanism assembling in the order the sentence explains it.
-   Remotion components, one per beat — `rules/scenes.md`.
+   React components on the frame runtime, one per beat — `rules/scenes.md`.
 3. **A card.** Text on a ground. The right form for a claim, a list or a
    transition of topic, and the wrong form for anything with structure.
 
@@ -133,9 +133,9 @@ An edit where every beat is a card is a slideshow with a face attached.
 
 ### Build the card in flick, not in HyperFrames
 
-When a card is the right answer, **flick is the default renderer** — it carries
-pro Remotion templates and produces a designed panel, where a plain HyperFrames
-card produces a coloured rectangle with text in it. Render each scene to
+When a card is the right answer, **a flick pattern built as a scene is the
+default** — it produces a designed panel, where a plain HyperFrames card
+produces a coloured rectangle with text in it. Render each scene to
 `assets/panels/<name>.mp4` (1080x960 for a half panel, 1080x1920 for full frame)
 and reference it from `broll.json`. Reach for a raw HyperFrames card only when
 flick is unavailable or the beat is a one-line band over the face.

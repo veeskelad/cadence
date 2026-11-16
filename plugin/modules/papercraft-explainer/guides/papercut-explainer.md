@@ -2,7 +2,7 @@
 
 Когда: нужен весь ролик из бумажной аппликации от идеи до mp4, либо неясно, с какого этапа начинать (здесь же таблица этапов и подсказка по стилю).
 
-A ~20-45 s vertical explainer that looks like layered construction paper brought to life: grainy paper props with drop shadows, rigid cut-out animation, a slow camera push with stop-motion paper boil, a taped headline banner per beat and word-by-word torn-paper caption tags. Built with Remotion, optional AI-generated textured assets, and any TTS.
+A ~20-45 s vertical explainer that looks like layered construction paper brought to life: grainy paper props with drop shadows, rigid cut-out animation, a slow camera push with stop-motion paper boil, a taped headline banner per beat and word-by-word torn-paper caption tags. Built as a React composition rendered by the Cadence engine (HyperFrames), optional AI-generated textured assets, and any TTS.
 
 Every beat runs three tracks:
 - the voiceover tells the story
@@ -93,14 +93,14 @@ The first three lines passing means Standard. The `qwen_tts` import passing as w
 
 - Strategy notes win over style notes: 22-30 s, and no news-framed hooks.
 - Parallelise independent work (scene groups, backdrops and props, re-renders) with agents in one go.
-- Render only when asked. Preview in the Remotion Studio.
+- Render only when asked. Preview with QA stills (`tools/qa.sh`) or the engine's live preview of `out/hf`.
 
 ## Shared references
 
 - `style-guide.md`: Style DNA, drawing in papercut, palette, fonts, texture, camera and jitter, motion timings, captions, sound.
 - `style-prompt.md`: portable prompts for other agents and generators.
 - `motion-principles.md`: the 12 principles of animation mapped to kit components and helpers, with a use-in-each-stage note.
-- `remotion-recipes.md`: Remotion component sketches, for when there is no library.
+- `frame-recipes.md`: React component sketches for the frame runtime, for when there is no library.
 - `asset-prompts.md`: what to generate versus build in code, with prompt templates.
 - `frame-breakdown.md`: a worked ~28 s example at 0.2 s resolution. Copy its event density, not its content.
 

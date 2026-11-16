@@ -49,4 +49,4 @@ claude plugin install cadence --marketplace veeskelad/cadence
 
 ## Лицензия
 
-MIT, `plugin/LICENSE.txt`. Чужие компоненты и их лицензии перечислены в `plugin/THIRD-PARTY-NOTICES.md`.
+С версии 1.10.1 Cadence распространяется по собственной лицензии, `plugin/LICENSE.txt`: ролики, сделанные с ним, принадлежат автору, а сам набор распространять и встраивать в другие продукты нельзя. Выпуски до 1.10 включительно остаются под MIT. Чужие компоненты и их лицензии перечислены в `plugin/THIRD-PARTY-NOTICES.md`.

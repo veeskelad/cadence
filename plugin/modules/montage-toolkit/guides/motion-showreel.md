@@ -134,9 +134,9 @@ and -1.2 dBTP.
 
 ### 7. Build (HyperFrames)
 
-Load `hyperframes` and `gsap` before writing HTML. Read `guides/motion-philosophy.md`
+Load `hyperframes` and `cadence` before writing HTML. Read `guides/motion-philosophy.md`
 (showreel pacing is its fast sizzle mode) and `video-storytelling` for
-persistent-world camera moves. Build one `index.html` with one paused GSAP timeline.
+persistent-world camera moves. Build one `index.html` with one paused Cadence Tween timeline.
 Chapters are timed `.clip` layers, and the HUD sits on top.
 
 - Every time comes from the beat sheet: `const B = (n) => n * PERIOD`.

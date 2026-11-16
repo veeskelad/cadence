@@ -1,6 +1,6 @@
 # Caption Styles — Visual Specifications
 
-Three premium caption presets for different content tones. Each uses `@remotion/captions` createTikTokStyleCaptions() for word-level timing.
+Three premium caption presets for different content tones. Each groups word-level timings into TikTok-style pages (`captionPages()` in `hyperframes/short.html`): a word with a leading space opens a new page once the current page spans more than the style's window.
 
 ## Bold Style
 
@@ -78,12 +78,12 @@ Best for: Professional, interviews, calm content, podcasts.
 
 ## Font Files
 
-All fonts must be placed in `remotion/public/fonts/`:
+All fonts live in `hyperframes/fonts/` and are copied into every render project:
 - `Montserrat-Bold.ttf` — from Google Fonts (OFL license)
 - `Bangers-Regular.ttf` — from Google Fonts (OFL license)
 - `Inter-Bold.ttf` — from Google Fonts (OFL license)
 
-Download from: https://fonts.google.com/
+Licence: `hyperframes/fonts/OFL.txt`.
 
 ## Caption Positioning
 

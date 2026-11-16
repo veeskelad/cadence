@@ -18,7 +18,7 @@ outputs inside the new project.
 2. Review mistakes in context and establish one frame-aligned edit decision list.
 3. Explore three opening directions and choose a truthful promise and payoff.
 4. Plan scenes, exact captions, moving footage, and sound cues against retained words.
-5. Build the composition with the HyperFrames and GSAP skills. Use a footage ledger
+5. Build the composition with the HyperFrames and Cadence Tween skills. Use a footage ledger
    to record provenance and prevent unintentional reuse of the same source scene.
 6. Validate, preview, render a draft, inspect frames, and listen to the full edit.
 7. Resolve timing, audio, and composition problems before exporting the final video.

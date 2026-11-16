@@ -33,7 +33,7 @@ export const photoPxPerFramePx = (cropW, frameW, k) => cropW / (frameW * k);
 // кадром позже, и на 30 fps каждый третий кадр повторяет прошлый.
 export const frameTime = (f, fps = 30) => Math.floor((f / fps) * 1e4) / 1e4;
 
-// power3.inOut — та же кривая, что у GSAP.
+// power3.inOut — та же кривая, что у Cadence Tween.
 export const power3InOut = (p) => {
   p = Math.min(1, Math.max(0, p));
   return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;

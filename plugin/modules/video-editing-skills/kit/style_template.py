@@ -16,9 +16,9 @@ def main(skill_dir):
     out=path(spec['out']).resolve() if spec.get('out') else cadence_env.out_dir_for(args.spec or pack/skill_dir.name)/(skill_dir.name+'.mp4')
     comp=out.parent/(out.stem+'.composition');comp.mkdir(parents=True,exist_ok=True)
     shutil.copytree(pack/'kit/fonts',comp/'fonts',dirs_exist_ok=True)
-    vendor=cadence_env.gsap_path()
+    vendor=cadence_env.tween_path()
     (comp/'vendor').mkdir(exist_ok=True)
-    shutil.copyfile(vendor,comp/'vendor/gsap.min.js')
+    shutil.copyfile(vendor,comp/'vendor/cadence-tween.js')
     (comp/'assets').mkdir(exist_ok=True)
     source=(skill_dir/'template.html').read_text()
     assets=set(re.findall(r'(?:src|href)="assets/([^"\s]+)"',source))
@@ -43,7 +43,7 @@ def main(skill_dir):
     if 'media_start' in spec:
         source=re.sub(r'data-media-start="[^"]+"',f'data-media-start="{float(spec["media_start"]):.6f}"',source)
     for before,after in spec.get('text',{}).items():
-        # Only plain HTML text substitutions; GSAP textContent strings should be edited in the template.
+        # Only plain HTML text substitutions; timeline textContent strings should be edited in the template.
         if before not in source:raise ValueError('Text not found: '+before)
         source=source.replace(before,html.escape(str(after),quote=True))
     (comp/'index.html').write_text(source)

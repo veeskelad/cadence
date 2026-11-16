@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sanity-check a rendered video against its timeline.
 
-usage: python check_render.py out/video.mp4 [--timeline src/slug/timeline.json] [--hits 5.9,61.5]
+usage: python check_render.py out/video.mp4 [--timeline src/timeline.json] [--hits 5.9,61.5]
 
 Reports duration (and the difference from the timeline), audio peak/RMS,
 clipped samples, and the level around given hit times (seconds) compared with

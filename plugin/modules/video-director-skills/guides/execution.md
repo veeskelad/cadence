@@ -143,7 +143,7 @@ under the voice, with a swell into the climax) **and** the SFX in one pass.
 
 ## Re-branding
 Run the "Brand setup" flow in SETUP.md once (writes `BRAND.md` + edits the
-token files), or edit `remotion/src/templates/hfBrand.ts` (colors + the 3
+token files), or edit `hyperframes/src/templates/hfBrand.ts` (colors + the 3
 fonts) directly → re-render. Every `hf_*` graphic updates together; no
 per-template edits.
 
@@ -272,7 +272,7 @@ series" below for when `series_pipeline.sh` is worth scaffolding a
 ## Visual style: Paper Brand vs Visual OS
 
 `pr_*` graphics support two selectable token sets in
-`$MSKILL/remotion/src/templates/paperBrand.ts`, resolved per-render from
+`$MSKILL/hyperframes/src/templates/paperBrand.ts`, resolved per-render from
 `props.json`'s `prStyle` field (set via the `PR_STYLE` env var, which
 `series_pipeline.sh` reads automatically from the project's `.pr_style`
 file):

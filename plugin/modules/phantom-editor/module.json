@@ -60,10 +60,10 @@
       "tests",
       "tools"
     ],
-    "file": "phantom-editor-ab0f22960fbc.zip",
-    "sha256": "ab0f22960fbcffff3cf7d5c0c88c09eb6e5de58d487c1cca3c29f57b4239314d",
-    "bytes": 2729190,
-    "expanded_bytes": 5187806,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/phantom-editor-ab0f22960fbc.zip"
+    "file": "phantom-editor-c7d045146d51.zip",
+    "sha256": "c7d045146d51401bc08909de5fb3f584c9c6ba294871350ab41b3145ef917f2c",
+    "bytes": 2752647,
+    "expanded_bytes": 5250824,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/phantom-editor-c7d045146d51.zip"
   }
 }

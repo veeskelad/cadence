@@ -8,7 +8,7 @@ style's `DESIGN.md`, `tokens.css`, and manifest slot limits.
 
 For an overlay, preserve transparency outside the card and the speaker's face.
 For a takeover, use an opaque background. Copy the chosen card into the video's
-`compositions/`, localize its CSS, fonts, and GSAP dependency, fill its named
+`compositions/`, localize its CSS, fonts, and Cadence Tween dependency, fill its named
 `data-slot` values, and wire its timing using the HyperFrames skill. Copying a
 card without its relative dependencies does not produce a complete asset.
 

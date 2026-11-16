@@ -8,7 +8,7 @@ chop — that is the failure this skill prevents.
 
 ```js
 const stepEase = (base, dur, fps = 12) => {
-  const e = gsap.parseEase(base);
+  const e = cadence.parseEase(base);
   const n = Math.max(1, Math.round(dur * fps));
   return (p) => e(Math.floor(p * n) / n);
 };

@@ -53,8 +53,8 @@ Requirements, all free:
 |---|---|---|
 | Transcription | `whisper.cpp` | Local. Model chosen by language + hardware. |
 | Media processing | `ffmpeg` / `ffprobe` | |
-| Captions, cards, compositing | HyperFrames | Renders HTML/CSS/GSAP compositions. |
-| Designed scenes | Remotion | React motion graphics, one composition per scene. Installed per project by `scenes.py init`. |
+| Captions, cards, compositing | HyperFrames | Renders HTML/CSS compositions animated by Cadence Tween. |
+| Designed scenes | React on HyperFrames | React motion graphics, one composition per scene, rendered by the Cadence engine (`engine/`). Scene packages (React, esbuild, TypeScript, about 45 MB) installed per project by `scenes.py init`. |
 | Composition runtime | `node` 22+ | Already required by Claude Code. |
 | B-roll download | `yt-dlp` | Optional. |
 
@@ -75,7 +75,7 @@ Footage lives wherever the user put it. All output goes in `<footage>/studio/`.
     ├── edl.json             cut decisions
     ├── composition/         HyperFrames project
     ├── scenes.json           designed scenes: which beat, what moves
-    ├── scenes/               Remotion project for those scenes
+    ├── scenes/               scene workspace: React components, build.mjs
     ├── assets/              fetched SFX, logos, screenshots
     ├── verify/              frames and measurements from the verify pass
     └── out/                 the delivered package
@@ -204,7 +204,7 @@ false, because captions are the most-read thing on screen.
 `asset` is the `--name` you gave `capture.py`. `target` must be text that
 capture found. `rules/proof.md` has the craft.
 
-**`scenes.json`** — designed scenes, built in Remotion. A card is text on a
+**`scenes.json`** — designed scenes, built as React components. A card is text on a
 ground; a scene is a built visual with structure — a counter running, a
 comparison assembling, a stylised UI typing. Beats with structure go here
 rather than into a headline and a sub-line.
@@ -218,12 +218,18 @@ rather than into a headline and a sub-line.
 ]}
 ```
 
-`scenes.py sync` writes the Remotion project's `Root.tsx` and
+`scenes.py sync` writes the workspace's `Root.tsx` and
 `src/data/scene-spec.json` from this file and the cut — one composition per
 scene, at the cut's own size and frame rate. You write only the components, in
-`<studio>/scenes/src/scenes/<Component>.tsx`. `scenes.py studio` opens Remotion
-Studio to preview them, `render` writes one MP4 per scene and registers them as
-overlays so `compose.py` composites them under the captions.
+`<studio>/scenes/src/scenes/<Component>.tsx`, with timing from
+`@cadence/frame` (`useCurrentFrame`, `interpolate`, `spring`, `Sequence`; no
+animation library). `scenes.py check` type-checks them and refuses imports
+other than React and `@cadence/frame`. `scenes.py studio --only <id>` opens the
+engine's preview of one scene; `render` builds each scene into its own
+HyperFrames project (`build.mjs`), renders it with the Cadence engine to one
+MP4 per scene, checks its size, rate and frame count against the spec, and
+registers them as overlays so `compose.py` composites them under the
+captions.
 
 Show `scenes.json` before writing any component — a component written against
 an unapproved beat is the expensive artefact to throw away. Craft and the
@@ -330,7 +336,7 @@ details and the reasons are in the rules files named.
 - **Everything HD:**
   - The hook's top panel is a motion graphic built at frame resolution, never
     an upscaled screenshot.
-  - Rebuild product screenshots as native Flick/Remotion scenes at 1080x960,
+  - Rebuild product screenshots as native designed scenes at 1080x960,
     using the real UI's text (`rules/proof.md`).
 - **Palette:** green `#76B900` for emphasis words in captions, accents, chips
   and borders. The ground is near-black green with a slow-drifting grid. It is
@@ -358,7 +364,7 @@ the failure it prevents.
 | `rules/sound.md` | Sound effect placement, levels, music |
 | `rules/proof.md` | Screenshots, B-roll, zoom and highlight |
 | `rules/motion.md` | Zooms, transitions, cards, layout |
-| `rules/scenes.md` | Designed Remotion scenes: when, how, what to check |
+| `rules/scenes.md` | Designed React scenes: when, how, what to check |
 | `rules/framing.md` | Crops, splits, composition |
 | `rules/assets.md` | Where pictures come from: proof, reference clips, flick, generated stills, Flow |
 

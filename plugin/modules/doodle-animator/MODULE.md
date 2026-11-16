@@ -24,9 +24,12 @@
 
 ## Установка и ограничения
 
-- Движок ставится в проект только с согласия человека: `npm install` (esbuild, three, playwright-core, около 100 МБ)
+- Движок ставится в проект только с согласия человека: `npm install` (esbuild, three, playwright-core, около 75 МБ)
   и `npx playwright-core install chromium` (около 170 МБ, сеть). Нужны Node и ffmpeg. До установки можно создать проект и
   прочитать справку.
+- MP4 по умолчанию рендерит общий движок Cadence (HyperFrames, `engine/` в корне Cadence): `render.mjs` находит его сам
+  (`CADENCE_ENGINE`, файл `cadence-engine.json`, который пишет `scaffold.mjs`, или папка `engine/` выше проекта). Своему
+  Chromium остаются кадры (`still.mjs`), проверки, размытие движения (`--blur`), GIF, WebM и APNG (`--engine playwright`).
 - Проект всегда создаётся в `$WORK/<проект>/doodle`, не внутри `modules/`; ничего из движка модуля не меняется.
 - Облачные голоса отключены. Озвучка: свои записи (`files`), локальный `kokoro` или системный `say` на macOS (только для
   черновиков). Для речи и слов по таймингу нужен whisper.cpp; без него озвучку не делать.
@@ -54,8 +57,9 @@
 
 ```
 node tools/still.mjs intro --frame 0 --out out/look.png --scale 2   # кадр с хешем
-node tools/render.mjs intro                                        # MP4; --out x.gif|x.webm|x.apng
+node tools/render.mjs intro                                        # MP4 через движок Cadence; --out x.gif|x.webm|x.apng
 node tools/gate.mjs intro                                          # детерминизм, контракт, мёртвый эфир
+node tools/gate.mjs intro --adapter hyperframes --mp4 out/intro.mp4   # то же на движке Cadence
 node tools/emit.mjs intro --out out/intro.html                     # одна автономная страница
 node tools/narrate.mjs providers                                   # какие голоса доступны на этой машине
 ```

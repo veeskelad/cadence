@@ -117,7 +117,7 @@ Generate `<project-folder>/STORYBOARD.md` using the template in `references/stor
 Beat N — TITLE (start–end, duration) — Concept in one sentence
 Visual elements: [each element, size, animation, timing]
 Motion language: [kind of motion]
-Eases used: [3–4 distinct GSAP eases]
+Eases used: [3–4 distinct Cadence Tween eases]
 Exit: [transition into next beat]
 Audio: [VO line / SFX / music layer]
 ```
@@ -150,10 +150,10 @@ Invoke `/hyperframes` for framework rules. This skill owns the scaffold and disc
   <script>
     (function(){
       const SLOT_DURATION = ...;
-      const tl = gsap.timeline({ paused: true });
+      const tl = cadence.timeline({ paused: true });
       // ... tweens ...
       tl.to({}, { duration: SLOT_DURATION }, 0);   // anchor — MOTION_PHILOSOPHY Law 11
-      window.__timelines["scene-name"] = tl;
+      cadence.mount("scene-name", tl);
     })();
   </script>
 </div>
@@ -250,7 +250,7 @@ Full preflight + pre-delivery checklist: `Read: references/build-checklist.md`
 - `references/style-intake.md` — style interview + MOTION_PHILOSOPHY defaults
 - `references/catalog-intent-map.md` — "user says X → install Y"
 - `references/storyboard-template.md` — beat-by-beat template + worked example
-- `references/composition-scaffold.md` — scoped-styles + IIFE GSAP boilerplate
+- `references/composition-scaffold.md` — scoped-styles + IIFE Cadence Tween boilerplate
 - `references/build-checklist.md` — preflight + pre-delivery gates
 
 External (workspace-level):
@@ -260,5 +260,5 @@ External (workspace-level):
 
 - `/hyperframes` — framework rules, invoke at Gate 6
 - `/hyperframes-cli` — init · lint · preview · render · transcribe · tts
-- `/gsap` — GSAP animation reference
+- `/cadence` — Cadence Tween animation reference
 - `/short-form-edit` — hand off at Gate 5 for 9:16 talking-head format

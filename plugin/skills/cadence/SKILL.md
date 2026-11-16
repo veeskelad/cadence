@@ -126,10 +126,12 @@ description: Начинай работу с Cadence, когда человек �
 | отдельный эффект: предмет в студии, шейдер-фон, нырок через масштабы, сборка из плиток, keynote-лонч, расшифровка текста, частицы | `cadence-motion` |
 | звук: эффекты под картинку, громкость, музыка под голос | `cadence-sound` |
 | свой стиль: цвета, шрифты, пак | `cadence-style` |
+| вид словами: «в стиле Apple», «градиенты», «блюр», «смаз», «жидкий», «точки», «ascii», «как в терминале» | `cadence-motion`, шаблон `poster-motion`; слова → приём — `skills/cadence-visual-direction/references/style-words.md` |
 | не знаю, какой стиль; покажи варианты | `cadence-style` → `references/choose-style.md` |
 | порезать своё видео: паузы, субтитры, свести звук | `cadence-cut` |
 | кино-эффект на своём видео: speed ramp, whip pan, crash zoom, zoom-переход, тряска, вспышка, match cut, стоп-кадр | `python3 scripts/video_fx.py <эффект> … --dry-run`, потом без `--dry-run`; описание — в шапке скрипта |
 | монтаж и эффекты на живой съёмке в DaVinci Resolve | `cadence-resolve` |
+| готовый анимированный компонент для сайта или презентации (кнопка, карточка, AI-элемент) | `cadence-platform-engineering` → `references/component-sources.md` |
 | нужной сцены нет: сгенерировать кадр или клип в своём сервисе | `cadence-generate` |
 | «как сделан этот ролик?» — разбор референса | `cadence-breakdown` |
 | проверить готовый ролик перед публикацией | `python3 scripts/check_reel.py <ролик>` + `guides/BEFORE-POSTING.md` |

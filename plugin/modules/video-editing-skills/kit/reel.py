@@ -139,13 +139,13 @@ class Job:
         said = ' '.join(f'{w}@{t:.2f}' for w, t, _ in self.words)
         raise ValueError(f'"{v}" is not said in this clip. Words: {said}')
 
-    def cutout(self, model=None):
+    def cutout(self, quality=None):
         out = self.work / 'cutout.webm'
         stamp = self.work / 'cutout.ok'
         if out.exists() and stamp.exists() and stamp.read_text() == str(self.clip.stat().st_mtime):
             return out
         from cutout import cutout
-        cutout(self.clip, out, model or self.get('cutout_model', 'mobilenetv3'))
+        cutout(self.clip, out, quality or self.get('cutout_quality', 'balanced'))
         stamp.write_text(str(self.clip.stat().st_mtime))
         return out
 
@@ -227,13 +227,13 @@ class Comp:
                 f'style="{style}"></video>')
 
     def write(self):
-        gsap = cadence_env.gsap_path()
+        tween = cadence_env.tween_path()
         if self.dir.exists():
             shutil.rmtree(self.dir)
         (self.dir / 'assets').mkdir(parents=True)
         shutil.copytree(KIT / 'fonts', self.dir / 'fonts')
         (self.dir / 'vendor').mkdir()
-        shutil.copy(gsap, self.dir / 'vendor' / 'gsap.min.js')
+        shutil.copy(tween, self.dir / 'vendor' / 'cadence-tween.js')
         for src, rel in self.files.items():
             try:
                 os.link(src, self.dir / rel)
@@ -245,15 +245,14 @@ class Comp:
 <body>
 <div id="root" data-composition-id="main" data-start="0" data-duration="{self.dur:.3f}" data-fps="{FPS}" data-width="{W}" data-height="{H}">
 {chr(10).join(self.body)}
-<script src="vendor/gsap.min.js"></script>
+<script src="vendor/cadence-tween.js"></script>
 <script>
 (function () {{
-const gsap = window.gsap;
-const tl = gsap.timeline({{ paused: true }});
+const cadence = window.cadence.scope(document);
+const tl = cadence.timeline({{ paused: true }});
 {chr(10).join(self.js)}
 tl.set({{}}, {{}}, {self.dur:.3f});
-window.__timelines = window.__timelines || {{}};
-window.__timelines["main"] = tl;
+cadence.mount("main", tl);
 }})();
 </script>
 </div>

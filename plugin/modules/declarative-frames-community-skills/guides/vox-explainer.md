@@ -46,7 +46,7 @@ Read only the references needed for the current stage:
 - Collage motion: [vox-collage-motion.md](../kits/vox-explainer/references/vox-collage-motion.md)
 - Motion law and seam gate: [motion-continuity.md](../kits/vox-explainer/references/motion-continuity.md)
 - Transition catalog and code: [velocity-matched-transitions.md](../kits/vox-explainer/references/velocity-matched-transitions.md)
-  and [velocity-matched-transitions-gsap.md](../kits/vox-explainer/references/velocity-matched-transitions-gsap.md)
+  and [velocity-matched-transitions-cadence-tween.md](../kits/vox-explainer/references/velocity-matched-transitions-cadence-tween.md)
 - Multi-stage element motion: [animation-overlap.md](../kits/vox-explainer/references/animation-overlap.md)
 - Render-safe seam mechanics: [render-safe-seams.md](../kits/vox-explainer/references/render-safe-seams.md)
 - Seam ledger and script usage: [seam-gate.md](../kits/vox-explainer/references/seam-gate.md)

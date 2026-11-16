@@ -32,7 +32,7 @@
     "отчёты проверок"
   ],
   "run": "node modules/doodle-animator/engine/tools/scaffold.mjs \"$WORK/<проект>/doodle\" --film intro --format 9x16 --duration 12",
-  "engine": "node",
+  "engine": "hyperframes",
   "deps": {
     "node": "engine",
     "system": [
@@ -40,7 +40,7 @@
       "ffmpeg"
     ]
   },
-  "install_mb": 400,
+  "install_mb": 260,
   "platform": [
     "macos",
     "linux",
@@ -58,10 +58,10 @@
       "references",
       "styles"
     ],
-    "file": "doodle-animator-98b6a7562c08.zip",
-    "sha256": "98b6a7562c08088082acbbed9d1e286c40bb0d4ba56398ff21d45e06a1783ca0",
-    "bytes": 4679849,
-    "expanded_bytes": 10884173,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/doodle-animator-98b6a7562c08.zip"
+    "file": "doodle-animator-73717c26bfef.zip",
+    "sha256": "73717c26bfefc30c0b647ecaabc3939472ce61a6617fad33b78f0d944e96e3dd",
+    "bytes": 4654069,
+    "expanded_bytes": 10773440,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/doodle-animator-73717c26bfef.zip"
   }
 }

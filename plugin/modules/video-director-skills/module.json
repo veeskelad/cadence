@@ -1,8 +1,8 @@
 {
   "id": "video-director-skills",
   "family": "cadence-visual-direction",
-  "title": "Режиссура ролика: сценарий, план битов, графика Remotion",
-  "what": "Сценарий и раскадровка ролика по битам, графика-шаблоны, субтитры, камера и звук поверх говорящего видео или голоса за кадром, рендер в MP4 на Remotion.",
+  "title": "Режиссура ролика: сценарий, план битов, графика кодом",
+  "what": "Сценарий и раскадровка ролика по битам, графика-шаблоны, субтитры, камера и звук поверх говорящего видео или голоса за кадром, рендер в MP4 движком Cadence (HyperFrames).",
   "when": [
     "напиши сценарий короткого ролика по моей идее",
     "сделай раскадровку и план графики под мой голос",
@@ -29,17 +29,17 @@
     "превью и финальный MP4 с субтитрами, графикой и звуком в $WORK/<проект>/out/"
   ],
   "run": "OUT_DIR=\"$WORK/<проект>/out\" bash modules/video-director-skills/routes/video-edit/scripts/render.sh <нарезка.mp4>",
-  "engine": "remotion",
+  "engine": "hyperframes",
   "deps": {
     "python": "requirements.txt",
-    "node": "routes/video-edit-longform/remotion",
+    "node": "hyperframes",
     "system": [
       "ffmpeg",
       "node",
       "python3"
     ]
   },
-  "install_mb": 3000,
+  "install_mb": 2700,
   "platform": [
     "macos",
     "linux"
@@ -50,13 +50,14 @@
   "payload": {
     "paths": [
       "assets",
+      "hyperframes",
       "requirements.txt",
       "routes"
     ],
-    "file": "video-director-skills-944c5493f63e.zip",
-    "sha256": "944c5493f63ea9ab0ecc9ab89e72293af9afc506a932c3540858d0847d6f1f3a",
-    "bytes": 1067041,
-    "expanded_bytes": 2903744,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/video-director-skills-944c5493f63e.zip"
+    "file": "video-director-skills-8e0822392e57.zip",
+    "sha256": "8e0822392e57fee904295264493c707c79be6cfc5df9c9a365f3ae220aa9ea7b",
+    "bytes": 1061951,
+    "expanded_bytes": 2857603,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/video-director-skills-8e0822392e57.zip"
   }
 }

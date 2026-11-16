@@ -2,7 +2,7 @@
 
 ## Which parts to generate and which to build
 
-| Element | Build in code (Remotion/SVG) | Generate with an image tool | Why |
+| Element | Build in code (React/SVG) | Generate with an image tool | Why |
 |---|---|---|---|
 | Characters (the critter and its variants) | ✅ | no | Need posable parts; must look identical in every frame |
 | Caption tags, banner, labels, buttons, gauges | ✅ | no | Text must be exact and animatable |
@@ -11,7 +11,7 @@
 | Complex static props (rocket, crane, consoles, Earth, metal panel, easel) | possible | ✅ good fit | Faster than drawing; animate as whole pieces |
 | Paper-grain texture tile | no | ✅ | One-time asset |
 
-**Text-to-video models are the wrong tool for the finished video.** They can't hold exact on-screen text, word-synced captions, or the same character across 10 shots. Use them at most for an optional B-roll insert. The pipeline is: **AI stills for textured assets → Remotion for all motion, text and timing.**
+**Text-to-video models are the wrong tool for the finished video.** They can't hold exact on-screen text, word-synced captions, or the same character across 10 shots. Use them at most for an optional B-roll insert. The pipeline is: **AI stills for textured assets → the React composition (Cadence engine) for all motion, text and timing.**
 
 ## Tool
 
@@ -23,7 +23,7 @@ Use whatever image tool the machine has. It needs to support **transparent PNG o
 <image-tool> edit "<prompt>" --image library/papercut/public/bg/backdrops/kitchen.jpg --out ...   # style-match against a library backdrop
 ```
 
-If no image tool is available, build every prop in code with the paper filter. The style holds up without generated images. Don't generate any text inside images; add all text in Remotion.
+If no image tool is available, build every prop in code with the paper filter. The style holds up without generated images. Don't generate any text inside images; add all text in the composition.
 
 ## Style-lock suffix (append to every prompt)
 

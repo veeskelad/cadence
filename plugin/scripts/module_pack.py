@@ -83,6 +83,7 @@ def build_zip(mdir: Path, paths: list[str]) -> bytes:
 def build(tag: str) -> None:
     DIST.mkdir(parents=True, exist_ok=True)
     excludes = []
+    changed = []
     for item in plan():
         mdir = MODULES / item["id"]
         data = build_zip(mdir, item["paths"])
@@ -93,8 +94,12 @@ def build(tag: str) -> None:
         m = json.loads(mj.read_text(encoding="utf-8"))
         if m.get("network") == "none":
             m["network"] = "install"  # пакет скачивается при установке
-        m["payload"] = {"paths": item["paths"], "file": name, "sha256": sha, "bytes": len(data), "expanded_bytes": item["payload"],
-                        "url": f"https://github.com/{REPO}/releases/download/{tag}/{name}"}
+        prev = m.get("payload") or {}
+        # Пакет не изменился — ссылка на прежний релиз остаётся, перезаливать его не нужно
+        url = prev["url"] if prev.get("sha256") == sha and prev.get("url") else f"https://github.com/{REPO}/releases/download/{tag}/{name}"
+        if url != prev.get("url"):
+            changed.append(name)
+        m["payload"] = {"paths": item["paths"], "file": name, "sha256": sha, "bytes": len(data), "expanded_bytes": item["payload"], "url": url}
         mj.write_text(json.dumps(m, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         excludes += [f"modules/{item['id']}/{p}" for p in item["paths"]]
         print(f"{item['id']}: {len(data) / 1e6:.1f} МБ → {name}")
@@ -102,6 +107,8 @@ def build(tag: str) -> None:
     rel["exclude"] = [e for e in rel.get("exclude", []) if not e.startswith("modules/")] + sorted(excludes)
     RELEASE.write_text(json.dumps(rel, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"release.json: исключено из выпуска {len(excludes)} путей; пакеты — {DIST}")
+    print("выложить в релиз " + tag + ": " + (" ".join(changed) if changed else "ничего, все пакеты прежние"))
+    (DIST / "CHANGED.txt").write_text("\n".join(changed) + "\n")
 
 
 def main() -> int:

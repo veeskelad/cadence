@@ -8,7 +8,7 @@ and accepts only localhost preview URLs.
 ```bash
 # STAMP: write the master seam block (base sets + all wrapper tweens) from the ledger.
 # Replaces the // <seams:auto> … // </seams:auto> block (inserts after the
-# window.__timelines["main"] registration if markers are absent). Stamped seams pass
+# cadence.timelineOf("main") registration if markers are absent). Stamped seams pass
 # the gate by construction. match-cut/morph rows get visibility sets only — the
 # carrier handoff stays hand-authored.
 node <KIT_DIR>/scripts/seam-stamp.mjs --ledger ledger.json --write index.html
@@ -92,9 +92,9 @@ so ancestor wrapper transforms are automatically included.
 ## Known constraints
 
 - Full-frame incoming wrappers must start hidden in HTML/CSS (`opacity: 0`).
-  The stamper's immediate `gsap.set` cannot satisfy static lint rules that
+  The stamper's immediate `cadence.set` cannot satisfy static lint rules that
   inspect only the initial markup.
-- Seek-safety: under the gate's random seeks, GSAP lazy `.to()` start-value
+- Seek-safety: under the gate's random seeks, Cadence Tween lazy `.to()` start-value
   capture breaks on multi-stage chains — author them as
   `fromTo(..., {immediateRender:false})`.
 - Generated seams satisfy the generator's hard invariants, but the verifier may

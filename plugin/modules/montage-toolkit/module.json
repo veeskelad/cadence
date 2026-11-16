@@ -33,14 +33,13 @@
   "run": "node modules/montage-toolkit/scripts/new-video.mjs <проект>",
   "engine": "hyperframes",
   "deps": {
-    "node": ".",
     "system": [
       "ffmpeg",
       "ffprobe",
       "node"
     ]
   },
-  "install_mb": 5,
+  "install_mb": 0,
   "platform": [
     "macos",
     "linux",
@@ -59,10 +58,10 @@
       "tests",
       "workflows"
     ],
-    "file": "montage-toolkit-d3d7c92a0772.zip",
-    "sha256": "d3d7c92a07721659c476334f2b7e10109bc4d2f5e5dcc999c88f5b8db721458e",
-    "bytes": 1280133,
-    "expanded_bytes": 4193974,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/montage-toolkit-d3d7c92a0772.zip"
+    "file": "montage-toolkit-cef4f8339062.zip",
+    "sha256": "cef4f8339062ac0a70caa98ac6eb189aceba99f2edd8e15c41beaae6ffb04642",
+    "bytes": 1279264,
+    "expanded_bytes": 4190690,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/montage-toolkit-cef4f8339062.zip"
   }
 }

@@ -30,10 +30,10 @@
 
 ### 2.1 Core Backgrounds
 
-- **Perspective grid floor** — always. `<div>` with `transform: perspective(900px) rotateX(60deg)` + two `repeating-linear-gradient` axes at `rgba(255,255,255,.05) 0 1px, transparent 1px 80px`. GSAP animates `background-position-y` for parallax.
+- **Perspective grid floor** — always. `<div>` with `transform: perspective(900px) rotateX(60deg)` + two `repeating-linear-gradient` axes at `rgba(255,255,255,.05) 0 1px, transparent 1px 80px`. Cadence Tween animates `background-position-y` for parallax.
 - **Vignette** — always on top. `radial-gradient(ellipse at center, transparent 30%, #000 95%)`, `pointer-events: none`.
 - **Grain overlay** — always. `npx hyperframes add grain-overlay`.
-- **Sparkle particles** (grid scenes) — 20–40 absolute `+` shapes at random intersections, GSAP `stagger.from('random')` opacity, `repeat: -1, yoyo: true`.
+- **Sparkle particles** (grid scenes) — 20–40 absolute `+` shapes at random intersections, Cadence Tween `stagger.from('random')` opacity, `repeat: -1, yoyo: true`.
 - **Iridescent gradient stage** (wheel scenes) — soft conic-gradient or pre-rendered `<video muted loop>` for true chromatic shimmer.
 - **Conical light beam** (finales) — `conic-gradient(from 180deg at 50% 0%, transparent, rgba(0,255,200,.15) 50%, transparent)`, blurred.
 - **Liquid-glass card** — 4-stop diagonal gradient `rgba(255,255,255,.075/.025/.010/.055)` + `backdrop-filter: blur(14px) saturate(1.12)` + inner highlight `inset 0 1px 0 rgba(255,255,255,.22)` + 1px border. Inner highlight is the iOS-26 tell.
@@ -76,10 +76,10 @@ Reference palette (Infinite-spot specific — Acme or other briefs override): Ch
 
 ### 2.4 Motion Vocabulary
 
-| Move | GSAP recipe |
+| Move | Cadence Tween recipe |
 |------|-------------|
 | **Camera dolly through type** | `tl.fromTo(text, { scale: 1, opacity: 1 }, { scale: 8, opacity: 0, duration: 1.5, ease: 'power2.in' })` |
-| **Light-streak whip** | `gsap.fromTo(streak, { xPercent: -150 }, { xPercent: 250, duration: 0.4, ease: 'power3.in' })` — fire AT the cut |
+| **Light-streak whip** | `cadence.fromTo(streak, { xPercent: -150 }, { xPercent: 250, duration: 0.4, ease: 'power3.in' })` — fire AT the cut |
 | **Word ghost reveal** | `stagger: 0.35` with exits at `+= 0.5` → 0.15s overlap |
 | **Object morph drift** | `to A: { x: 200, scale: 0.5, opacity: 0 }`, `from B: { x: -200, scale: 0.5, opacity: 0 }`, both 0.5s. Light streak hides swap. |
 | **Coin spin reveal** | `tl.from(coin, { rotateY: 90, duration: 0.8, ease: 'back.out(1.4)' })` — needs `transform-style: preserve-3d` |
@@ -88,9 +88,9 @@ Reference palette (Infinite-spot specific — Acme or other briefs override): Ch
 | **Color recolor (no cut)** | `tl.to(':root', { '--accent': '#ff9430', duration: 0.6 })` — CSS vars |
 | **Slide-up phone reveal** | `tl.from(phone, { y: '100%', duration: 1, ease: 'power3.out' }).from(headline, { y: 30, opacity: 0, duration: 0.6 }, 0.3)` |
 | **Wheel + side-panel** | `tl.to(wheel, { rotation: 120, duration: 1.5 }).from(panel, { x: -100, opacity: 0, duration: 0.6 }, '<0.3')` |
-| **Floating cluster drift** | `gsap.to(coins, { y: '-=15', duration: 2, repeat: -1, yoyo: true, ease: 'sine.inOut', stagger: { each: 0.4, from: 'random' } })` |
-| **Vignette breath** | `gsap.to(vignette, { opacity: 0.9, duration: 4, repeat: -1, yoyo: true, ease: 'sine.inOut' })` |
-| **Cut-the-curve vertical whip** (default adjacent-beat transition) | **Exit:** `tl.to(wrap, { y: -150, filter: "blur(30px)", duration: 0.33, ease: "power2.in" })` · **Entry:** `gsap.set(wrap, { y: 150, filter: "blur(30px)" })` then `tl.to(wrap, { y: 0, filter: "blur(0px)", duration: 1.0, ease: "power2.out" }, 0)` — same direction both sides, velocity matched at the cut |
+| **Floating cluster drift** | `cadence.to(coins, { y: '-=15', duration: 2, repeat: -1, yoyo: true, ease: 'sine.inOut', stagger: { each: 0.4, from: 'random' } })` |
+| **Vignette breath** | `cadence.to(vignette, { opacity: 0.9, duration: 4, repeat: -1, yoyo: true, ease: 'sine.inOut' })` |
+| **Cut-the-curve vertical whip** (default adjacent-beat transition) | **Exit:** `tl.to(wrap, { y: -150, filter: "blur(30px)", duration: 0.33, ease: "power2.in" })` · **Entry:** `cadence.set(wrap, { y: 150, filter: "blur(30px)" })` then `tl.to(wrap, { y: 0, filter: "blur(0px)", duration: 1.0, ease: "power2.out" }, 0)` — same direction both sides, velocity matched at the cut |
 
 **Transitions menu:** light-streak whip (default) · cross-warp morph (object→object) · color recolor (related ideas same comp) · slide-up (product mockups) · flash-through-white (act break) · swirl-vortex (product-family rotations). Registry blocks for most: `whip-pan`, `cross-warp-morph`, `flash-through-white`, `swirl-vortex`, `cinematic-zoom`, `chromatic-radial-split`.
 
@@ -163,7 +163,7 @@ Wire as sibling `<audio>` elements in root, never inside `<video>`.
 </style>
 
 <script>
-gsap.fromTo('.whip-streak',
+cadence.fromTo('.whip-streak',
   { xPercent: -100, scaleX: 0.5 },
   { xPercent: 250, scaleX: 1.5, duration: 0.4, ease: 'power3.in' }
 );
@@ -193,7 +193,7 @@ Same DOM, meaning shifts (Global → Affordable). Cheap to build, expensive to l
 ### 3.4 3D objects — pre-render or CSS?
 
 - Iridescent chrome / chromatic refraction → **pre-render MP4** (alpha or loop). WebGL overkill.
-- Planar motion, spinning flat textures → **CSS 3D + GSAP**.
+- Planar motion, spinning flat textures → **CSS 3D + Cadence Tween**.
 - Card with motion blur → PNG + `filter: blur()` keyframe at peak.
 
 ### 3.5 Timeline-padding rule (framework-critical)
@@ -201,15 +201,15 @@ Same DOM, meaning shifts (Global → Affordable). Cheap to build, expensive to l
 Every sub-composition ends its timeline with a no-op anchor:
 
 ```js
-const tl = gsap.timeline({ paused: true });
+const tl = cadence.timeline({ paused: true });
 // … tweens …
 tl.to({}, { duration: SLOT_DURATION }, 0);  // forces timeline.duration() >= SLOT_DURATION
-window.__timelines['my-comp'] = tl;
+cadence.mount('my-comp', tl);
 ```
 
 HF sets `visibility: hidden` when `timeline.duration() < data-duration` — black-frame flash at the beat tail. The anchor has zero animation cost but keeps the composition alive for its full slot.
 
-### 3.6 GSAP proxy pattern (Canvas 2D / shaders in a timeline)
+### 3.6 Cadence Tween proxy pattern (Canvas 2D / shaders in a timeline)
 
 Drive procedural rendering from a single tween advancing a proxy time value:
 
@@ -271,7 +271,7 @@ Every entry/exit tween's comment names the matching tween in the adjacent beat:
 
 ```js
 // ENTRY — blur de-ramps from 22px to match outgoing "circle" beat's 22px exit.
-gsap.set(wrap, { filter: "blur(22px)" });
+cadence.set(wrap, { filter: "blur(22px)" });
 tl.to(wrap, { filter: "blur(0px)", duration: 0.33, ease: "power2.out" }, 0);
 
 // EXIT — matches incoming "engine" beat's 150px y + 30px blur entry.
@@ -305,7 +305,7 @@ If you can't name the matching tween, you haven't designed the seam.
   ```
   Any gap where `timeline.duration() < data-duration` is a black-frame risk.
 
-### 4.1 GSAP Code Dictionary
+### 4.1 Cadence Tween Code Dictionary
 
 | Purpose | Ease | Duration |
 |---|---|---|
@@ -322,15 +322,15 @@ If you can't name the matching tween, you haven't designed the seam.
 
 **Staggers:** chrome sweep across words `0.04` · dot-grid ripple per-column `0.019`, within-column `0.004` · code-stream lines `0.06`.
 
-**No `gsap.defaults()`** — declare ease/duration per tween. Inheritance bugs are harder to diagnose than verbose tweens.
+**No `cadence.defaults()`** — declare ease/duration per tween. Inheritance bugs are harder to diagnose than verbose tweens.
 
 **Timeline skeleton:**
 ```js
 (() => {
-  const tl = gsap.timeline({ paused: true });
+  const tl = cadence.timeline({ paused: true });
   // … tweens …
   tl.to({}, { duration: SLOT_DURATION }, 0);  // Law #11 anchor
-  window.__timelines['<data-composition-id>'] = tl;
+  cadence.mount('<data-composition-id>', tl);
 })();
 ```
 Key must match `data-composition-id` exactly.

@@ -27,7 +27,7 @@ MODULE_MAP = ROOT / "MODULE-MAP.md"
 ROUTING = ROOT / "knowledge/system/ROUTING.md"
 
 START, END = "<!-- modules:start -->", "<!-- modules:end -->"
-ENGINES = {"python", "node", "hyperframes", "remotion", "ffmpeg", "nim", "docs"}
+ENGINES = {"python", "node", "hyperframes", "ffmpeg", "nim", "docs"}  # Remotion не используется: рендер — общий движок HyperFrames
 NETWORK = {"none", "install", "runtime"}
 STATUS = {"ready", "beta", "docs"}
 PLATFORMS = {"macos", "linux", "windows"}
@@ -226,4 +226,8 @@ def build(check: bool) -> int:
 
 
 if __name__ == "__main__":
+    extra = [a for a in sys.argv[1:] if a != "--check"]
+    if extra:  # неизвестный флаг (в том числе --help) — подсказка вместо пересборки
+        print(__doc__)
+        sys.exit(2)
     sys.exit(build("--check" in sys.argv[1:]))

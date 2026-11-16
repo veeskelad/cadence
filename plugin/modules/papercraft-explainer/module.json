@@ -2,7 +2,7 @@
   "id": "papercraft-explainer",
   "family": "cadence-structures",
   "title": "Вертикальный эксплейнер из бумажной аппликации",
-  "what": "Короткий вертикальный ролик 9:16 из слоёв цветной бумаги: стратегия, хук, сценарий, раскадровка, озвучка, сборка в Remotion и проверка кадров.",
+  "what": "Короткий вертикальный ролик 9:16 из слоёв цветной бумаги: стратегия, хук, сценарий, раскадровка, озвучка, сборка на React, рендер движком Cadence (HyperFrames) и проверка кадров.",
   "when": [
     "сделай ролик в стиле бумажной аппликации",
     "объясни эту тему вырезанной из бумаги анимацией",
@@ -30,9 +30,9 @@
     "кадры и контактные листы для проверки"
   ],
   "run": "PAPERCUT_LIB=\"$PWD/modules/papercraft-explainer/library\" bash modules/papercraft-explainer/library/new_episode.sh \"$WORK/<проект>/papercut\" 01-slug CompId out-name",
-  "engine": "remotion",
+  "engine": "hyperframes",
   "deps": {
-    "node": "library/papercut/template",
+    "node": "library/papercut/hyperframes",
     "system": [
       "node",
       "ffmpeg",
@@ -40,7 +40,7 @@
       "rsync"
     ]
   },
-  "install_mb": 700,
+  "install_mb": 150,
   "platform": [
     "macos",
     "linux"
@@ -53,10 +53,10 @@
       "examples",
       "library"
     ],
-    "file": "papercraft-explainer-dc054ebe881d.zip",
-    "sha256": "dc054ebe881d3de3b972a4ed2e9f521ff61e52b1e1d310d575e17acb58d046b1",
-    "bytes": 10722716,
-    "expanded_bytes": 11426471,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/papercraft-explainer-dc054ebe881d.zip"
+    "file": "papercraft-explainer-e7b8cd99ea37.zip",
+    "sha256": "e7b8cd99ea3701ac9a22fe750dbc3c4ddff064c0267fe6534869490a26d269dd",
+    "bytes": 10694857,
+    "expanded_bytes": 11281369,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/papercraft-explainer-e7b8cd99ea37.zip"
   }
 }

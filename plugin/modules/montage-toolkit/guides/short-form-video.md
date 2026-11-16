@@ -6,7 +6,7 @@
 
 Short-form = 1080x1920 vertical, 10–30s, talking-head face + motion-graphic scene overlays + karaoke captions. Everything in this skill is distilled from the May Shorts 19 iteration autopsy (v1 → v4) and is preserved for maintenance of those examples. Use `short-form-edit` for new recordings.
 
-**Always invoke `/hyperframes` first.** This skill sits on top of it — it does not replace the framework rules (`data-*` attributes, `window.__timelines`, composition structure). Those are non-negotiable regardless of the format.
+**Always invoke `/hyperframes` first.** This skill sits on top of it — it does not replace the framework rules (`data-*` attributes, `cadence.mount`, composition structure). Those are non-negotiable regardless of the format.
 
 ## When this skill fires
 
@@ -43,7 +43,7 @@ index.html (root, 1080x1920, data-composition-id="main")
 
 ## Face-mode choreography (the signature move of short-form)
 
-The face lives in a wrapper div sized at the source's native landscape (1920x1080). GSAP animates the WRAPPER (never the video element — animating `<video>` dimensions freezes frames).
+The face lives in a wrapper div sized at the source's native landscape (1920x1080). Cadence Tween animates the WRAPPER (never the video element — animating `<video>` dimensions freezes frames).
 
 Two modes:
 
@@ -114,8 +114,8 @@ Then the face-mode array, then any internal-offset changes, then frame-verificat
 One scene = one sub-composition file. Scenes sit on the same `data-track-index` back-to-back (no gaps). Inside each scene:
 
 - `data-duration` matches the parent's slot exactly
-- All GSAP anchors are LOCAL (0-based from scene start)
-- Use `tl.set({}, {}, <data-duration>)` to pad the timeline so GSAP `tl.duration()` matches `data-duration`
+- All Cadence Tween anchors are LOCAL (0-based from scene start)
+- Use `tl.set({}, {}, <data-duration>)` to pad the timeline so Cadence Tween `tl.duration()` matches `data-duration`
 
 ### Scene pacing rules (from the 10 principles)
 
@@ -133,7 +133,7 @@ One scene = one sub-composition file. Scenes sit on the same `data-track-index` 
 - Drop the rgba background pill — let the stroke hold readability. Captions should feel like graffiti on the frame, not a subtitle track.
 - For retimes, use a `shift()` function inside `captions.html` to map transcript word timestamps → edited-time. This keeps the transcript JSON untouched and makes retimes mechanical.
 
-See `references/captions.md` under `/hyperframes` for the full karaoke implementation. TL;DR: per-word `<span>` elements with `data-word-start`, GSAP tweens scoped to each span, tight 0.08–0.12s pop durations.
+See `references/captions.md` under `/hyperframes` for the full karaoke implementation. TL;DR: per-word `<span>` elements with `data-word-start`, Cadence Tween tweens scoped to each span, tight 0.08–0.12s pop durations.
 
 ## Ambient background (never ship flat navy)
 
@@ -316,7 +316,7 @@ For scenes 3–5 of a 15–20s short (the "middle grind" where attention drops t
 
 - `/hyperframes` — framework rules (always first)
 - `/hyperframes-cli` — CLI commands (init, lint, preview, render)
-- `/gsap` — animation library reference
+- `/cadence` — animation library reference
 
 ## Memory pointers (relevant feedback entries)
 

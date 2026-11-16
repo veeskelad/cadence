@@ -79,7 +79,7 @@ def image(j, c, v):
     c.css.append('#win img.shot{position:absolute;left:0;top:78px;width:860px;height:auto}')
     c.body.append(window(f'<img class="shot" id="shot" src="{c.asset(src)}">', v.get('bar', '')))
     c.js.append(f'tl.fromTo("#shot",{{y:0}},{{y:{-int(v.get("scroll", 120))},duration:{c.dur:.3f},ease:"power1.inOut"}},0);'
-                'gsap.set("#cur",{autoAlpha:0});')
+                'cadence.set("#cur",{autoAlpha:0});')
 
 
 def checklist(j, c, v):
@@ -93,7 +93,7 @@ def checklist(j, c, v):
 .ck .bx{width:58px;height:58px;border-radius:16px;border:4px solid #d8d2c8;display:grid;place-items:center;flex:none}
 .ck .bx svg{opacity:0}''')
     c.body.append(window(f'<div id="ckl">{rows}</div>', v.get('bar', 'checklist')))
-    c.js.append('gsap.set("#cur",{autoAlpha:0});')
+    c.js.append('cadence.set("#cur",{autoAlpha:0});')
     for i, it in enumerate(items):
         t = j.t(it.get('at'), 0.4 + i * 0.6)
         c.js.append(f'tl.fromTo("#ck{i}",{{x:-30,autoAlpha:0}},{{x:0,autoAlpha:1,duration:.3,ease:"power3.out"}},{max(0, t-0.35):.3f});'

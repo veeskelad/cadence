@@ -28,7 +28,7 @@
 ## 1. Подготовка
 
 1. `python3 scripts/module_setup.py status montage-toolkit`. Не готово: сказать человеку, что установка
-   берёт около 5 МБ из сети (анимационная библиотека GSAP), и ставить только после согласия:
+   берёт около 5 МБ из сети (анимационная библиотека Cadence Tween), и ставить только после согласия:
    `python3 scripts/module_setup.py install montage-toolkit`.
 2. Движок рендера общий: `python3 scripts/engine_setup.py status`. Нет движка: около 300 МБ, тоже только
    с согласия.
@@ -50,7 +50,7 @@
    открытые петли, возвраты), [guides/style-library.md](guides/style-library.md) (выбор карточек),
    [guides/hyperframes-video-beats.md](guides/hyperframes-video-beats.md) (графика с привязкой к слову).
 6. Сборка композиции: правила движка в [guides/hyperframes.md](guides/hyperframes.md) и
-   [guides/gsap.md](guides/gsap.md). Шрифты только локальные.
+   [guides/cadence-tween.md](guides/cadence-tween.md). Шрифты только локальные.
 7. Проверка до рендера: `node modules/montage-toolkit/scripts/preflight.mjs work/<проект>` и, для
    композиций с привязкой к словам, `node modules/montage-toolkit/scripts/validate-beat-sync.mjs work/<проект>`.
 8. Рендер: `npm --prefix engine run render -- work/<проект> --quality high --fps 30 --output work/<проект>/out/<имя>.mp4`.
@@ -81,7 +81,7 @@
 [motion-philosophy](guides/motion-philosophy.md), [kit-workspace](guides/kit-workspace.md),
 [short-form-video](guides/short-form-video.md).
 Движок (справка, общий движок Cadence): [hyperframes](guides/hyperframes.md),
-[hyperframes-cli](guides/hyperframes-cli.md), [gsap](guides/gsap.md).
+[hyperframes-cli](guides/hyperframes-cli.md), [cadence](guides/cadence-tween.md).
 
 ## 5. Ограничения
 

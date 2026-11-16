@@ -20,7 +20,7 @@ missing, propose a style from `style-library/registry.json` based on the footage
 5. Read `../video-storytelling/SKILL.md` for the visual arc and
    `../hyperframes-video-beats/SKILL.md` for overlays. Write a beat sheet with
    transcript anchors, one visual idea per beat, and deliberate callbacks.
-6. Read `guides/motion-philosophy.md`, `../hyperframes/SKILL.md`, and relevant GSAP
+6. Read `guides/motion-philosophy.md`, `../hyperframes/SKILL.md`, and relevant Cadence Tween
    references before authoring. Use `../style-library/SKILL.md` to select or
    adapt a card. Localize every asset used by the composition.
 7. Run preflight and HyperFrames lint from the project, plus the transcript-sync

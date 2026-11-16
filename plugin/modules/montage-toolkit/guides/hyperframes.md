@@ -4,7 +4,7 @@
 
 > В Cadence рендер идёт общим движком (`npm --prefix engine run check|snapshot|render`), а не командой `npx hyperframes`. Команды `init`, `add`, `tts`, `transcribe`, `capture`, `auth`, `cloud`, `remove-background` ходят в сеть или ставят модели и здесь не запускаются. Команды ниже оставлены как справка по движку.
 
-HTML is the source of truth for video. A composition is an HTML file with `data-*` attributes for timing, a GSAP timeline for animation, and CSS for appearance. The framework handles clip visibility, media playback, and timeline sync.
+HTML is the source of truth for video. A composition is an HTML file with `data-*` attributes for timing, a Cadence Tween timeline for animation, and CSS for appearance. The framework handles clip visibility, media playback, and timeline sync.
 
 ## Approach
 
@@ -41,7 +41,7 @@ For motion defaults, sizing, entrance patterns, and easing — follow [house-sty
 
 ## Layout Before Animation
 
-Position every element where it should be at its **most visible moment** — the frame where it's fully entered, correctly placed, and not yet exiting. Write this as static HTML+CSS first. No GSAP yet.
+Position every element where it should be at its **most visible moment** — the frame where it's fully entered, correctly placed, and not yet exiting. Write this as static HTML+CSS first. No Cadence Tween yet.
 
 **Why this matters:** If you position elements at their animated start state (offscreen, scaled to 0, opacity 0) and tween them to where you think they should land, you're guessing the final layout. Overlaps are invisible until the video renders. By building the end state first, you can see and fix layout problems before adding any motion.
 
@@ -49,8 +49,8 @@ Position every element where it should be at its **most visible moment** — the
 
 1. **Identify the hero frame** for each scene — the moment when the most elements are simultaneously visible. This is the layout you build.
 2. **Write static CSS** for that frame. The `.scene-content` container MUST fill the full scene using `width: 100%; height: 100%; padding: Npx;` with `display: flex; flex-direction: column; gap: Npx; box-sizing: border-box`. Use padding to push content inward — NEVER `position: absolute; top: Npx` on a content container. Absolute-positioned content containers overflow when content is taller than the remaining space. Reserve `position: absolute` for decoratives only.
-3. **Add entrances with `gsap.from()`** — animate FROM offscreen/invisible TO the CSS position. The CSS position is the ground truth; the tween describes the journey to get there.
-4. **Add exits with `gsap.to()`** — animate TO offscreen/invisible FROM the CSS position.
+3. **Add entrances with `cadence.from()`** — animate FROM offscreen/invisible TO the CSS position. The CSS position is the ground truth; the tween describes the journey to get there.
+4. **Add exits with `cadence.to()`** — animate TO offscreen/invisible FROM the CSS position.
 
 ### Example
 
@@ -130,7 +130,7 @@ Layered effects (glow behind text, shadow elements, background patterns) and z-s
 | ---------------------------- | -------- | -------------------------------------------- |
 | `data-composition-id`        | Yes      | Unique composition ID                        |
 | `data-start`                 | Yes      | Start time (root composition: use `"0"`)     |
-| `data-duration`              | Yes      | Takes precedence over GSAP timeline duration |
+| `data-duration`              | Yes      | Takes precedence over Cadence Tween timeline duration |
 | `data-width` / `data-height` | Yes      | Pixel dimensions (1920x1080 or 1080x1920)    |
 | `data-composition-src`       | No       | Path to external HTML file                   |
 
@@ -149,12 +149,12 @@ Sub-composition structure:
         /* scoped styles */
       }
     </style>
-    <script src="assets/gsap.min.js"></script>
+    <script src="assets/cadence-tween.js"></script>
     <script>
-      window.__timelines = window.__timelines || {};
-      const tl = gsap.timeline({ paused: true });
+      var cadence = window.cadence.scope(document);
+      const tl = cadence.timeline({ paused: true });
       // tweens...
-      window.__timelines["my-comp"] = tl;
+      cadence.mount("my-comp", tl);
     </script>
   </div>
 </template>
@@ -189,26 +189,26 @@ Video must be `muted playsinline`. Audio is always a separate `<audio>` element:
 ## Timeline Contract
 
 - All timelines start `{ paused: true }` — the player controls playback
-- Register every timeline: `window.__timelines["<composition-id>"] = tl`
+- Register every timeline: `cadence.mount("<composition-id>", tl);`
 - Framework auto-nests sub-timelines — do NOT manually add them
-- Duration comes from `data-duration`, not from GSAP timeline length
+- Duration comes from `data-duration`, not from Cadence Tween timeline length
 - Never create empty tweens to set duration
 
 ## Rules (Non-Negotiable)
 
 **Deterministic:** No `Math.random()`, `Date.now()`, or time-based logic. Use a seeded PRNG if you need pseudo-random values (e.g. mulberry32).
 
-**GSAP:** Only animate visual properties (`opacity`, `x`, `y`, `scale`, `rotation`, `color`, `backgroundColor`, `borderRadius`, transforms). Do NOT animate `visibility`, `display`, or call `video.play()`/`audio.play()`.
+**Cadence Tween:** Only animate visual properties (`opacity`, `x`, `y`, `scale`, `rotation`, `color`, `backgroundColor`, `borderRadius`, transforms). Do NOT animate `visibility`, `display`, or call `video.play()`/`audio.play()`.
 
 **Animation conflicts:** Never animate the same property on the same element from multiple timelines simultaneously.
 
 **No `repeat: -1`:** Infinite-repeat timelines break the capture engine. Calculate the exact repeat count from composition duration: `repeat: Math.ceil(duration / cycleDuration) - 1`.
 
-**Synchronous timeline construction:** Never build timelines inside `async`/`await`, `setTimeout`, or Promises. The capture engine reads `window.__timelines` synchronously after page load. Fonts are embedded by the compiler, so they're available immediately — no need to wait for font loading.
+**Synchronous timeline construction:** Never build timelines inside `async`/`await`, `setTimeout`, or Promises. The capture engine reads `cadence.mount` synchronously after page load. Fonts are embedded by the compiler, so they're available immediately — no need to wait for font loading.
 
 **Never do:**
 
-1. Forget `window.__timelines` registration
+1. Forget `cadence.mount` registration
 2. Use video for audio — always muted video + separate `<audio>`
 3. Nest video inside a timed div — use a non-timed wrapper
 4. Use `data-layer` (use `data-track-index`) or `data-end` (use `data-duration`)
@@ -217,7 +217,7 @@ Video must be `muted playsinline`. Audio is always a separate `<audio>` element:
 7. Create a top-level container without `data-composition-id`
 8. Use `repeat: -1` on any timeline or tween — always finite repeats
 9. Build timelines asynchronously (inside `async`, `setTimeout`, `Promise`)
-10. Use `gsap.set()` on clip elements from later scenes — they don't exist in the DOM at page load. Use `tl.set(selector, vars, timePosition)` inside the timeline at or after the clip's `data-start` time instead.
+10. Use `cadence.set()` on clip elements from later scenes — they don't exist in the DOM at page load. Use `tl.set(selector, vars, timePosition)` inside the timeline at or after the clip's `data-start` time instead.
 11. Use `<br>` in content text — forced line breaks don't account for actual rendered font width. Text that wraps naturally + a `<br>` produces an extra unwanted break, causing overlap. Let text wrap via `max-width` instead. Exception: short display titles where each word is deliberately on its own line (e.g., "THE\nIMMORTAL\nGAME" at 130px).
 
 ## Scene Transitions (Non-Negotiable)
@@ -225,9 +225,9 @@ Video must be `muted playsinline`. Audio is always a separate `<audio>` element:
 Every multi-scene composition MUST follow ALL of these rules. Violating any one of them is a broken composition.
 
 1. **ALWAYS use transitions between scenes.** No jump cuts. No exceptions.
-2. **ALWAYS use entrance animations on every scene.** Every element animates IN via `gsap.from()`. No element may appear fully-formed. If a scene has 5 elements, it needs 5 entrance tweens.
-3. **NEVER use exit animations** except on the final scene. This means: NO `gsap.to()` that animates opacity to 0, y offscreen, scale to 0, or any other "out" animation before a transition fires. The transition IS the exit. The outgoing scene's content MUST be fully visible at the moment the transition starts.
-4. **Final scene only:** The last scene may fade elements out (e.g., fade to black). This is the ONLY scene where `gsap.to(..., { opacity: 0 })` is allowed.
+2. **ALWAYS use entrance animations on every scene.** Every element animates IN via `cadence.from()`. No element may appear fully-formed. If a scene has 5 elements, it needs 5 entrance tweens.
+3. **NEVER use exit animations** except on the final scene. This means: NO `cadence.to()` that animates opacity to 0, y offscreen, scale to 0, or any other "out" animation before a transition fires. The transition IS the exit. The outgoing scene's content MUST be fully visible at the moment the transition starts.
+4. **Final scene only:** The last scene may fade elements out (e.g., fade to black). This is the ONLY scene where `cadence.to(..., { opacity: 0 })` is allowed.
 
 **WRONG — exit animation before transition:**
 
@@ -328,11 +328,11 @@ Skip on small edits (fixing a color, adjusting one duration). Run on new composi
 
 - **[references/captions.md](references/captions.md)** — Captions, subtitles, lyrics, karaoke synced to audio. Tone-adaptive style detection, per-word styling, text overflow prevention, caption exit guarantees, word grouping. Read when adding any text synced to audio timing.
 - **[references/tts.md](references/tts.md)** — Text-to-speech with Kokoro-82M. Voice selection, speed tuning, TTS+captions workflow. Read when generating narration or voiceover.
-- **[references/audio-reactive.md](references/audio-reactive.md)** — Audio-reactive animation: map frequency bands and amplitude to GSAP properties. Read when visuals should respond to music, voice, or sound.
-- **[references/css-patterns.md](references/css-patterns.md)** — CSS+GSAP marker highlighting: highlight, circle, burst, scribble, sketchout. Deterministic, fully seekable. Read when adding visual emphasis to text.
+- **[references/audio-reactive.md](references/audio-reactive.md)** — Audio-reactive animation: map frequency bands and amplitude to Cadence Tween properties. Read when visuals should respond to music, voice, or sound.
+- **[references/css-patterns.md](references/css-patterns.md)** — CSS+Cadence Tween marker highlighting: highlight, circle, burst, scribble, sketchout. Deterministic, fully seekable. Read when adding visual emphasis to text.
 - **[references/typography.md](references/typography.md)** — Typography: font pairing, OpenType features, dark-background adjustments, font discovery script. **Always read** — every composition has text.
-- **[references/motion-principles.md](references/motion-principles.md)** — Motion design principles: easing as emotion, timing as weight, choreography as hierarchy, scene pacing, ambient motion, anti-patterns. Read when choreographing GSAP animations.
-- **[visual-styles.md](visual-styles.md)** — 8 named visual styles (Swiss Pulse, Velvet Standard, Deconstructed, Maximalist Type, Data Drift, Soft Signal, Folk Frequency, Shadow Cut) with hex palettes, GSAP easing signatures, and shader pairings. Read when user names a style or when generating DESIGN.md.
+- **[references/motion-principles.md](references/motion-principles.md)** — Motion design principles: easing as emotion, timing as weight, choreography as hierarchy, scene pacing, ambient motion, anti-patterns. Read when choreographing Cadence Tween animations.
+- **[visual-styles.md](visual-styles.md)** — 8 named visual styles (Swiss Pulse, Velvet Standard, Deconstructed, Maximalist Type, Data Drift, Soft Signal, Folk Frequency, Shadow Cut) with hex palettes, Cadence Tween easing signatures, and shader pairings. Read when user names a style or when generating DESIGN.md.
 - **[house-style.md](house-style.md)** — Default motion, sizing, and color palettes when no style is specified.
 - **[patterns.md](patterns.md)** — PiP, title cards, slide show patterns.
 - **[data-in-motion.md](data-in-motion.md)** — Data, stats, and infographic patterns.
@@ -343,4 +343,4 @@ Skip on small edits (fixing a color, adjusting one duration). Run on new composi
   - [transitions/catalog.md](references/transitions/catalog.md) — Hard rules, scene template, and routing to per-type implementation code.
   - Shader transitions are in `@hyperframes/shader-transitions` (`packages/shader-transitions/`) — read package source, not skill files.
 
-GSAP patterns and effects are in the `/gsap` skill.
+Cadence Tween patterns and effects are in the `/cadence` skill.

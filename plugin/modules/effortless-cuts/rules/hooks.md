@@ -145,7 +145,7 @@ ISSUE 😕"), not the whole sentence and not a kicker line. The speaker says the
 sentence; the text names the topic the viewer already recognises.
 
 **The top panel in the first 3 seconds must be HD.** Use a motion graphic
-rendered at 1080 wide, an HD image or HD video, or a Flick/Remotion scene. An
+rendered at 1080 wide, an HD image or HD video, or a designed scene. An
 upscaled or dimmed screenshot reads as blurry: a 1280x800 capture scaled into
 the 1080x960 half was rejected on 2026-10-02.
 

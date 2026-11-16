@@ -2,7 +2,7 @@
 """Transcribe video with faster-whisper, output dual-format JSON.
 
 Produces both WhisperX-style segments (for the agent to read) and
-Remotion-native captions (for rendering with @remotion/captions).
+word-level captions {text, startMs, endMs} (for hyperframes/render.mjs).
 
 Usage:
     python3 transcribe.py INPUT_VIDEO --output transcript.json
@@ -115,7 +115,7 @@ def transcribe(audio_path, model_size="large-v3", device="auto", compute_type="a
                     "end": round(word.end, 3),
                 })
 
-                # Remotion caption format: {text, startMs, endMs}
+                # caption format for hyperframes/render.mjs: {text, startMs, endMs}
                 # faster-whisper preserves leading spaces in word.word
                 captions.append({
                     "text": word.word,
