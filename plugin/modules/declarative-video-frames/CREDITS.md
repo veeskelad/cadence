@@ -41,7 +41,7 @@ broader Node.js ecosystem.
     `cuboid-carousel` and `orbit-card` (`Three-LICENSE.txt` beside the copy); bundled as r181 inside
     `glass-shard-title`'s `glass-main.js`; loaded from the jsDelivr CDN by `canopy-part-title`
     (0.170.0) and `wireframe-portal-title` (0.181.2).
-  - Animation in every block, component and example runs on Cadence Tween (`engine/lib/cadence-tween.js`),
+  - Animation in every block, component and example runs on Cadence Tween (`engine/lib/cadence-tween.min.js`),
     Cadence's own engine. The upstream registry used GSAP; the blocks were rewritten onto Cadence Tween
     and no GSAP code ships with Cadence.
   - **[three-mesh-bvh](https://github.com/gkjohnson/three-mesh-bvh)** 0.9.14 and

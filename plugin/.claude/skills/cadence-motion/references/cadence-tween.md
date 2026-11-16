@@ -1,6 +1,6 @@
 # Cadence Tween — движок анимации Cadence
 
-Вся анимация на таймлайне в Cadence идёт на Cadence Tween: `engine/lib/cadence-tween.js`, собственный движок Cadence
+Вся анимация на таймлайне в Cadence идёт на Cadence Tween: `engine/lib/cadence-tween.min.js`, собственный движок Cadence
 без зависимостей. GSAP в Cadence не используется и в поставку не входит. Блоки, компоненты, карточки и генераторы
 модулей переведены на Cadence Tween и сверены с прежними кадрами покадрово.
 
@@ -8,8 +8,8 @@
 
 | Где страница | Тег |
 |---|---|
-| Проект `engine/build.mjs`, блок или компонент из библиотеки в `compositions/` | `<script src="/lib/cadence-tween.js"></script>` (сборка кладёт `lib/` в корень проекта) |
-| Самостоятельная страница в корне проекта | `<script src="lib/cadence-tween.js"></script>` и копия файла в `lib/` |
+| Проект `engine/build.mjs`, блок или компонент из библиотеки в `compositions/` | `<script src="/lib/cadence-tween.min.js"></script>` (сборка кладёт `lib/` в корень проекта) |
+| Самостоятельная страница в корне проекта | `<script src="lib/cadence-tween.min.js"></script>` и копия файла в `lib/` |
 
 В каждом встроенном скрипте композиции первая строка:
 
@@ -89,7 +89,7 @@ WebGL, three.js) зависит от всех значений сразу, ве�
 
 ## Версия и лицензия
 
-`engine/lib/cadence-tween.js` — собранный файл Cadence Tween, версия и контрольная сумма записаны в
+`engine/lib/cadence-tween.min.js` — собранный файл Cadence Tween, версия и контрольная сумма записаны в
 `engine/lib/cadence-tween.version`. Движок под проприетарной лицензией: использовать его можно только в составе
 Cadence, править файл, копировать его в другие продукты и разбирать нельзя. Новые версии ставит владелец
 командой `bash scripts/sync-tween.sh vX.Y.Z`, ручные правки файла ловит `tests/test_no_gsap.py`.

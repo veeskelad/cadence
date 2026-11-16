@@ -30,8 +30,8 @@ def hyperframes_cmd():
 
 
 def tween_path():
-    """Движок анимации Cadence (engine/lib/cadence-tween.js): лежит в выпуске, ставить ничего не нужно."""
-    p = ROOT / 'engine' / 'lib' / 'cadence-tween.js'
+    """Движок анимации Cadence (engine/lib/cadence-tween.min.js): лежит в выпуске, ставить ничего не нужно."""
+    p = ROOT / 'engine' / 'lib' / 'cadence-tween.min.js'
     if not p.is_file():
         sys.exit(f'нет движка анимации ({p}): выпуск Cadence неполный, переустановить плагин')
     return p

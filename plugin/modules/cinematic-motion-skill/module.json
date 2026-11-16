@@ -59,10 +59,10 @@
       "tests",
       "toolchain"
     ],
-    "file": "cinematic-motion-skill-8f99aaf9b531.zip",
-    "sha256": "8f99aaf9b5318168ef7c1822a26e92093172610d70bda926656857a22d5675bc",
-    "bytes": 3702309,
-    "expanded_bytes": 7219191,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/cinematic-motion-skill-8f99aaf9b531.zip"
+    "file": "cinematic-motion-skill-21d0d736fb9f.zip",
+    "sha256": "21d0d736fb9fda0960d34887cd43c52e428d634fa7db85c82d308139cdfece54",
+    "bytes": 3702310,
+    "expanded_bytes": 7219195,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.2/cinematic-motion-skill-21d0d736fb9f.zip"
   }
 }

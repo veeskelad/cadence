@@ -6,7 +6,7 @@ and are covered by the Cadence license (`LICENSE.txt` at the Cadence root), exce
 - HyperFrames skill documentation in `workflows/hyperframes`, `workflows/hyperframes-cli` and
   `workflows/cadence-tween` (rewritten for Cadence Tween): https://github.com/heygen-com/hyperframes, Apache-2.0, see
   `licenses/LICENSE-HYPERFRAMES.txt`. Adapted: runtime-relative paths, network commands marked as not run.
-- Animation runs on Cadence Tween (`engine/lib/cadence-tween.js`), Cadence's own engine; no GSAP code is
+- Animation runs on Cadence Tween (`engine/lib/cadence-tween.min.js`), Cadence's own engine; no GSAP code is
   installed or shipped.
 - Some cards reference Google Fonts in commented-out links. Font licenses remain with their publishers.
 

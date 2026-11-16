@@ -16,5 +16,5 @@ Sources examined before writing code, and why none was copied:
 Source file -> our file: none.
 
 Third-party runtime dependencies: none. Animation runs on Cadence Tween
-(`engine/lib/cadence-tween.js`, copied next to the page by `compose.py`), rendering on
+(`engine/lib/cadence-tween.min.js`, copied next to the page by `compose.py`), rendering on
 the shared Cadence engine (`engine/`).

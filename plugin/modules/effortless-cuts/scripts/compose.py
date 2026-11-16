@@ -53,10 +53,10 @@ def hyperframes():
 
 
 def install_tween(comp):
-    """Движок анимации Cadence Tween рядом со страницей: lib/cadence-tween.js."""
+    """Движок анимации Cadence Tween рядом со страницей: lib/cadence-tween.min.js."""
     from scenes import engine_dir
     (comp / "lib").mkdir(exist_ok=True)
-    shutil.copyfile(engine_dir() / "lib" / "cadence-tween.js", comp / "lib" / "cadence-tween.js")
+    shutil.copyfile(engine_dir() / "lib" / "cadence-tween.min.js", comp / "lib" / "cadence-tween.min.js")
 
 
 def caption_css(profile, width):
@@ -876,7 +876,7 @@ def build_html(video_name, width, height, duration, chunks, profile, beats=None,
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width={width}, height={height}" />
-    <script src="lib/cadence-tween.js"></script>
+    <script src="lib/cadence-tween.min.js"></script>
     <style>
       * {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{

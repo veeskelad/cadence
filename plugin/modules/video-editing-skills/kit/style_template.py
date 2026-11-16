@@ -18,7 +18,7 @@ def main(skill_dir):
     shutil.copytree(pack/'kit/fonts',comp/'fonts',dirs_exist_ok=True)
     vendor=cadence_env.tween_path()
     (comp/'vendor').mkdir(exist_ok=True)
-    shutil.copyfile(vendor,comp/'vendor/cadence-tween.js')
+    shutil.copyfile(vendor,comp/'vendor/cadence-tween.min.js')
     (comp/'assets').mkdir(exist_ok=True)
     source=(skill_dir/'template.html').read_text()
     assets=set(re.findall(r'(?:src|href)="assets/([^"\s]+)"',source))

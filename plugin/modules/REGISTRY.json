@@ -223,11 +223,11 @@
           "tests",
           "toolchain"
         ],
-        "file": "cinematic-motion-skill-8f99aaf9b531.zip",
-        "sha256": "8f99aaf9b5318168ef7c1822a26e92093172610d70bda926656857a22d5675bc",
-        "bytes": 3702309,
-        "expanded_bytes": 7219191,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/cinematic-motion-skill-8f99aaf9b531.zip"
+        "file": "cinematic-motion-skill-21d0d736fb9f.zip",
+        "sha256": "21d0d736fb9fda0960d34887cd43c52e428d634fa7db85c82d308139cdfece54",
+        "bytes": 3702310,
+        "expanded_bytes": 7219195,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.2/cinematic-motion-skill-21d0d736fb9f.zip"
       },
       "primary_for": [
         "voice-film"
@@ -445,11 +445,11 @@
           "scripts",
           "themes"
         ],
-        "file": "declarative-video-frames-5a51f59a0155.zip",
-        "sha256": "5a51f59a015518e51665fe4bcd84f924b712541cc5f2fc436706e7f3db3712b6",
-        "bytes": 34738486,
-        "expanded_bytes": 59358823,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/declarative-video-frames-5a51f59a0155.zip"
+        "file": "declarative-video-frames-b1ac80a5147c.zip",
+        "sha256": "b1ac80a5147c1ba2bca86edf7ab23a9aa897bfd5a0c6040a014a51dfa24394cb",
+        "bytes": 34740225,
+        "expanded_bytes": 59361311,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.2/declarative-video-frames-b1ac80a5147c.zip"
       },
       "primary_for": [
         "block-library"
@@ -979,11 +979,11 @@
           "tests",
           "workflows"
         ],
-        "file": "montage-toolkit-cef4f8339062.zip",
-        "sha256": "cef4f8339062ac0a70caa98ac6eb189aceba99f2edd8e15c41beaae6ffb04642",
-        "bytes": 1279264,
-        "expanded_bytes": 4190690,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/montage-toolkit-cef4f8339062.zip"
+        "file": "montage-toolkit-808dba741b18.zip",
+        "sha256": "808dba741b18e9102983262d1888416cd671fe011ef884fd5830e11343779c3a",
+        "bytes": 1280495,
+        "expanded_bytes": 4192370,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.2/montage-toolkit-808dba741b18.zip"
       },
       "primary_for": [
         "talking-head-edit"
@@ -1279,11 +1279,11 @@
           "tests",
           "tools"
         ],
-        "file": "phantom-editor-c7d045146d51.zip",
-        "sha256": "c7d045146d51401bc08909de5fb3f584c9c6ba294871350ab41b3145ef917f2c",
-        "bytes": 2752647,
-        "expanded_bytes": 5250824,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/phantom-editor-c7d045146d51.zip"
+        "file": "phantom-editor-68a56ce4f3b9.zip",
+        "sha256": "68a56ce4f3b987985fa50ca89145dd3f06ed9312dc94d7261f85e8f1e6f5851d",
+        "bytes": 2752715,
+        "expanded_bytes": 5251044,
+        "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.2/phantom-editor-68a56ce4f3b9.zip"
       },
       "primary_for": [
         "styled-reel"

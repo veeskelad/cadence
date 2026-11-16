@@ -233,7 +233,7 @@ class Comp:
         (self.dir / 'assets').mkdir(parents=True)
         shutil.copytree(KIT / 'fonts', self.dir / 'fonts')
         (self.dir / 'vendor').mkdir()
-        shutil.copy(tween, self.dir / 'vendor' / 'cadence-tween.js')
+        shutil.copy(tween, self.dir / 'vendor' / 'cadence-tween.min.js')
         for src, rel in self.files.items():
             try:
                 os.link(src, self.dir / rel)
@@ -245,7 +245,7 @@ class Comp:
 <body>
 <div id="root" data-composition-id="main" data-start="0" data-duration="{self.dur:.3f}" data-fps="{FPS}" data-width="{W}" data-height="{H}">
 {chr(10).join(self.body)}
-<script src="vendor/cadence-tween.js"></script>
+<script src="vendor/cadence-tween.min.js"></script>
 <script>
 (function () {{
 const cadence = window.cadence.scope(document);

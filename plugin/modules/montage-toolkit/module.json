@@ -58,10 +58,10 @@
       "tests",
       "workflows"
     ],
-    "file": "montage-toolkit-cef4f8339062.zip",
-    "sha256": "cef4f8339062ac0a70caa98ac6eb189aceba99f2edd8e15c41beaae6ffb04642",
-    "bytes": 1279264,
-    "expanded_bytes": 4190690,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/montage-toolkit-cef4f8339062.zip"
+    "file": "montage-toolkit-808dba741b18.zip",
+    "sha256": "808dba741b18e9102983262d1888416cd671fe011ef884fd5830e11343779c3a",
+    "bytes": 1280495,
+    "expanded_bytes": 4192370,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.2/montage-toolkit-808dba741b18.zip"
   }
 }

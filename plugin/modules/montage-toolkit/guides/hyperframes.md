@@ -149,7 +149,7 @@ Sub-composition structure:
         /* scoped styles */
       }
     </style>
-    <script src="assets/cadence-tween.js"></script>
+    <script src="assets/cadence-tween.min.js"></script>
     <script>
       var cadence = window.cadence.scope(document);
       const tl = cadence.timeline({ paused: true });
