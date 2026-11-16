@@ -95,7 +95,7 @@ draws itself declares `kind: "drawing"` and is judged on a finer floor; a freeze
 ## The engine
 
 `engine/` is the portable art core plus the tooling. `engine/src/canvas-core` knows nothing
-about the DOM or any backend. `W`, `H`, `fps` and `durationFrames` come from the film's `meta`. Four backends, one art core → `references/backends-and-adapters.md`.
+about the DOM or any backend. `W`, `H`, `fps` and `durationFrames` come from the film's `meta`. Three backends, one art core → `references/backends-and-adapters.md`; the MP4 renders through the shared Cadence engine (HyperFrames) by default.
 3D: `engine/src/three-core` renders three.js onto the same frame, so every tool below works on 3D films (three.js 0.170.0, hash-pinned, `engine/vendor/three/PROVENANCE.md`; type face `engine/assets/fonts/PROVENANCE.md`).
 Camera moves (pans, dollies, lens and dolly zooms, parallax, shake) and slow motion or freeze frames: `engine/src/canvas-core/camera.ts`, `engine/src/canvas-core/timeRemap.ts`, `references/camera.md`.
 Seams between scenes: `references/motion-grammar.md` (cuts that carry motion: `seams.ts`; `tools/deck.mjs deal` deals each film different moves; `deck.mjs find "<name>"` turns a move's everyday name into its card). `render.mjs --blur auto` renders with motion blur (subframes per frame
@@ -105,7 +105,7 @@ from its measured on-screen speed, averaged in linear light, `--shutter 180`); t
 node modules/doodle-animator/engine/tools/scaffold.mjs ~/art --film intro --format 9x16 --duration 12   # seconds
 cd ~/art && npm install && npx playwright-core install chromium
 node tools/still.mjs intro --frame 0 --out out/look.png --scale 2   # a still, with its hash
-node tools/render.mjs intro                                        # MP4; --out x.gif|x.webm|x.apng
+node tools/render.mjs intro                                        # MP4 through the Cadence engine; --out x.gif|x.webm|x.apng or --blur use the playwright page
 node tools/gate.mjs intro                                          # determinism, contract, dead air
 node tools/emit.mjs intro --out out/intro.html                     # one self-contained offline player
 ```
@@ -113,7 +113,7 @@ node tools/emit.mjs intro --out out/intro.html                     # one self-co
 | Tool | What it does |
 |---|---|
 | `scaffold.mjs` | a project with a still and/or film; `--duration`, `--format` or `--size`, `--fps`, `--bpm` |
-| `still.mjs` / `render.mjs` | frames drawn twice with hashes (`--frames a,b,c --sheet <file>` in one browser) / the piece in any format (`--from/--to`, `--poster-frame`, `--hashes`) |
+| `still.mjs` / `render.mjs` | frames drawn twice with hashes (`--frames a,b,c --sheet <file>` in one browser) / the piece: MP4 through the Cadence engine by default (`--engine hyperframes`), any format and `--from/--to`, `--poster-frame`, `--hashes`, `--blur` on the playwright page (`--engine playwright`) |
 | `gate.mjs` | determinism, contract, dead air, artifact, 3D checks; `--self-test` proves it can fail |
 | `registry.mjs` / `gallery.mjs` / `docs-check.mjs` | the style list from the plates / the gallery sheet / fails when a doc's style count, length or path disagrees with the code |
 | `verify-export.mjs` | QA on the rendered file: frames, duration, score, A/V sync, true peak after the encode; opt-in first frame, loop seam, `--delivery` |

@@ -2,13 +2,13 @@
 
 Когда: пора собрать эпизод по раскадровке: создать проект, сцены, звук, отрендерить mp4 или переделать одну сцену.
 
-Build every episode on the library instead of writing a Remotion project from scratch. Read `library/README.md` once.
+Build every episode on the library instead of writing a project from scratch. Read `library/README.md` once. The episode is a React composition rendered by the Cadence engine (HyperFrames, `engine/`).
 
 ## Preflight
 
-- Install: **Standard** or Full. Needs the library, node 20+, npm, ffmpeg, Python tools (numpy, Pillow, soundfile) and Chrome or Chromium for the audio render. Probe with the commands in `papercut-explainer`; if something is missing, see `papercut-setup.md`.
-- Library: `$PAPERCUT_LIB`, which is `modules/papercraft-explainer/library` (absolute path) in Cadence. With no library at all, build from the sketches in `remotion-recipes.md`.
-- Follow the current Remotion conventions (remotion.dev/docs) for markup, captions and the Studio.
+- Install: **Standard** or Full. Needs the library and its packages (`python3 scripts/module_setup.py install papercraft-explainer`), the Cadence engine (`python3 scripts/engine_setup.py status`), node 22+, ffmpeg, Python tools (numpy, Pillow, soundfile) and Chrome or Chromium for the audio render. Probe with the commands in `papercut-explainer`; if something is missing, see `papercut-setup.md`.
+- Library: `$PAPERCUT_LIB`, which is `modules/papercraft-explainer/library` (absolute path) in Cadence. With no library at all, build from the sketches in `frame-recipes.md`.
+- Time comes only from `useCurrentFrame()` of `@cadence/frame` (the kit's `frame.tsx`): no CSS animations, no animation libraries.
 - Needs `papercut/STORYBOARD.md` and `narration/script.json` from the earlier stages.
 - Smoke test of the whole toolchain: `library/tools/selftest.sh` builds `examples/hello-reel/` in a throwaway folder and renders one still.
 
@@ -18,9 +18,9 @@ Build every episode on the library instead of writing a Remotion project from sc
 $PAPERCUT_LIB/new_episode.sh <series-dir> NN-slug CompId [out-name]
 ```
 
-It creates `<series>/episodes/NN-slug/{research,narration/voice,papercut}` with the template project and a synced copy of the kit in `src/lib/`. `node_modules` comes from `$DONOR`, else the newest sibling episode, else `npm i`. If `<series>/papercut-assets/` exists, it is laid over the default textures and props.
+It creates `<series>/episodes/NN-slug/{research,narration/voice,papercut}` with the template project and a synced copy of the kit in `src/lib/`. `node_modules` is a link to the library's `papercut/hyperframes/node_modules` (React, esbuild, TypeScript), so a project installs nothing. If `<series>/papercut-assets/` exists, it is laid over the default textures and props.
 
-The folder may already exist, because the earlier stages wrote `research/`, `narration/script.json` and `papercut/STORYBOARD.md` into it. The script merges into it and never overwrites a file that is there. It stops only if `papercut/package.json` exists (already scaffolded).
+The folder may already exist, because the earlier stages wrote `research/`, `narration/script.json` and `papercut/STORYBOARD.md` into it. The script merges into it and never overwrites a file that is there. It stops only if `papercut/src/lib/SYNCED.txt` exists (already scaffolded).
 
 Never edit `src/lib/` in a project. It is a snapshot, so an old episode renders the same after the library changes. Fix the library, then re-sync with `papercut/sync_kit.sh`.
 
@@ -49,7 +49,7 @@ Follow `asset-prompts.md`: an image tool (anything that outputs transparent PNGs
 3. File ownership: an agent writes only `src/scenes/<Scene>.tsx`, an optional `<Scene>.parts.tsx` and `tools/cue_sheet.d/<Scene>.json`. Never `src/lib/**`, other scenes, `index.ts`, `plan.json`, `episode.json` or the storyboard.
 4. Agents read `library/papercut/CATALOG.md` and `library/audio/CATALOG.md`, not the kit source, and reuse components, prop sets and scene templates (`kit/scenes/`, for example `CtaPhoneDM` for the CTA) before drawing anything new.
 
-Build rules: 1080x1920, 30 fps, scenes chained in the kit's transition series. Global layers: VO and music `<Audio>`, the taped banner with `<Boil>`, `<WordTagCaptions>`, `<GrainOverlay>`. Every prop is wrapped in `<Paper>`, entrances use `<PopIn>`, each scene runs inside its storyboard camera. No CSS animations. Keep the bottom 20% clear. Neighbouring scenes never share a backdrop. The default hero is a boxy orange critter (token `C.hero` `#D67354`, shade `C.heroLo` `#A9553B`, alias `you`); accessories and name pills tell the cast apart.
+Build rules: 1080x1920, 30 fps, scenes chained in the kit's transition series. Global layers: the taped banner with `<Boil>`, `<WordTagCaptions>`, `<GrainOverlay>`. Every prop is wrapped in `<Paper>`, entrances use `<PopIn>`, each scene runs inside its storyboard camera. No CSS animations. The composition is silent: VO, music and effects are mixed by `tools/mix.py` and muxed in by `render.sh`. Keep the bottom 20% clear. Neighbouring scenes never share a backdrop. The default hero is a boxy orange critter (token `C.hero` `#D67354`, shade `C.heroLo` `#A9553B`, alias `you`); accessories and name pills tell the cast apart.
 
 ## 5. Sound
 
@@ -63,13 +63,13 @@ python3 $PAPERCUT_LIB/tools/cues.py && node $PAPERCUT_LIB/audio/render.mjs
 
 ## 6. Render
 
-Preview in the Studio (`npx remotion studio`). Render only when asked:
+Preview: stills with `$PAPERCUT_LIB/tools/qa.sh NAME` (see `papercut-qa`), or the engine's live preview of the built project (`node $PAPERCUT_LIB/papercut/hyperframes/build.mjs . --out out/hf`, then `npm --prefix <cadence>/engine run preview -- "$PWD/out/hf"`). Render only when asked:
 
 ```
 $PAPERCUT_LIB/tools/render.sh        # -> out/<out>.mp4
 ```
 
-Flags: `--workers N` (default 3), `--conc N`, `--force`, `--keep`. Each scene is cached, so after a fix only the changed scene re-renders; a change to the kit, plan, voice or captions re-renders everything. The first run downloads Remotion's headless Chrome, and `out/cache` takes several GB of ProRes.
+Flags: `--workers N` (Chrome workers inside each engine render, default 1), `--force`. The project is built into `out/hf` and each scene is an engine render of its span, cached in `out/cache/seg/`, so after a fix only the changed scene re-renders; a change to the kit, plan, voice or captions re-renders everything. The engine renders one job at a time per user and waits for any other render on the machine.
 
 To fix or rebuild one scene: edit `src/scenes/<Scene>.tsx`, check it with `papercut-qa`, then run `render.sh` again.
 

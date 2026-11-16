@@ -50,7 +50,7 @@ Audio extraction is handled internally by transcribe.py:
 
 Output is dual-format JSON:
 - `segments[]` — WhisperX-style with word timestamps (for the agent to read)
-- `captions[]` — Remotion-native `{text, startMs, endMs}` array (for rendering)
+- `captions[]` — word-level `{text, startMs, endMs}` array (for rendering)
 
 Report to user: transcription time, word count, language detected.
 
@@ -130,7 +130,7 @@ After user selects segments:
 - Show selected segments with exact timestamps
 - Allow timecode adjustments ("move segment 2 start back 3 seconds")
 - Confirm final selections
-- Estimate render time (~15-30s per segment with Remotion)
+- Estimate render time (about 3x the segment length per segment with one render worker)
 
 Write approved segments to:
 ```bash
@@ -199,11 +199,11 @@ Compute reframe coordinates for each clip:
 
 Report to user: clips extracted, content type per clip, reframe strategy.
 
-### Step 9: RENDER via Remotion
+### Step 9: RENDER with the Cadence engine
 
 Render all snapped segments with the selected caption style:
 ```bash
-CHROME_PATH="${CHROME_PATH:-}" node "$SHORTS_ROOT/remotion/render.mjs" \
+node "$SHORTS_ROOT/hyperframes/render.mjs" \
     --segments $SHORTS_TMP/snapped_segments.json \
     --reframe $SHORTS_TMP/reframe.json \
     --captions $SHORTS_TMP/transcript_cleaned.json \
@@ -213,10 +213,9 @@ CHROME_PATH="${CHROME_PATH:-}" node "$SHORTS_ROOT/remotion/render.mjs" \
 ```
 
 The render script:
-1. Bundles the Remotion project once (~5-10s)
-2. Opens a shared Chrome instance
-3. Renders each segment sequentially (~15-30s each)
-4. Outputs 1080x1920 MP4 files
+1. Builds a small HyperFrames project per segment (`hyperframes/short.html`, fonts, the clip) in `render/_projects/`
+2. Renders the segments one after another with the shared engine (`engine/` at the Cadence root, one worker by default: `--workers 2` is faster on a strong machine)
+3. Outputs 1080x1920 MP4 files `short_NN.mp4` with the clip's sound and removes the build folders (`--keep-projects` keeps them for inspection)
 
 Report progress to user as each segment renders.
 
@@ -262,7 +261,7 @@ or re-exported before delivery.
 
 1. **Always run preflight** before any processing
 2. **Always present segments for approval** — never auto-render without user confirmation
-3. **Always report costs** — Remotion rendering is free (local), only potential cost is GPU power
+3. **Always report costs** — rendering is free (local engine), only potential cost is GPU power
 4. **Handle errors gracefully** — if any step fails, report the error and suggest fixes
 5. **Clean up on success** — offer to delete $SHORTS_TMP/ after export
 6. **Respect the user's choices** — if they say "re-analyze", go back to Step 4
@@ -298,6 +297,6 @@ These defaults work well for most content. Offer alternatives when the user has 
 ## Error Recovery
 
 - **Transcription fails**: Check that `SHORTS_PY` points to the module environment, the model is on disk (see `--allow-download`), try `--model small` for less VRAM
-- **Remotion render fails**: Check `python3 scripts/module_setup.py status shorts-studio` (node dependencies of `remotion/`)
+- **Render fails**: Check `python3 scripts/engine_setup.py status` (the shared engine) and the engine log on stderr; `--keep-projects` keeps the per-segment project for `npm --prefix engine run check -- <absolute path to the project>`
 - **Export fails**: Check FFmpeg version (`ffmpeg -version`), try CPU encoding if NVENC fails
 - **Out of disk space**: Clean $SHORTS_TMP/, check with `df -h work`

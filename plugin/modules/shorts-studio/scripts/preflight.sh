@@ -71,10 +71,11 @@ if ! "$PY" -c "import faster_whisper" 2>/dev/null; then
     ERRORS+=("faster-whisper not installed for $PY — ask the person, then run: python3 scripts/module_setup.py install shorts-studio")
 fi
 
-# Check Remotion node_modules
+# Check the shared Cadence render engine (HyperFrames in engine/ at the Cadence root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [ ! -d "$SCRIPT_DIR/remotion/node_modules" ]; then
-    ERRORS+=("Remotion dependencies not installed — ask the person, then run: python3 scripts/module_setup.py install shorts-studio")
+ENGINE_DIR="${CADENCE_ENGINE:-$SCRIPT_DIR/../../engine}"
+if [ ! -d "$ENGINE_DIR/node_modules/hyperframes" ]; then
+    ERRORS+=("Cadence render engine not ready — check: python3 scripts/engine_setup.py status; install it only with the person's consent")
 fi
 
 # Get video info

@@ -114,7 +114,7 @@ Two sanctioned exits — both physical, **never an opacity fade in place**:
    (`left:'118%'`, `left:'-12%'`, or `top:'116%'`), 0.5–0.7s.
 2. **Cut-the-curve handoff**: in the final ~0.3s before a hard cut, the cursor starts
    accelerating (`power2.in`) toward the NEXT scene's first click point, covering the
-   first ~1/3 of that path; the next composition `gsap.set`s the cursor at the
+   first ~1/3 of that path; the next composition `cadence.set`s the cursor at the
    handoff pose and continues with `power2.out` at matched velocity. The cursor itself
    becomes the carrier element that stitches the seam:
 
@@ -122,7 +122,7 @@ Two sanctioned exits — both physical, **never an opacity fade in place**:
 // scene A, last 0.3s — start the journey:
 tl.to(cursor, { left: "40.7%", top: "63.7%", duration: 0.3, ease: "power2.in" }, CUT - 0.3);
 // scene B, t=0 — finish it at matched velocity:
-gsap.set(cursorB, { left: "40.7%", top: "63.7%" });
+cadence.set(cursorB, { left: "40.7%", top: "63.7%" });
 tl.to(cursorB, { left: "22%", top: "45%", duration: 0.6, ease: "power2.out" }, 0);
 ```
 

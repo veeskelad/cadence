@@ -1,0 +1,21 @@
+{
+  "name": "effortless-cuts-scenes",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Designed scenes: React components, one HyperFrames composition per scene, rendered by the Cadence engine.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs . --entry src/index.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "esbuild": "0.28.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

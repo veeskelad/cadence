@@ -28,7 +28,6 @@
   "engine": "hyperframes",
   "deps": {
     "python": "kit/requirements.txt",
-    "node": "kit",
     "system": [
       "ffmpeg",
       "ffprobe",

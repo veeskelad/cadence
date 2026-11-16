@@ -15,12 +15,12 @@
 @font-face{font-family:TikTok;src:url(fonts/TikTokSans.ttf);font-weight:100 900}
 .quiet{position:absolute;left:120px;top:1120px;width:820px;text-align:center;font:600 49px/1.1 TikTok,sans-serif;color:#fff;-webkit-text-stroke:4px #141414;paint-order:stroke fill;z-index:25}
 </style></head><body>
- <div id="root" data-composition-id="main" data-width="1080" data-height="1920" data-duration="4.2" data-fps="30"><div id="scene0" class="photo" style="left:0px;top:0px;width:1080px;height:1920px;z-index:0;opacity:1"><img src="assets/blue-stairs.jpg"></div><div id="scene1" class="photo" style="left:0px;top:0px;width:1080px;height:1920px;z-index:1;opacity:0"><img src="assets/red-stairs.jpg"></div><div id="scene2" class="photo" style="left:0px;top:0px;width:1080px;height:1920px;z-index:2;opacity:0"><img src="assets/cactus.jpg"></div><div class="presenter" style="left:-80px;top:200px;width:1240px;height:2204.4444444444443px;"><video id="person" src="assets/explainer_cut.webm" muted playsinline data-start="0" data-duration="4.2" data-media-start="0.04" data-track-index="1"></video></div><div class="quiet" id="caption" style="top:1350px;font-size:56px">change the scene</div></div>
- <script src="vendor/gsap.min.js"></script><script>const tl=gsap.timeline({paused:true});tl.fromTo('#scene0 img',{scale:1.02},{scale:1.08,duration:1.4,ease:'none'},0);
+ <div id="root" data-composition-id="main" data-width="1080" data-height="1920" data-duration="4.2" data-fps="30" data-no-timeline><div id="scene0" class="photo" style="left:0px;top:0px;width:1080px;height:1920px;z-index:0;opacity:1"><img src="assets/blue-stairs.jpg"></div><div id="scene1" class="photo" style="left:0px;top:0px;width:1080px;height:1920px;z-index:1;opacity:0"><img src="assets/red-stairs.jpg"></div><div id="scene2" class="photo" style="left:0px;top:0px;width:1080px;height:1920px;z-index:2;opacity:0"><img src="assets/cactus.jpg"></div><div class="presenter" style="left:-80px;top:200px;width:1240px;height:2204.4444444444443px;"><video id="person" src="assets/explainer_cut.webm" muted playsinline data-start="0" data-duration="4.2" data-media-start="0.04" data-track-index="1"></video></div><div class="quiet" id="caption" style="top:1350px;font-size:56px">change the scene</div></div>
+ <script src="vendor/cadence-tween.js"></script><script>const cadence=window.cadence.scope(document);const tl=cadence.timeline({paused:true});tl.fromTo('#scene0 img',{scale:1.02},{scale:1.08,duration:1.4,ease:'none'},0);
  tl.set('#scene1',{opacity:1},1.4);tl.set('#scene0',{opacity:0},1.4);
  tl.fromTo('#scene1 img',{scale:1.06},{scale:1,duration:1.4,ease:'none'},1.4);
  tl.set('#scene2',{opacity:1},2.8);tl.set('#scene1',{opacity:0},2.8);
  tl.fromTo('#scene2 img',{scale:1},{scale:1.04,duration:1.4,ease:'none'},2.8);
  tl.set('#caption',{textContent:'keep the story moving'},2.8);
 
- window.__timelines=window.__timelines||{};window.__timelines.main=tl;</script></body></html>
+ cadence.mount("main",tl);</script></body></html>

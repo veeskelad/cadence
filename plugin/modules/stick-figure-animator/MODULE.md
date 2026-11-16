@@ -7,20 +7,23 @@
 вшитые субтитры; голос, если он уже записан.
 
 **Команда (первый шаг).**
-`python3 modules/stick-figure-animator/scripts/find_remotion.py --path "$WORK/<проект>/remotion"`
-показывает найденные проекты Remotion; дальше по шагам из `guides/stickman-video.md`.
+`python3 modules/stick-figure-animator/scripts/new_video.py --project "$WORK/<проект>/stickman" --slug <имя>`
+создаёт ролик; продолжить начатый помогает `scripts/find_projects.py --path "$WORK/<проект>"`. Дальше по шагам
+из `guides/stickman-video.md`.
 
-**Что получится.** Проект Remotion со сценами человечков, `voiceover.srt` с текстом и таймингом для записи,
-`storyboard.md` и MP4 в `out/` проекта. Эффекты и музыка синтезируются локально, чужих сэмплов нет.
+**Что получится.** Папка ролика (страница HyperFrames со сценами человечков), `voiceover.srt` с текстом и
+таймингом для записи, `storyboard.md` и MP4 в `out/` ролика. Эффекты и музыка синтезируются локально, чужих сэмплов нет.
 
 ## Важно до начала
 
-- Это движок Remotion. Он ставится отдельно, только с согласия человека: новая установка тянет несколько
-  сотен МБ из сети. Python-часть (numpy, scipy, pillow) ставится как обычно:
+- Рисует общий движок Cadence (HyperFrames в `engine/`): `python3 scripts/engine_setup.py status` должен
+  ответить `ready`. Своих node-пакетов у модуля нет. Python-часть (numpy, scipy, pillow) ставится как обычно:
   `python3 scripts/module_setup.py install stick-figure-animator`.
-- Проект Remotion держать в `$WORK/<проект>/remotion`, а не в папке с исходниками человека. Скрипты
-  `setup_project.py` и `new_video.py` не перезаписывают чужие файлы; чужой `package.json` без Remotion
-  не трогают (код выхода 3).
+- Ролик — отдельная папка `$WORK/<проект>/stickman/<имя>`, а не папка с исходниками человека. Скрипты
+  `setup_project.py` и `new_video.py` не перезаписывают чужие файлы; непустую папку, которая не ролик
+  со стик-фигурами, не трогают (код выхода 3).
+- Время анимации: кадр считается заново из номера кадра (`bindSeek` из `engine/lib/motion.js`), без
+  библиотеки анимации; сцены — функции `({ f, from, dur }) => разметка`.
 - По умолчанию сети нет. Её просят только `fetch_transcript.py` (субтитры чужого видео, спросить
   человека) и первая загрузка модели в `transcribe_voice.py` / `align_voice.py` (нужен `faster-whisper`).
 - Голос в ролике не слышно агенту: итог проверяется по `check_render.py`, а на слух проверяет человек.
@@ -29,24 +32,26 @@
 
 Пути `scripts/`, `assets/`, `references/` ниже считаются от корня модуля `modules/stick-figure-animator/`.
 
-1. Найти или создать проект: `scripts/find_remotion.py`, затем
-   `scripts/setup_project.py --dir <проект> [--create]` и `scripts/new_video.py --project <проект> --slug <имя>`.
-2. План по тексту: `scripts/parse_input.py --script script.md --out <проект>/src/<имя>`
-   (или `--srt`). Получается `timeline.ts`, `timeline.json`, `voiceover.srt`.
-3. Раскадровка в `storyboard.md`, сцены в `src/<имя>/Sxx*.tsx`. Приёмы — `references/animation-style.md`,
+1. Создать ролик: `scripts/new_video.py --project <проект> --slug <имя>` (начатый найти —
+   `scripts/find_projects.py`; обновить копию движка в старом ролике — `scripts/setup_project.py --dir <ролик> --update-engine`).
+2. План по тексту: `scripts/parse_input.py --script script.md --out <ролик>/src`
+   (или `--srt`). Получается `timeline.js`, `timeline.json`, `voiceover.srt`.
+3. Раскадровка в `storyboard.md`, сцены в `<ролик>/src/Sxx*.js`. Приёмы — `references/animation-style.md`,
    API движка — `references/engine-api.md`, типичные ошибки — `references/pitfalls.md`.
-4. Проверка кадров без полного рендера: `node stickman-sheet.mjs <Композиция> out/sheet.png 0-450:45`.
-5. Звук: `scripts/gen_audio.py --out <проект>/public/<имя> --plan "intro:8,play:40,finale:12"`.
-6. Рендер `npx remotion render <Композиция> out/<имя>.mp4` и проверка
-   `scripts/check_render.py out/<имя>.mp4 --timeline src/<имя>/timeline.json`.
-7. Голос записан позже: `scripts/align_voice.py --timeline ... --audio voice.wav --out ...` перестраивает
-   тайминг по реальной речи; потом рендер с `--props='{"voice":"voice.wav"}'`.
+4. Проверка кадров без полного рендера: `node <ролик>/render.mjs --sheet 0-450:45` (лист в `out/sheet.png`).
+5. Звук: `scripts/gen_audio.py --out <ролик>/assets --plan "intro:8,play:40,finale:12"`.
+6. Рендер `node <ролик>/render.mjs [--captions]` (в один поток) и проверка
+   `scripts/check_render.py <ролик>/out/<имя>.mp4 --timeline <ролик>/src/timeline.json`.
+7. Голос записан позже: `scripts/align_voice.py --timeline ... --audio voice.wav --out <ролик>/src` перестраивает
+   тайминг по реальной речи; потом `node <ролик>/render.mjs --voice voice.wav`.
 
 ## Ограничения
 
 - Реальные люди появляются только как подписанные обобщённые фигуры; насилие мультяшное.
 - Пересказ чужого видео или текста указывать в финальных титрах.
 - Свою музыку человек приносит на своих правах; встроенная генерируется заново.
+- Шрифт заголовков — Oswald из шрифтов движка (раньше был Barlow Condensed из сети); шрифт ударных слов
+  Bangers без кириллицы, для русских надписей брать `FONT.title` или `FONT.body`.
 
 ## Справка
 

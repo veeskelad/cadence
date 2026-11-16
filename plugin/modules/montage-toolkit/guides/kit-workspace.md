@@ -30,7 +30,7 @@ For one stage, open the matching guide:
 | Select or extend styles and templates | `style-library` |
 | HTML compositions and media timing (engine reference) | `hyperframes` |
 | Preview, lint, and rendering (engine reference) | `hyperframes-cli` |
-| Timeline animation | `gsap` |
+| Timeline animation | `cadence` |
 
 Before a creative session read `guides/motion-philosophy.md` and the project's DESIGN.md.
 The philosophy's fast sizzle pacing is a style reference. Give educational speech
@@ -66,7 +66,7 @@ div with id, data-composition-id, data-start, duration, width, and height. Timed
 elements carry data-start, data-duration, and data-track-index; same-track clips
 must not overlap. Visible timed divs use class="clip"; videos do not.
 Mute videos and use sibling audio for the mix. Animate a non-timed video wrapper.
-Register one synchronous paused GSAP timeline per composition in window.__timelines
+Register one synchronous paused Cadence Tween timeline per composition in `cadence.mount`
 using its exact composition ID. Keep finite timelines and explicit durations.
 HyperFrames owns media playback. Use deterministic animation and local assets.
 

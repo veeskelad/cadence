@@ -12,7 +12,7 @@ python3 modules/video-editing-skills/styles/orbit-reel/build.py work/<проек
 python3 modules/video-editing-skills/styles/orbit-reel/build.py work/<проект>/orbit-reel.json --prepare-only
 ```
 
-Результат: `work/<проект>/out/orbit-reel.mp4` и рядом редактируемый HTML в `orbit-reel.composition/`. Нужны Python 3.9+, ffmpeg/ffprobe, Node.js 22+; GSAP ставится из зависимостей модуля, рендер идёт общим движком Cadence. Путь `out` в спецификации, если задан, считается от папки спецификации.
+Результат: `work/<проект>/out/orbit-reel.mp4` и рядом редактируемый HTML в `orbit-reel.composition/`. Нужны Python 3.9+, ffmpeg/ffprobe, Node.js 22+; анимация идёт на движке Cadence Tween из состава Cadence, рендер общим движком Cadence. Путь `out` в спецификации, если задан, считается от папки спецификации.
 
 ## Свои видео и картинки
 
@@ -31,7 +31,7 @@ python3 modules/video-editing-skills/styles/orbit-reel/build.py work/<проек
 }
 ```
 
-Имена ключей (`banana-heels.jpg`, `explainer.mp4` и так далее) только метки места в шаблоне, подставляется то, что ты указал. `text` делает буквальные замены в HTML и экранирует значения. Текст, который меняется через GSAP, правится прямо в `template.html`.
+Имена ключей (`banana-heels.jpg`, `explainer.mp4` и так далее) только метки места в шаблоне, подставляется то, что ты указал. `text` делает буквальные замены в HTML и экранирует значения. Текст, который меняется по таймлайну, правится прямо в `template.html`.
 
 ## Вырезка человека
 

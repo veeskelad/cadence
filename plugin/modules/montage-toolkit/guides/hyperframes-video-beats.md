@@ -174,7 +174,7 @@ Follow project `AGENTS.md` and HyperFrames lint rules:
 
 - Every mounted timed element needs `data-start`, `data-duration`, and `data-track-index`.
 - Visible timed root-mounted elements should have the expected clip/layer class used by the project.
-- Sub-compositions should register a paused GSAP timeline on `window.__timelines`.
+- Sub-compositions should register a paused Cadence Tween timeline on `cadence.mount`.
 - Pin each sub-composition timeline with `tl.set({}, {}, SLOT);`.
 - Keep deterministic logic only.
 - Do not animate video element dimensions or media properties in ways that can freeze renders.

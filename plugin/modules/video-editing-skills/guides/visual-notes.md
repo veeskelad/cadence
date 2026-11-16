@@ -13,11 +13,11 @@ Run from the Cadence root (module dependencies and the engine are installed once
 python3 modules/video-editing-skills/styles/visual-notes/build.py work/<project>/visual-notes.json
 ```
 
-A spec is required: the module ships no sample photos or footage, so give your own files under `assets` with the keys listed below (see `example.json`). `--prepare-only` builds an editable composition without rendering. Python 3.9+, ffmpeg/ffprobe and Node.js 22+ are required. GSAP comes from the module dependencies, rendering uses the shared Cadence engine. No transcript or API key is needed for these short templates. The result lands in `work/<project>/out/`. [Spec and your own footage](five-photo-styles.md).
+A spec is required: the module ships no sample photos or footage, so give your own files under `assets` with the keys listed below (see `example.json`). `--prepare-only` builds an editable composition without rendering. Python 3.9+, ffmpeg/ffprobe and Node.js 22+ are required. Animation runs on the Cadence Tween engine shipped with Cadence, rendering uses the shared Cadence engine. No transcript or API key is needed for these short templates. The result lands in `work/<project>/out/`. [Spec and your own footage](five-photo-styles.md).
 
 ## Adapt the treatment
 
-Show the whole photograph first, then expose a specific detail at 1.5s. Re-anchor the crop inside `#iris` when changing the photograph; the example focuses on the pixelated burger detail. Update `#tag`, `#callout` and both initial and GSAP-updated text. The magnification should reveal something real in the image.
+Show the whole photograph first, then expose a specific detail at 1.5s. Re-anchor the crop inside `#iris` when changing the photograph; the example focuses on the pixelated burger detail. Update `#tag`, `#callout` and both initial and timeline-updated text. The magnification should reveal something real in the image.
 
 Asset keys: `explainer_cut.webm`, `pixel-burger.jpg`.
 

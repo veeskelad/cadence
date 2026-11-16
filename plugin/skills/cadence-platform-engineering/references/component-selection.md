@@ -30,4 +30,6 @@
 | Typed visual variants | cva | конечный набор variants/defaults |
 | Theme | next-themes | SSR initial mode, flash, user override |
 
+Готовые анимированные компоненты (кнопки, карточки, AI-элементы) и их лицензии — [каталоги](component-sources.md).
+
 Для обычной hover/fade достаточно существующего CSS. MP4 использует текущие primitives renderer и чистый render(t); UI-библиотеку нельзя добавить только ради того, что она умеет «красивую анимацию».

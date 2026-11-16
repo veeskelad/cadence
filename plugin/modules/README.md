@@ -24,8 +24,8 @@ modules/REGISTRY.json       собирается скриптом, руками 
 - Одна функция — один основной исполнитель (`CAPABILITIES.json`): модуль или скрипт Cadence.
   Запасной берётся, только если основной недоступен.
 - Модуль не регистрируется как навык: внутри нет `SKILL.md`, только `MODULE.md`.
-- Рендер — общий движок `engine/`. Модуль со своим движком (`"engine": "remotion"`) ставится
-  отдельно и только по согласию.
+- Рендер — только общий движок `engine/` (HyperFrames). Remotion в модулях не используется (решение владельца 16.11.2026):
+  модуль на нём переписывается под `engine/`, `build_registry.py` не примет `"engine": "remotion"`.
 - Зависимости — `python3 scripts/module_setup.py status|install <id>`: в общий кэш
   `~/.cache/cadence/modules/`, сеть только с согласия человека.
 - Модуль тяжелее 3 МБ в выпуск едет лёгким: паспорт, `MODULE.md`, `guides/` и лицензии. Остальное
@@ -53,7 +53,7 @@ modules/REGISTRY.json       собирается скриптом, руками 
 | `capabilities` | ключи из `CAPABILITIES.json`, которые модуль исполняет |
 | `inputs`, `outputs` | что дать, что появится |
 | `run` | команда запуска от корня Cadence |
-| `engine` | `python`, `node`, `hyperframes`, `remotion`, `ffmpeg`, `nim`, `docs` |
+| `engine` | `python`, `node`, `hyperframes`, `ffmpeg`, `nim`, `docs` |
 | `deps` | `python` (файл requirements), `node` (папка с package.json), `system` (программы) |
 | `install_mb` | примерный объём установки |
 | `platform` | `macos`, `linux`, `windows` |

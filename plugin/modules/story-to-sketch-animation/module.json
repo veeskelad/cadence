@@ -30,16 +30,15 @@
     "тихий MP4 1080×1440 (превью 720×960)"
   ],
   "run": "python3 modules/story-to-sketch-animation/scripts/new_workdir.py --project <проект>",
-  "engine": "remotion",
+  "engine": "hyperframes",
   "deps": {
-    "node": ".",
     "system": [
       "node",
       "ffmpeg",
       "python3"
     ]
   },
-  "install_mb": 600,
+  "install_mb": 5,
   "platform": [
     "macos",
     "linux",
@@ -51,21 +50,18 @@
   "payload": {
     "paths": [
       "examples",
-      "package-lock.json",
       "package.json",
       "public",
       "references",
-      "remotion.config.ts",
+      "render",
       "scripts",
-      "src",
       "storyboard.json",
-      "storyboard.uploaded.json",
-      "tsconfig.json"
+      "storyboard.uploaded.json"
     ],
-    "file": "story-to-sketch-animation-7b22292d3734.zip",
-    "sha256": "7b22292d3734a721c712ba1b044603c688ba1dcba8c2697a80b3fbf2c0c7fc99",
-    "bytes": 4394142,
-    "expanded_bytes": 5329477,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/story-to-sketch-animation-7b22292d3734.zip"
+    "file": "story-to-sketch-animation-4689792b46b1.zip",
+    "sha256": "4689792b46b1c2541032647513cb6b45663e23d10d4a45fc387f189e64aca508",
+    "bytes": 4366676,
+    "expanded_bytes": 5226041,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/story-to-sketch-animation-4689792b46b1.zip"
   }
 }

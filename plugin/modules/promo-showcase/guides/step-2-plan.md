@@ -216,7 +216,7 @@ If SFX are enabled, note likely sound opportunities but leave exact sounds to th
 - Good: "Recreate the swipe card with Thunder's profile and hay tags."
 - Good: "Use the source site's amber/dark palette and serif headline feel."
 - Good: "The stat reveal should feel like a deadpan startup metric slide."
-- Avoid: "Use a GSAP timeline with this selector and this easing."
+- Avoid: "Use a Cadence Tween timeline with this selector and this easing."
 - Avoid: "Use this exact HTML structure."
 - Avoid: "Load this specific runtime URL."
 

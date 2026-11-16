@@ -8,7 +8,7 @@ HyperFrames is the container: its tracks, sub-compositions and variables are edi
 
 | Level | For | How | Editable in Studio afterwards |
 | --- | --- | --- | --- |
-| Native | code that can become HTML + GSAP: most Remotion, HTML/CSS/GSAP animation, simple Motion Canvas | translate it, then verify frame by frame | every element; variables, catalog, presets apply |
+| Native | code that can become HTML + Cadence Tween: most Remotion, HTML/CSS/Cadence Tween animation, simple Motion Canvas | translate it, then verify frame by frame | every element; variables, catalog, presets apply |
 | Hosted | code that can draw any requested frame in a browser: canvas, p5.js, Three.js, Lottie, WebGL, other JS animation | keep the code and drive it from HyperFrames time | timing, position, exposed parameters |
 | Media | anything that outputs video or frames: Manim, After Effects, Blender, PIL, moviepy | render to a file and use it as a clip | cut, place, layer; not the pixels inside |
 

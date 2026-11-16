@@ -238,6 +238,6 @@ One **discrete visual event per stressed word**, roughly every 0.4–0.8 s: a pr
   - **TTS (CustomVoice)**, 0.6B or 1.7B: preset speakers Aiden, Dylan, Eric, Ryan, Serena, Vivian, Sohee, Ono_anna, Uncle_fu, plus an optional style instruction. For this style, try 1.7B with Ryan or Aiden and an instruction like *"friendly, natural, conversational, like telling a friend; clear pauses between sentences; stress the key word of each line"*. Delivery rules (breathing room, emphasis, tone): `papercut-voice.md`.
   - **Voice Design** (1.7B): describe a voice in words.
   - **Voice Clone** (Base 0.6B/1.7B): clone from a reference clip plus its transcript.
-  - Export the WAV to the video project's `public/vo/` and transcribe it for word timings (Remotion captions skill).
+  - Export the WAV to the video project's `public/vo/` and transcribe it for word timings (`library/voice/asr.py` or any speech-to-text tool).
 - **Measured on a finished reel:** the audio ran continuously with no gaps over 0.25 s at −35 dB, so voiceover lines were butted tight over a music bed.
 - **Recommended:** a light playful music bed at −20 to −24 LUFS, plus paper and UI foley (pop on entrances, key clicks, a GO chime, a NO-GO buzzer, radio squelch, a whoosh on camera moves, a rumble on launches).

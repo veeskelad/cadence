@@ -24,13 +24,13 @@
     "записанный голос (по желанию)"
   ],
   "outputs": [
-    "проект Remotion со сценами человечков",
+    "папка ролика HyperFrames со сценами человечков",
     "MP4 ролика",
     "voiceover.srt для записи голоса",
     "storyboard.md"
   ],
-  "run": "python3 modules/stick-figure-animator/scripts/find_remotion.py --path \"$WORK/<проект>/remotion\"",
-  "engine": "remotion",
+  "run": "python3 modules/stick-figure-animator/scripts/new_video.py --project \"$WORK/<проект>/stickman\" --slug <имя>",
+  "engine": "hyperframes",
   "deps": {
     "python": "requirements.txt",
     "system": [
@@ -39,7 +39,7 @@
       "python3"
     ]
   },
-  "install_mb": 150,
+  "install_mb": 80,
   "platform": [
     "macos",
     "linux",

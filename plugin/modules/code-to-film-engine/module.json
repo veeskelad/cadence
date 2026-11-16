@@ -56,10 +56,10 @@
       "run.py",
       "styles"
     ],
-    "file": "code-to-film-engine-fb05d75b57b6.zip",
-    "sha256": "fb05d75b57b6c53a73a39e21134b144bc9b5b2ee573bb0b0b94e34f108fc814d",
-    "bytes": 3765321,
-    "expanded_bytes": 9805499,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/code-to-film-engine-fb05d75b57b6.zip"
+    "file": "code-to-film-engine-6d3ec40177a4.zip",
+    "sha256": "6d3ec40177a4db3398bf29562b31c75fdee03d17d89beee2582f5f7f78074cff",
+    "bytes": 3763149,
+    "expanded_bytes": 9801218,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/code-to-film-engine-6d3ec40177a4.zip"
   }
 }

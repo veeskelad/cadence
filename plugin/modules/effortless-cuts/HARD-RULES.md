@@ -92,16 +92,21 @@ An overlay at a different rate is resampled on composite — a frame dropped or
 doubled every few frames, on exactly the moves meant to look designed. A
 different size is rescaled. Both render without a warning. `scenes.py` takes
 both numbers from the cut for this reason; never set them in `Root.tsx`.
+`scenes.py render` refuses an MP4 whose size, rate or frame count differs from the spec.
 
 **16. Scene audio never reaches the mix.** Overlays composite with the `muted`
-attribute, so a sting baked into a Remotion scene is dropped silently. It also
+attribute, so a sting baked into a scene is dropped silently. It also
 escapes the voice-only differencing in rule 11, so it cannot be proven
 audible. Every sting belongs in `sfx.json`.
 
-**17. Frame-driven motion only inside a scene.** The renderer advances frames
-out of real time. A CSS transition, a timer or a `requestAnimationFrame` loop
-has no wall clock to run against, so it renders as a still — with no error and
-a plausible-looking first frame.
+**17. Frame-driven motion only inside a scene.** The engine seeks each frame
+out of real time, in any order. A CSS transition, a timer, a
+`requestAnimationFrame` loop or an animation library with its own clock has no
+wall clock to run against, so it renders as a still — with no error and a
+plausible-looking first frame. Every value comes from `useCurrentFrame()`
+through `interpolate` and `spring` from `@cadence/frame`; a scene imports
+nothing but React, `@cadence/frame` and its own files (`scenes.py check`
+enforces it).
 
 **18. Anchor cut edges on silence, not on word onsets.** ASR word onsets land
 on the consonant, so an edge placed at the onset chops the attack off the first
@@ -134,7 +139,7 @@ Rules 1–7 and 10 are adapted from [browser-use/video-use](https://github.com/b
 (MIT), which isolated these production-correctness traps cleanly.
 Rules 8, 9, 11–13 and 18–20 come from failures observed in this project.
 
-Rules 15–17 govern the Remotion scene layer. Its structure — a spec
+Rules 15–17 govern the designed-scene layer (React on the Cadence engine). Its structure — a spec
 approved before anything is built, one composition per scene, frame-driven
 motion — is adapted from [Creatorberry/flick](https://github.com/Creatorberry/flick)
 (MIT).

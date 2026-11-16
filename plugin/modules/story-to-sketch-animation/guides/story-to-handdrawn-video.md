@@ -165,6 +165,6 @@ For time jumps, ambiguous pronouns, medical scenes, or age-sensitive characters,
 
 ## Quality Standard
 
-Run `npm run check` after renderer changes: type check and storyboard schema checks. Run `npm run check:storyboard` for actual asset validation; a fresh copy lacks the historical generated images. Render commands validate their selected storyboard's assets.
+Run `npm run check` after renderer changes: storyboard schema checks; `node scripts/render-video.mjs --build-only` builds the page without rendering, and `npm --prefix <Cadence>/engine run check -- "$PWD/out/.build/storyboard"` lints it (absolute path: npm runs from `engine/`). Run `npm run check:storyboard` for actual asset validation; a fresh copy lacks the historical generated images. Render commands validate their selected storyboard's assets.
 
 Use the retest prompts in `examples/regression-prompts.md` of the working copy. Inspect actual captions, margins, reference fidelity and cut/page-flip behavior before delivering a video. Do not spend generation credits solely to validate a change unless the user requests visual samples.

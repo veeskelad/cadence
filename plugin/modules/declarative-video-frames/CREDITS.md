@@ -20,7 +20,7 @@ Remotion.
 ## Thanks
 
 Thanks also to the authors and maintainers of the open-source projects
-HyperFrames builds on, including Puppeteer, FFmpeg, GSAP, Hono, and the
+HyperFrames builds on, including Puppeteer, FFmpeg, Hono, and the
 broader Node.js ecosystem.
 
 ## Third-party licenses
@@ -41,10 +41,9 @@ broader Node.js ecosystem.
     `cuboid-carousel` and `orbit-card` (`Three-LICENSE.txt` beside the copy); bundled as r181 inside
     `glass-shard-title`'s `glass-main.js`; loaded from the jsDelivr CDN by `canopy-part-title`
     (0.170.0) and `wireframe-portal-title` (0.181.2).
-  - **[GSAP](https://gsap.com)** 3.14.2, under the [GSAP Standard License](https://gsap.com/standard-license)
-    (not an OSI open-source licence). Vendored in `code-slice-hero`, `cuboid-carousel`,
-    `frost-sequence-camera-orbit` and `orbit-card` with `GSAP-NOTICE.txt`; loaded from the CDN by
-    `glass-shard-title`, `canopy-part-title` and `wireframe-portal-title`.
+  - Animation in every block, component and example runs on Cadence Tween (`engine/lib/cadence-tween.js`),
+    Cadence's own engine. The upstream registry used GSAP; the blocks were rewritten onto Cadence Tween
+    and no GSAP code ships with Cadence.
   - **[three-mesh-bvh](https://github.com/gkjohnson/three-mesh-bvh)** 0.9.14 and
     **[opentype.js](https://github.com/opentypejs/opentype.js)** 2.x (range in the block's
     `source/package.json`), both MIT, bundled into the frost block's `frost.js`.

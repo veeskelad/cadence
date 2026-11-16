@@ -42,8 +42,7 @@ def main():
     shutil.copy2(clip, comp / clip.name)
     (comp / "hyperframes.json").write_text(
         json.dumps(compose.HYPERFRAMES_JSON, indent=2))
-    (comp / "package.json").write_text(
-        json.dumps(compose.PACKAGE_JSON, indent=2))
+    compose.install_tween(comp)
 
     fragment = shatter.build(
         args.word, args.t_hit, shatter.parse_box(args.zone),
@@ -56,11 +55,12 @@ def main():
     for sub in ("check", "render"):
         if sub == "render" and not args.render:
             break
-        cmd = ["npx", "--yes", compose.HYPERFRAMES_PKG, sub]
+        cmd = (["nice", "-n", "10"] if sub == "render" else []) + compose.hyperframes() + [sub]
         if sub == "render":
-            cmd += [".", "-q", "high", "--crf", "16", "--video-frame-format", "png",
+            cmd += [".", "--workers", "1", "-q", "high", "--crf", "16", "--video-frame-format", "png",
                     "-o", str((Path(args.out) / "master.mp4").resolve())]
-        r = subprocess.run(cmd, cwd=comp, capture_output=True, text=True, errors="replace")
+        r = subprocess.run(cmd, cwd=comp, env={**__import__("os").environ, **compose.HF_ENV},
+                           capture_output=True, text=True, errors="replace")
         print((r.stdout or r.stderr)[-1200:])
         if r.returncode != 0:
             return 1

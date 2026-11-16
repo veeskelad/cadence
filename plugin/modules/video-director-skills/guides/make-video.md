@@ -22,8 +22,8 @@ Ask (via AskUserQuestion, one round, skipping anything the user already said):
    `BRAND.md` doesn't exist yet, run the brand-setup flow in SETUP.md before
    your first render — it asks primary/secondary/accent colors, background
    preference, and fonts, then edits the token files
-   (`$SKILL/remotion/src/templates/hfBrand.ts`,
-   `$F5/remotion/src/motion/tokens.ts`) and writes `BRAND.md` so you never
+   (`$SKILL/hyperframes/src/templates/hfBrand.ts`,
+   `$F5/hyperframes/src/motion/tokens.ts`) and writes `BRAND.md` so you never
    ask again. If `BRAND.md` already exists, skip straight to rendering — the
    token files already reflect the user's brand.
 5. **If route C (faceless motion reel) with a VO in hand** — also ask
@@ -84,7 +84,7 @@ Same loop as route A but against `$F5`: transcribe → author the beat plan with
 its `viz`/native kinds (`$F5` knowledge + `template_library.md`) → lint →
 preview `bash "$F5/scripts/render.sh"` with absolute `OUT_DIR` → sign-off →
 final. Notes:
-- Colors/fonts come from `$F5/remotion/src/motion/tokens.ts` — run the brand
+- Colors/fonts come from `$F5/hyperframes/src/motion/tokens.ts` — run the brand
   setup in SETUP.md before your first render so this matches your own brand,
   not the shipped example preset.
 - The bespoke one-off compositions from the original bundle (channel-specific
@@ -147,10 +147,10 @@ they've recorded the VO.
   (default, its own cream/ink/orange palette, independent of the brand-setup
   flow) or the configured Visual-OS-style brand, chosen per project via
   `.pr_style` (see §1 step 5 above). Token files are the source of truth:
-  `$SKILL/remotion/src/templates/hfBrand.ts`,
-  `$F5/remotion/src/motion/tokens.ts`, `$MSKILL/remotion/src/templates/paperBrand.ts`.
+  `$SKILL/hyperframes/src/templates/hfBrand.ts`,
+  `$F5/hyperframes/src/motion/tokens.ts`, `$MSKILL/hyperframes/src/templates/paperBrand.ts`.
 - **Never auto-run the final render.** Preview → user says "ship it" → final.
-- **Absolute `OUT_DIR` always** — render.sh cd's into its remotion dir; a
+- **Absolute `OUT_DIR` always** — render.sh cd's into its composition dir; a
   relative path strands the output inside the skill.
 - `pr_proof` without `image_path` renders a blank card — source a real
   screenshot/photo or explicitly flag the placeholder before calling it done.

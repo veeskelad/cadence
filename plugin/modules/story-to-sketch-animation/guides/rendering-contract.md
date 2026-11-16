@@ -9,7 +9,7 @@ The agent and the renderer have separate responsibilities:
 1. The Agent reads the story, preserves its wording, plans sentence-based beats, and establishes character continuity. A selected built-in recipe or an analyzed reference-image profile provides the visual style.
 2. The available image-generation tool creates a character reference and complete master pages. In the default `image2` text mode, exact handwritten captions and illustrations are generated together. Inspect glyphs, character identity, margins, and reference fidelity before import.
 3. Local scripts import the approved masters and prepare the assets required by the selected animation mode. Uploaded pages enter at this step and follow the same processing rules.
-4. Remotion reads the storyboard, applies timing and animation, and renders a silent H.264 video. Voiceover and background music are optional post-production work.
+4. `scripts/render-video.mjs` reads the storyboard, builds a HyperFrames project (`render/story.html` with one block per scene and the referenced images) and renders a silent H.264 video with the shared Cadence engine. Voiceover and background music are optional post-production work.
 
 Preparing a generation manifest is not image generation. The default CLI path needs the Agent to call an image tool and supply real output files before import and render can complete.
 
@@ -38,6 +38,10 @@ Preparing a generation manifest is not image generation. The default CLI path ne
 - Adjacent pages overlap for the transition. Rendered duration is the sum of page frame counts minus the overlap between adjacent pages; use the storyboard timing calculation when targeting an exact runtime.
 
 Both modes avoid camera shake and bounce. The renderer does not add narration or text-synchronized music.
+
+## Time and animation
+
+There is no animation library and no registered timeline. The root of the built page carries `data-no-timeline`; the page imports `bindSeek` from `lib/motion.js` (copied from `engine/lib/`), and the engine sends each frame time `t` through the `hf-seek` event. `render(t)` takes `frame = Math.round(t × fps)` and recomputes everything from it: which scenes are visible, each plate's left-to-right `clip-path` (linear progress over its frames, then smoothstep) and, in page-flip mode, the curl paths, the faded underside and its shadow. Nothing is kept between frames, so frames can be rendered in any order. The preview is the same page at 720×960: the 1080×1440 stage is scaled by 2/3.
 
 ## Assets
 
@@ -68,6 +72,6 @@ Built-in previews all depict the same grandmother-and-child bridge scene for com
 
 ## Validation
 
-`npm run check` checks types and storyboard schemas. Render commands validate their own storyboard's actual image files before starting. Mechanical checks do not establish glyph correctness, style quality or reference fidelity; those require inspecting the generated masters and rendered video.
+`npm run check` checks the storyboard schemas. Render commands validate their own storyboard's actual image files before starting. Mechanical checks do not establish glyph correctness, style quality or reference fidelity; those require inspecting the generated masters and rendered video.
 
 See the [asset workflow](asset-workflow.md) and [reference-style workflow](reference-style-workflow.md) for operational details.

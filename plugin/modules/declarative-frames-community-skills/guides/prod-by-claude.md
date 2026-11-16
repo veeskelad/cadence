@@ -65,7 +65,7 @@ If the track changes, repeat steps 5-7. If `video.json` changes, repeat steps 6-
 - Files: writes only inside `<project-dir>`. `build-data.mjs` rewrites the `data-duration` and
   audio `data-start` attributes in `index.html`.
 - Network: `npm install` (npm registry), the Chrome for Testing download (about 150 MB from
-  Google's storage), and GSAP from cdn.jsdelivr.net when the composition loads. `snapshot`
+  Google's storage), and Cadence Tween from cdn.jsdelivr.net when the composition loads. `snapshot`
   uploads frames to a hosted captioning model unless given `--describe false`, so always pass it. Recording runs on
   127.0.0.1 only and fetches nothing unless the track itself loads samples (then from the sample
   URLs the track names).

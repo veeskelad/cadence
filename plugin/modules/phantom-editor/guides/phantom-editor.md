@@ -478,7 +478,7 @@ Only the user's own feedback is `from: user` (quoted "you said"); a rule you lea
 - `library/sfx/` kit + manifest.json; `library/memes/<id>/` clips + meta.json
 - `templates/fonts/` Geist, Inter, Inter Tight, Playfair Display, Montserrat, Oswald, Unbounded, JetBrains Mono, Caveat (OFL, latin + cyrillic woff2)
 - `scripts/lib/facereel.py` the shared base of the custom talking-head builders (Face RESULT `recipes/result-podcast/faceresult.py`,
-  Whiteboard `recipes/whiteboard/board.py`, Clean OS `recipes/clean-os/cleanos.py` + its parts `kit.py`; `--api` prints each one's calls): plate as shot + held tail, word refs, GSAP timeline, SFX by role, ducked bed,
+  Whiteboard `recipes/whiteboard/board.py`, Clean OS `recipes/clean-os/cleanos.py` + its parts `kit.py`; `--api` prints each one's calls): plate as shot + held tail, word refs, Cadence Tween timeline, SFX by role, ducked bed,
   face zones and the face guard, the talking-head budgets, build/{beats,plan,sfx_events}.json
 - `references/reel-json.md` the spec and beat types
 - `references/take-selection.md` choosing takes (adapted from mariagorskikh/talking-head-reel, MIT)

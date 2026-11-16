@@ -22,10 +22,9 @@
     "варианты под YouTube Shorts, TikTok и Instagram Reels"
   ],
   "run": "bash modules/shorts-studio/scripts/preflight.sh <видео> work/<проект>/out/shorts",
-  "engine": "remotion",
+  "engine": "hyperframes",
   "deps": {
     "python": "requirements.txt",
-    "node": "remotion",
     "system": [
       "ffmpeg",
       "ffprobe",
@@ -33,7 +32,7 @@
       "python3"
     ]
   },
-  "install_mb": 1000,
+  "install_mb": 700,
   "platform": [
     "macos",
     "linux"

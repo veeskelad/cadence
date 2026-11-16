@@ -1,12 +1,12 @@
 {
   "name": "cadence",
-  "version": "1.10",
+  "version": "1.10.1",
   "description": "Дизайн, моушн, монтаж и звук с агентом: ролики кодом, нарезка живого видео, эффекты, звук и свой стиль. Всё считается на твоём компьютере.",
   "author": {
     "name": "Cadence"
   },
   "homepage": "https://veeskelad.github.io/cadence/",
-  "license": "MIT",
+  "license": "LicenseRef-Cadence",
   "keywords": [
     "motion design",
     "video editing",

@@ -81,11 +81,11 @@ emit(`// Regenerate: node <KIT_DIR>/scripts/seam-stamp.mjs --ledger ledger.json 
 if (scenes.length) {
   const first = scenes[0];
   const rest = scenes.slice(1).filter((s) => !zEntries.has(s));
-  emit(`gsap.set(${quote(first)}, { autoAlpha: 1, xPercent: 0, yPercent: 0, scale: 1, filter: "blur(0px)", transformOrigin: "50% 50%" });`);
+  emit(`cadence.set(${quote(first)}, { autoAlpha: 1, xPercent: 0, yPercent: 0, scale: 1, filter: "blur(0px)", transformOrigin: "50% 50%" });`);
   if (rest.length)
-    emit(`gsap.set([${rest.map((s) => quote(s)).join(",")}], { autoAlpha: 0, xPercent: 0, yPercent: 0, scale: 1, filter: "blur(0px)", transformOrigin: "50% 50%" });`);
+    emit(`cadence.set([${rest.map((s) => quote(s)).join(",")}], { autoAlpha: 0, xPercent: 0, yPercent: 0, scale: 1, filter: "blur(0px)", transformOrigin: "50% 50%" });`);
   for (const [sel, p] of zEntries)
-    emit(`gsap.set(${quote(sel)}, { autoAlpha: 0, scale: ${p.scale}, filter: "blur(${p.blur}px)", xPercent: 0, yPercent: 0, transformOrigin: "50% 50%" });`);
+    emit(`cadence.set(${quote(sel)}, { autoAlpha: 0, scale: ${p.scale}, filter: "blur(${p.blur}px)", xPercent: 0, yPercent: 0, transformOrigin: "50% 50%" });`);
 }
 emit(``);
 
@@ -142,9 +142,9 @@ if (!targetArg) {
   if (re.test(html)) {
     html = html.replace(re, block);
   } else {
-    // insert after the master timeline registration line
-    const anchor = /(window\.__timelines\["main"\]\s*=\s*tl;\s*\n)/;
-    if (!anchor.test(html)) throw new Error('no <seams:auto> markers and no window.__timelines["main"] anchor found');
+    // insert after the master timeline mount line
+    const anchor = /(cadence\.mount\("main",\s*tl\);\s*\n)/;
+    if (!anchor.test(html)) throw new Error('no <seams:auto> markers and no cadence.mount("main", tl) anchor found');
     html = html.replace(anchor, `$1\n${block}\n`);
   }
   writeFileSync(target, html);

@@ -6,7 +6,7 @@ Writes a voiceover script for a **faceless** short-form reel in the paper-reel
 style (cream grid + orange punch cards + taped proof-card aesthetic). The
 output is timed prose meant to be read aloud as VO, not slides — every beat
 is short enough to say in one breath and tagged with which graphic kind it
-becomes downstream (`pr_card` / `pr_punch` / `pr_proof`, the Remotion kinds
+becomes downstream (`pr_card` / `pr_punch` / `pr_proof`, the composition kinds
 already wired into the paper-reel render pipeline).
 
 **The single biggest failure mode of this skill is sameness** — every idea

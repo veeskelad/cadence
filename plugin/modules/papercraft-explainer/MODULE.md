@@ -14,8 +14,10 @@ PAPERCUT_LIB="$PWD/modules/papercraft-explainer/library" \
   bash modules/papercraft-explainer/library/new_episode.sh "$WORK/<проект>/papercut" 01-slug CompId out-name
 ```
 
-**Что получится.** В `$WORK/<проект>/papercut/episodes/01-slug/` проект Remotion с готовой библиотекой
+**Что получится.** В `$WORK/<проект>/papercut/episodes/01-slug/` проект ролика на React с готовой библиотекой
 бумажных деталей, 24 фонами, переходами и 79 звуками; дальше сценарий, раскадровка, озвучка и MP4 в `out/`.
+Рендерит общий движок Cadence (HyperFrames, `engine/`): `library/papercut/hyperframes/build.mjs` собирает проект
+в `out/hf`, время считается от номера кадра (`kit/frame.tsx`), без библиотек анимации.
 
 ## Оглавление
 
@@ -27,11 +29,12 @@ PAPERCUT_LIB="$PWD/modules/papercraft-explainer/library" \
 
 ## Важно до начала
 
-- Движок Remotion ставится отдельно и только с согласия человека: Node 20+, npm, ffmpeg, около 0,7 ГБ
-  (пакеты и браузер Remotion). Паспорт отмечает это полем `install_mb`; `python3 scripts/module_setup.py status papercraft-explainer`
-  скажет, чего не хватает. Без установки работают только этапы 1–4 (текст).
-- `new_episode.sh` без готовых `node_modules` сам запустит `npm i` (сеть). Если пакеты уже стоят в соседнем
-  эпизоде, он их копирует; донора можно задать переменной `DONOR`.
+- Пакеты модуля (React, esbuild, TypeScript, puppeteer-core для звука, около 100 МБ) ставятся один раз и только
+  с согласия человека: `python3 scripts/module_setup.py install papercraft-explainer`. Движок Cadence общий:
+  `python3 scripts/engine_setup.py status` должен дать `ready`. Нужны Node 22+ и ffmpeg. Без установки работают
+  только этапы 1–4 (текст).
+- `new_episode.sh` ничего не скачивает: `node_modules` эпизода становится ссылкой на пакеты библиотеки
+  (`library/papercut/hyperframes/node_modules`).
 - Серию держать в `$WORK/<проект>/papercut`, а не рядом с исходниками человека. Скрипты нигде не перезаписывают
   существующие файлы эпизода.
 - Звук рендерится через Chrome или Chromium (`CHROME_PATH`, если браузер не в обычном месте).
@@ -67,7 +70,6 @@ PAPERCUT_LIB="$PWD/modules/papercraft-explainer/library" \
 
 - Ролик в формате 9:16, сцены на 1080×1920.
 - Примеры в `examples/` вымышлены: переносить стиль и приёмы, а не содержание, продукты и цифры.
-- Remotion не входит в MIT: для компаний выше порога размера нужна его платная лицензия, см. `THIRD_PARTY.md`.
 - Фоны частично сделаны графической моделью, часть нарисована кодом (`library/papercut/backdrops-src/`);
   состав и оговорки в `THIRD_PARTY.md`.
 - Голосовой конвейер самый слабо проверенный: проверен на Apple Silicon, ветки CUDA и faster-whisper на железе не запускались.
@@ -75,6 +77,6 @@ PAPERCUT_LIB="$PWD/modules/papercraft-explainer/library" \
 ## Справка
 
 Весь набор справок лежит в `guides/` (один уровень): `papercut-*.md` по этапам, а также `style-guide.md`,
-`style-prompt.md`, `motion-principles.md`, `remotion-recipes.md`, `asset-prompts.md`, `frame-breakdown.md`,
+`style-prompt.md`, `motion-principles.md`, `frame-recipes.md`, `asset-prompts.md`, `frame-breakdown.md`,
 `hook-patterns.md`, `storytelling.md`, `comedy.md`, `competitor-analysis.md`. Примеры запросов: `examples/prompts.md`;
 готовая серия: `examples/paper-trail/`; минимальный эпизод для проверки: `examples/hello-reel/`.

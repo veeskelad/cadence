@@ -12,18 +12,19 @@ instagram или all). Если не назвал, предложить и сп�
 **Что получится:** `work/<проект>/out/shorts/short_NN_yt.mp4`, `_tt.mp4`, `_ig.mp4`: вертикальные
 1080x1920 клипы с анимированными субтитрами, кодированные под площадки, и итоговая проверка файлов.
 
-Модуль со своим движком Remotion: он ставится отдельно и только с согласия человека. Подробный разбор
+Рисует общий движок Cadence (HyperFrames в `engine/`), своих пакетов для рендера у модуля нет. Подробный разбор
 каждого шага лежит в [guides/shorts-pipeline.md](guides/shorts-pipeline.md); критерии оценки кусков в
 [references/scoring-rubric.md](references/scoring-rubric.md); стили субтитров в
 [references/caption-styles.md](references/caption-styles.md); требования площадок в
-[references/platform-specs.md](references/platform-specs.md); приёмы Remotion в
-[references/remotion-patterns.md](references/remotion-patterns.md).
+[references/platform-specs.md](references/platform-specs.md); как устроен рендер и время анимации в
+[references/render-patterns.md](references/render-patterns.md).
 
 ## Шаги (коротко)
 
 1. Установка: `python3 scripts/module_setup.py status shorts-studio`. Не готово — сказать человеку,
-   что нужно около 1 ГБ из сети (Python-пакеты и Remotion), а модель Whisper отдельно (small около
+   что нужно около 700 МБ из сети (Python-пакеты), а модель Whisper отдельно (small около
    0,5 ГБ, large-v3 около 3 ГБ). После согласия: `python3 scripts/module_setup.py install shorts-studio`.
+   Движок рендера общий: `python3 scripts/engine_setup.py status` должен ответить `ready`.
 2. Проверка входа: команда выше. Видеокарта не обязательна; без неё всё считается на процессоре.
 3. Распознавание: `transcribe.py` даёт слова с временем. Модель берётся только с диска; скачать её
    можно с флагом `--allow-download`, и только после согласия. На слабой машине `--model small`.
@@ -33,7 +34,9 @@ instagram или all). Если не назвал, предложить и сп�
 6. Согласование: человек выбирает куски, правит границы, выбирает стиль и площадку.
 7. Границы: `snap_boundaries.py` подгоняет начало и конец под фразы и паузы, чтобы не рвать слова.
 8. Клипы и кадрирование: вырезать без перекодирования, затем `compute_reframe.py`.
-9. Рендер: `remotion/render.mjs` собирает проект один раз и рисует клипы по очереди.
+9. Рендер: `node modules/shorts-studio/hyperframes/render.mjs --segments … --reframe … --captions …
+   --style bold --clips-dir … --output-dir …` собирает на каждый кусок маленький проект и рисует клипы
+   по очереди общим движком, по умолчанию в один поток (`--workers 1`).
 10. Выгрузка: `export.sh` кодирует под площадки, `validate.sh` проверяет файлы.
 
 Промежуточные файлы лежат в `$SHORTS_TMP` (по умолчанию `work/<проект>/tmp/shorts`), итог в
@@ -42,11 +45,7 @@ instagram или all). Если не назвал, предложить и сп�
 ## Ограничения
 
 - Без решения человека ничего не рендерим: кандидаты показываются таблицей, рендер идёт после выбора.
-- Пакеты и модель Whisper качаются только с согласия человека. Рендеру нужен `CHROME_PATH=/путь/к/Chrome`; без него Remotion сам скачает свой браузер (около 100 МБ), и это разрешается только флагом `ALLOW_BROWSER_DOWNLOAD=1` после согласия.
-- Шрифты субтитров (Montserrat, Bangers, Inter) лежат в `remotion/public/fonts/` с лицензией OFL.
+- Пакеты и модель Whisper качаются только с согласия человека. Рендер идёт без сети, общим движком Cadence.
+- Шрифты субтитров (Montserrat, Bangers, Inter) лежат в `hyperframes/fonts/` с лицензией OFL.
 - Расчёт кадрирования использует распознавание лица (mediapipe); для записи экрана есть режим без него.
 - Список слов-паразитов в разборе английский, а шрифт стиля bounce (Bangers) без кириллицы (проверено по таблице символов). Для русской речи брать bold или clean.
-
-## Лицензия Remotion
-
-Remotion бесплатен для частных лиц и команд до трёх человек; компании крупнее нужна платная лицензия Remotion (remotion.dev/license). Скажи об этом человеку до установки модуля.

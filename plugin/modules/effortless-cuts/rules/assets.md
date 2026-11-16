@@ -15,7 +15,7 @@ trust (`rules/proof.md`).
 |---|---|---|
 | 1 | **Real proof**: capture the actual page | The line names a repo, product, page, number or tweet. Always first. 9:16 pieces are captured in mobile view (`rules/proof.md`). |
 | 2 | **Reference clips**: a folder of reference reels the person keeps | A reference reel already shows the screen you need. Screens only, never the other creator's face (`rules/proof.md`, "Borrowed B-roll"). |
-| 3 | **Designed scenes**: flick (Remotion) first, HyperFrames second | The line describes structure with no real artefact: a mechanism, a comparison, a counter, a payoff. `rules/scenes.md`. |
+| 3 | **Designed scenes**: a flick pattern as a React scene first, a HyperFrames card second | The line describes structure with no real artefact: a mechanism, a comparison, a counter, a payoff. `rules/scenes.md`. |
 
 Generated pictures and video are not part of this module (ask the `cadence-generate` skill). Reaching for them to avoid
 looking something up breaks rung 1.
@@ -35,12 +35,12 @@ building a beat that wants a screen, check whether a reference already has it.
 
 ## 3. Designed scenes
 
-**Flick first.** Built-in Remotion templates beat hand-built HyperFrames cards
-on this material, and they carry the real vendor logo with a palette taken from
-it. HyperFrames renders the composition, captions and the simple band and hook
-cards.
+**Flick first.** A flick scene pattern, adapted as a React scene, beats a
+hand-built HyperFrames card on this material, and it carries the real vendor
+logo with a palette taken from it. HyperFrames renders everything: the scenes,
+the composition, captions and the simple band and hook cards.
 
-- Write each scene as a Remotion component (`scripts/scenes.py`, `rules/scenes.md`).
+- Write each scene as a React component on `@cadence/frame` (`scripts/scenes.py`, `rules/scenes.md`).
 - Panels render to `studio/assets/panels/*.mp4`: 1080×960 half panel,
   1080×1920 full frame.
 - A card naming a product carries that product's real logo. No logo and no

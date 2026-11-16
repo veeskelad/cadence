@@ -4,8 +4,8 @@ Five SEAM techniques, one principle: **cut at peak velocity, match direction and
 on both sides of the cut** — plus the two in-scene techniques (§6 arrivals, §7 slides).
 The seam law — vector law, the current, the ledger, and the verification gate — lives in
 [motion-continuity.md](motion-continuity.md); read it first. This reference contains the
-parameters and mechanics. All GSAP code templates are in
-[velocity-matched-transitions-gsap.md](velocity-matched-transitions-gsap.md).
+parameters and mechanics. All Cadence Tween code templates are in
+[velocity-matched-transitions-cadence-tween.md](velocity-matched-transitions-cadence-tween.md).
 
 ## Catalog
 
@@ -264,6 +264,6 @@ Rules:
 
 ## Code
 
-All GSAP templates — worker-authored versions, registry `gsap_template`s, the combined
+All Cadence Tween templates — worker-authored versions, registry `gsap_template`s, the combined
 continuation cut + zoom, word-cascade DOM/CSS/JS, rack-focus — live in
-[velocity-matched-transitions-gsap.md](velocity-matched-transitions-gsap.md).
+[velocity-matched-transitions-cadence-tween.md](velocity-matched-transitions-cadence-tween.md).

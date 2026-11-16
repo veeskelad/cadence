@@ -2,7 +2,7 @@
 
 Nothing in this directory is copied from a third-party source. `shatter.py` and
 `demo.py` are original to this project; they follow the integration conventions
-of `scripts/compose.py` (a CSS block, `<div class="clip">` elements, GSAP
+of `scripts/compose.py` (a CSS block, `<div class="clip">` elements, Cadence Tween
 statements appended to `tl`).
 
 Sources examined before writing code, and why none was copied:
@@ -15,5 +15,6 @@ Sources examined before writing code, and why none was copied:
 
 Source file -> our file: none.
 
-Third-party runtime dependencies (not vendored): GSAP 3.14.2 (loaded by
-`compose.py`), the HyperFrames CLI pinned in `compose.py`.
+Third-party runtime dependencies: none. Animation runs on Cadence Tween
+(`engine/lib/cadence-tween.js`, copied next to the page by `compose.py`), rendering on
+the shared Cadence engine (`engine/`).

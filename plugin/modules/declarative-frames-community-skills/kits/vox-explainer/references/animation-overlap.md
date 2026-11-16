@@ -35,7 +35,7 @@ Convert an AE rig by mapping one null to one wrapper, in order.
 
 **The ease is not optional and it is the half everyone drops.** After Effects' stock
 Easy Ease is 33% influence — peak/mean **1.49**. Overlap two eases that gentle and you
-get mush, not the effect. GSAP's `expo.inOut` (peak/mean `10·ln2` = 6.93) is a valid
+get mush, not the effect. Cadence Tween's `expo.inOut` (peak/mean `10·ln2` = 6.93) is a valid
 drop-in for the measured curve.
 
 **Reading any speed graph into a bezier.** For a symmetric `cubic-bezier(a, 0, 1−a, 1)`,

@@ -46,10 +46,10 @@
       "scripts",
       "themes"
     ],
-    "file": "declarative-video-frames-87e776e9f558.zip",
-    "sha256": "87e776e9f558dc4140c63837a8cbed7b0d84574df2ed3180b1baf92394f9145f",
-    "bytes": 47648515,
-    "expanded_bytes": 112509752,
-    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10/declarative-video-frames-87e776e9f558.zip"
+    "file": "declarative-video-frames-5a51f59a0155.zip",
+    "sha256": "5a51f59a015518e51665fe4bcd84f924b712541cc5f2fc436706e7f3db3712b6",
+    "bytes": 34738486,
+    "expanded_bytes": 59358823,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-1.10.1/declarative-video-frames-5a51f59a0155.zip"
   }
 }

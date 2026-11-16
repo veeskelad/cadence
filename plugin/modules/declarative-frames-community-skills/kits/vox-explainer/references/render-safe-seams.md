@@ -36,7 +36,7 @@ injector:
 3. Reassigns **all** clip `data-track-index` as a 0/1 ping-pong so the two
    overlapping wrappers never share a track (same-track overlap is illegal —
    `core/src/lint/rules/composition.ts`). Higher track composites on top.
-4. Stamps the `gsap_template` into `window.__timelines["main"]` at `T = overlap-start`.
+4. Stamps the `gsap_template` into `cadence.timelineOf("main")` at `T = overlap-start`.
 
 Verified by prototype render (2026-05-31): the master-timeline wrapper tween is
 seeked and rendered (no double-seek with the sub-comp's own paused timeline —
@@ -59,6 +59,6 @@ The injector substitutes these tokens in each `gsap_template` line:
 | `__ORIGIN_OUT__` / `__ORIGIN_IN__` | transformOrigin pair for `squeeze`                                       |
 
 `filter` / `scaleX` / `transformOrigin` are lint-clean on the master timeline
-(verified: `core/src/lint/rules/gsap.ts` has no per-property whitelist and scopes
+(verified: `core/src/lint/rules/cadence.ts` has no per-property whitelist and scopes
 its checks to `data-composition-id` ranges; the x/y/scale/rotation/opacity
 whitelist is a _scene-worker_ prompt rule only — it does not bind index.html).

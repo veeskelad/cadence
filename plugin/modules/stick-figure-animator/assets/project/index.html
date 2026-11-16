@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Stick-figure video</title>
+    <!--
+      One stick-figure video. src/video.js holds the scenes; every frame is redrawn from the frame number
+      alone (bindSeek from lib/motion.js sends the time, F = round(t × fps)), no animation library.
+      render.mjs fills the marked blocks (fonts, size, length, sound tracks, props) before each render.
+    -->
+    <!-- stickman:fonts -->
+    <!-- /stickman:fonts -->
+    <style>
+      html, body { margin: 0; background: #fafaf7; }
+      #root { position: relative; overflow: hidden; background: #fafaf7; }
+      #frame { position: absolute; inset: 0; }
+      /* every face and weight the engine uses, drawn once off-screen so the fonts are loaded before frame 0 */
+      #warm { position: absolute; left: -4000px; top: 0; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="stickman" data-start="0" data-width="1920" data-height="1080" data-duration="60" data-no-timeline>
+      <div id="frame"></div>
+      <div id="warm" aria-hidden="true">
+        <span style="font-family: Bangers">Aa</span>
+        <span style="font-family: 'Oswald'; font-weight: 600">Aa Яя</span>
+        <span style="font-family: 'Oswald'; font-weight: 700">Aa Яя</span>
+        <span style="font-family: 'Inter Tight'; font-weight: 500">Aa Яя</span>
+        <span style="font-family: 'Inter Tight'; font-weight: 700">Aa Яя</span>
+        <span style="font-family: 'Inter Tight'; font-weight: 800">Aa Яя</span>
+      </div>
+      <!-- stickman:audio -->
+      <!-- /stickman:audio -->
+    </div>
+    <script type="application/json" id="props">
+      {"fps": 30, "captions": false}
+    </script>
+    <script type="module">
+      import {bindSeek} from './lib/motion.js';
+      import {VIDEO} from './src/stickman/fx.js';
+      import {Video} from './src/video.js';
+
+      const root = document.getElementById('root');
+      const props = JSON.parse(document.getElementById('props').textContent);
+      VIDEO.width = Number(root.dataset.width);
+      VIDEO.height = Number(root.dataset.height);
+      VIDEO.fps = props.fps;
+      root.style.width = `${VIDEO.width}px`;
+      root.style.height = `${VIDEO.height}px`;
+      const frame = document.getElementById('frame');
+      bindSeek((t) => {
+        frame.innerHTML = Video(Math.round(t * VIDEO.fps), props);
+      });
+    </script>
+  </body>
+</html>

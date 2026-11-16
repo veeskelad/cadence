@@ -16,6 +16,8 @@
 | Смысл и исполнение анимации | [cadence-motion-behavior](../../skills/cadence-motion-behavior/SKILL.md) | состояния, curve/clock, словарь, recipes и аудит |
 | Жесты и физическое управление | [cadence-physical-interaction](../../skills/cadence-physical-interaction/SKILL.md) | grab/drag/release, velocity, прерывание и feedback |
 | mobile web, Expo/Native, Swift, компоненты | [cadence-platform-engineering](../../skills/cadence-platform-engineering/SKILL.md) | реальный SDK/compiler и platform contract; для MP4 только изображение поведения |
+| Готовые анимированные компоненты для сайта и презентации | [cadence-platform-engineering](../../skills/cadence-platform-engineering/SKILL.md) → [каталоги](../../skills/cadence-platform-engineering/references/component-sources.md) | компонент с адресом, лицензией и планом вставки; для MP4 — образец поведения |
+| Вид словами («в стиле Apple», «градиенты», «блюр», «ascii», «как в терминале») | [cadence-visual-direction](../../skills/cadence-visual-direction/SKILL.md) → [словарь вида](../../skills/cadence-visual-direction/references/style-words.md) | приём из `engine/lib/looks.js` и рецепт `knowledge/effects-bank/look-*.md` |
 | Loading/result и сообщения | [cadence-notification-state](../../skills/cadence-notification-state/SKILL.md) | операция, id, lifecycle, stack и сценарные события |
 | Сравнение разных решений | [cadence-design-variants](../../skills/cadence-design-variants/SKILL.md) | различимые варианты на общих входах и выбор |
 | Крайний контент и состояния | [cadence-layout-resilience](../../skills/cadence-layout-resilience/SKILL.md) | реальные fixtures, bounds, длинные строки, пустота, данные/медиа |

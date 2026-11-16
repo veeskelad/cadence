@@ -9,8 +9,11 @@ sentence describes something with *structure* — a comparison, a sequence, a
 mechanism, a number that moves. Forcing that into a headline and a sub-line is
 how a piece ends up reading as a slideshow with a face attached.
 
-Scenes are React components rendered by Remotion, one MP4 per scene,
-composited back through the overlay path B-roll uses. The approach — a spec
+Scenes are React components, one HyperFrames composition and one MP4 per
+scene, rendered by the shared Cadence engine and composited back through the
+overlay path B-roll uses. Time comes from the frame runtime `@cadence/frame`
+(`templates/scenes/src/lib/frame.tsx`): `useCurrentFrame`, `interpolate`,
+`spring`, `Sequence`. No animation library. The approach — a spec
 approved before anything is built, one composition per scene, frame-driven
 motion, no background music — is adapted from
 [Creatorberry's flick](https://github.com/Creatorberry/flick) (MIT).
@@ -57,7 +60,12 @@ flick ships a catalog of scene templates —
 each with the pattern it draws and what it is wrong for. Read that catalog
 before building: a template that matches the beat is a better starting point
 than a blank component, and adapting one means changing its content, palette
-and timing, never shipping its example copy or imagery.
+and timing, never shipping its example copy or imagery. Its components import
+their timing from another frame-driven React renderer: point those imports at
+`@cadence/frame`, which offers the same names (`useCurrentFrame`,
+`useVideoConfig`, `interpolate`, `spring`, `Sequence`, `AbsoluteFill`, `Img`,
+`staticFile`). Anything that runs on its own clock is rewritten as a function
+of the frame.
 
 Two things always change when a flick template lands in a cut here: the
 palette comes from `profile.yml`, and the layout has to keep the caption band
@@ -66,10 +74,10 @@ the beat's frame count.
 
 ## One composition per scene
 
-Each scene is its own Remotion composition, registered on its own. Never build
-a single all-scenes composition: the edit's timeline lives in the cut, not in
-Remotion, and an all-in-one composition has to be re-rendered in full every
-time one beat changes.
+Each scene is its own composition, registered on its own and built into its
+own HyperFrames project. Never build a single all-scenes composition: the
+edit's timeline lives in the cut, not in the scene workspace, and an all-in-one
+composition has to be re-rendered in full every time one beat changes.
 
 `scenes.py sync` generates `Root.tsx` and `src/data/scene-spec.json` from
 `scenes.json` and the cut. Do not edit either by hand — a registration that
@@ -78,8 +86,13 @@ drifts from the spec renders a truncated scene with no error.
 ## Frame-driven motion only
 
 Drive everything from `useCurrentFrame()`. No CSS transitions, no
-`requestAnimationFrame`, no timers: the renderer advances frames out of real
-time, so anything driven by the wall clock renders as a still.
+`requestAnimationFrame`, no timers, no animation library: the engine seeks
+frames out of real time and in any order, so anything driven by the wall clock
+renders as a still. A scene imports React, `@cadence/frame` and its own files;
+`scenes.py check` refuses anything else.
+
+Fonts are local files in `public/`, listed in `src/fonts.ts`; nothing is
+fetched at render time.
 
 `rules/motion.md` governs the craft — err large, hold the zoom, one thing at a
 time, vary the entrance, sync the landing frame to the word. A scene is not
@@ -104,7 +117,7 @@ added at delivery.
 ## Before you show it
 
 - [ ] The beat had nothing real to capture.
-- [ ] `scenes.py check` passes, including `tsc --noEmit`.
+- [ ] `scenes.py check` passes, including `tsc --noEmit` and the import check.
 - [ ] The scene renders at the cut's own dimensions and frame rate.
 - [ ] Something changes at least every three seconds inside it.
 - [ ] Every on-screen word is readable on a phone at arm's length.
