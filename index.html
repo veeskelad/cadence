@@ -48,7 +48,7 @@ p{margin:0 0 14px}
 /* шапка */
 .nav{position:fixed;z-index:50;top:0;left:0;right:0;display:flex;align-items:center;gap:22px;
   padding:calc(12px + env(safe-area-inset-top,0px)) calc(clamp(16px,4vw,44px) + env(safe-area-inset-right,0px)) 12px calc(clamp(16px,4vw,44px) + env(safe-area-inset-left,0px));
-  background:rgba(7,26,50,.62);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  background:rgba(7,26,50,.72);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
   border-bottom:1px solid rgba(255,255,255,.08)}
 .logo{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:500;font-size:17px;letter-spacing:-.01em}
 .logo{transition:opacity .35s,visibility .35s}
@@ -56,7 +56,7 @@ p{margin:0 0 14px}
 /* знак и слово «Cadence» рядом не ставим: C дублируется */
 .nav.wm-on .logo{opacity:0;visibility:hidden}
 .nav nav{display:none;gap:26px;margin-left:auto}
-.nav nav a{color:var(--dim);text-decoration:none;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;transition:color .2s}
+.nav nav a{color:rgba(255,255,255,.84);text-decoration:none;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;transition:color .2s}
 .nav nav a:hover{color:var(--ink)}
 .btn{display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border-radius:999px;border:0;cursor:pointer;background:var(--ink);color:var(--black);
   font:600 15px var(--sans);text-decoration:none;white-space:nowrap;transition:transform var(--d-settle) var(--e-settle),box-shadow .3s}
@@ -257,7 +257,7 @@ p{margin:0 0 14px}
 .end{position:relative;overflow:hidden;padding:140px 0 60px;text-align:center;isolation:isolate}
 .end::before{content:"";position:absolute;z-index:-1;left:-10%;right:-10%;bottom:-40%;height:110%;background:radial-gradient(closest-side,rgba(50,103,224,.6),rgba(14,63,167,.38) 45%,transparent 75%)}
 .end img{width:84px;height:84px;margin:0 auto 26px;display:block}
-.foot{margin-top:90px;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;justify-content:space-between;gap:16px;color:var(--dim2)}
+.foot{margin-top:90px;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;justify-content:space-between;gap:16px;color:rgba(255,255,255,.72)}
 
 /* появление: без JS всё видно */
 .js .rise{opacity:0;transform:translateY(26px)}
