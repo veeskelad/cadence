@@ -34,6 +34,7 @@ claude plugin install cadence --marketplace veeskelad/cadence
 | Где | Что |
 |---|---|
 | `index.html` | страница сайта |
+| `icons/` | знак Cadence для вкладки браузера и экрана телефона |
 | `.claude-plugin/marketplace.json` | каталог для Claude Code: отсюда ставится плагин |
 | `plugin/` | текущая версия Cadence, которую ставит плагин |
 | `current/manifest.json` | указатель на текущий выпуск: по нему промпт установки и проверка обновлений узнают, что скачать |
