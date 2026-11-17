@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "cadence.style-pack.v1",
+  "id": "cadence-ember",
+  "title": "Cadence Ember",
+  "wordmark": "CADENCE",
+  "colors": {
+    "canvas": "#0E0C0B",
+    "surface": "#1C1917",
+    "ink": "#F0EEE6",
+    "muted": "#B4ADA3",
+    "signal": "#D97757",
+    "signalSoft": "#3A2A22",
+    "signalSecondary": "#F2A65A",
+    "line": "#51483F",
+    "positive": "#FF8A4C",
+    "onSignal": "#0E0C0B"
+  },
+  "typography": {
+    "display": {
+      "family": "Literata Variable, serif",
+      "weight": 400,
+      "trackingEm": -0.015,
+      "transform": "none",
+      "sizeScale": 1.0
+    },
+    "body": {
+      "family": "Manrope, sans-serif",
+      "weight": 500,
+      "trackingEm": 0
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "weight": 500
+    }
+  },
+  "fonts": [
+    "literata",
+    "manrope",
+    "jetbrains-mono"
+  ],
+  "radii": {
+    "small": 10,
+    "medium": 24,
+    "large": 36,
+    "pill": 999
+  },
+  "stroke": {
+    "hairline": 2,
+    "regular": 4,
+    "emphasis": 8
+  },
+  "shadow": {
+    "card": "0 18px 48px rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.18)"
+  },
+  "decor": {
+    "grid": false,
+    "gridSize": 64,
+    "brackets": false,
+    "accentBlob": false
+  },
+  "motion": {
+    "character": "editorial"
+  },
+  "provenance": {
+    "base": "cadence",
+    "references": [],
+    "notes": "Тёплая тёмная тема с кораллом, янтарём и антиквой. Уточнены читаемость подписи, разделение поверхностей, спокойная геометрия и физическая тень. Акцентное пятно не обязательно; движение определяется смыслом сцены."
+  }
+}

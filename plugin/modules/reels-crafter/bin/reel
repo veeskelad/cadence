@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# reel: one entry point for the reels-crafter module (run from the Cadence root or from anywhere).
+# A reel folder is work/<project>/ : src/ (own clips), vo/vo.mp3 (own voice), reel.json, out/ (results).
+set -euo pipefail
+
+SELF="$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE[0]}")"
+ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"                     # modules/reels-crafter
+CAD="$(cd "$ROOT/../.." && pwd)"                                # Cadence root
+export REEL_DATA="${REEL_DATA:-${XDG_CACHE_HOME:-$HOME/.cache}/cadence/modules/reels-crafter-bin}"   # compiled mask tool
+
+# Python of the module: REEL_PY, else the one made by scripts/module_setup.py (no network here)
+py() {
+  if [ -n "${REEL_PY:-}" ]; then echo "$REEL_PY"; return; fi
+  python3 "$CAD/scripts/module_setup.py" python reels-crafter | python3 -c 'import json,sys; print(json.load(sys.stdin)["python"])'
+}
+
+usage() {
+  cat <<EOT
+reel: reels from your own footage (module reels-crafter)
+
+  reel doctor                         what is in place and what is missing (no network)
+  reel new <reel-dir>                 start a reel folder from the template (src/, vo/, reel.json)
+  reel sheet <clip>... [-o dir]       contact sheets (10 frames per clip) to pick moments
+  reel build <reel-dir> [--stills|--lint]
+                                      render the reel (--stills = fast preview + safe-zone QA sheet)
+  reel stills <reel-dir> <t1,t2,...>  render single frames at those times into <reel-dir>/stills/
+  reel masks <frames-dir> <out-dir>   macOS Vision person masks (alpha PNG) + head positions
+  reel th <lines|tighten|cut|qa|clean|transcribe|render> [args]
+                                      talking-head tools (talking-head/)
+  reel root | py | data               print the module folder / the module python / the data folder
+
+Dependencies: python3 scripts/module_setup.py install reels-crafter (network, only with the person's consent).
+Whisper models are read from disk; downloading one needs ALLOW_MODEL_DOWNLOAD=1 and the person's consent.
+EOT
+}
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  root) echo "$ROOT" ;;
+  py) py ;;
+  data) echo "$REEL_DATA" ;;
+  doctor)
+    python3 "$CAD/scripts/module_setup.py" status reels-crafter
+    command -v swiftc >/dev/null && echo "swiftc: ok (person masks)" || echo "swiftc: missing (cover and orbit need macOS masks)" ;;
+  new)
+    dir="${1:?usage: reel new <reel-dir>}"
+    mkdir -p "$dir/src" "$dir/vo"
+    [ -e "$dir/reel.json" ] || cp "$ROOT/examples/template/reel.json" "$dir/reel.json"
+    echo "created $dir (put clips in $dir/src, voice in $dir/vo/vo.mp3, edit $dir/reel.json)" ;;
+  sheet) "$(py)" "$ROOT/tools/contact_sheet.py" "$@" ;;
+  build) "$(py)" "$ROOT/engine/build.py" "$@" ;;
+  stills)
+    dir="$(cd "${1:?reel dir}" && pwd)"; mkdir -p "$dir/stills"
+    W=1080 H=1920 node "$ROOT/tools/render.mjs" "$dir" stills "${2:?times like 0.5,3.2}" ;;
+  masks)
+    tool="$REEL_DATA/bin/masks"
+    if [ ! -x "$tool" ] || [ "$ROOT/tools/masks.swift" -nt "$tool" ]; then
+      mkdir -p "$REEL_DATA/bin"; swiftc -O "$ROOT/tools/masks.swift" -o "$tool"
+    fi
+    "$tool" "$@" ;;
+  th)
+    sub="${1:?lines|tighten|cut|qa|clean|transcribe|render}"; shift
+    TH="$ROOT/talking-head"
+    case "$sub" in
+      lines|tighten|cut|qa) "$(py)" -I "$TH/prep/$sub.py" "$@" ;;
+      clean) bash "$TH/prep/clean_audio.sh" "$@" ;;
+      transcribe) "$(py)" -I "$TH/engine/transcribe.py" "$@" ;;
+      render) node "$TH/engine/render.mjs" "$@" ;;
+      *) echo "unknown: $sub" >&2; exit 1 ;;
+    esac ;;
+  help|-h|--help) usage ;;
+  *) echo "unknown command: $cmd" >&2; usage; exit 1 ;;
+esac

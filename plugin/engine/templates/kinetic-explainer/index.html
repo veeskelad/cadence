@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — kinetic explainer</title>
+    <!--
+      Грамматика говорящего объяснения поверх своего видео: слова подписи встают по таймингам речи,
+      ключевое слово штампуется через плашку на 2 кадра, число катится с объёмной тенью,
+      наезд на акцентах, склейка-хлыст со смазом, плиточная смена регистра на «бумагу» и наклонённые
+      фото-карточки, которые улетают вверх со смазом. Регистр «окно на бумаге»: видео в окне вырастает
+      пружиной, столбик слов, стикеры выскакивают вокруг, крупная фраза проезжает со смазом.
+      Всё — функция времени t (bindSeek).
+      Сценарий — #film: paper, videos (window), punch, whip, tiles, cards, stickers, sweeps, captions
+      (формат — examples/kinetic-explainer/film.json).
+    -->
+    <!-- cadence:fonts -->
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+        /* Скругления — radii пака (small 10, medium 24, large 36): движок их не подставляет. */
+        --r-small: 10px;
+        --r-medium: 24px;
+      }
+      html, body { margin: 0; background: var(--canvas); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--canvas); }
+      #root > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: transform, filter; }
+      #paper { position: absolute; inset: 0; opacity: 0; }
+      #root > video.window { inset: auto; border-radius: var(--r-medium); box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.1); }
+      .mark { position: absolute; width: 12px; height: 12px; background: var(--signal); visibility: hidden; }
+      .sticker { position: absolute; display: grid; place-items: center; border-radius: 22%; background: #fff;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.12); visibility: hidden; }
+      .sticker span { font: 700 1px/1 'Golos Text', sans-serif; }
+      .sticker img { width: 70%; height: 70%; object-fit: contain; }
+      .sweep { position: absolute; left: 0; white-space: nowrap; font: 700 260px/1 Oswald, sans-serif; color: #141210;
+        text-transform: uppercase; visibility: hidden; will-change: transform, filter; }
+      #tiles { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .card { position: absolute; left: 50%; top: 0; transform-origin: 50% 50%; opacity: 0; will-change: transform, filter; }
+      .card .print { background: #fbfaf7; padding: 16px; border-radius: 4px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18); }
+      .card img { display: block; width: 100%; }
+      .cap { position: absolute; display: flex; flex-wrap: wrap; align-items: baseline; font-size: 54px; column-gap: 0.28em; row-gap: 0; visibility: hidden; }
+      .cap.center { justify-content: center; text-align: center; }
+      /* Подложка на видео — материал: растёт вместе с текстом, размытие фона, светлая кромка сверху, радиус пака. */
+      .cap.scrim { box-sizing: border-box; padding: 16px 32px 24px; }
+      .plate { position: absolute; left: 0; top: 0; border-radius: var(--r-medium); transform-origin: 0 0;
+        background: rgba(20, 18, 16, 0.42); backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 18px 48px rgba(0, 0, 0, 0.22); }
+      .cap.scrim .w { text-shadow: none; letter-spacing: 0.005em; }
+      .cap.scrim .key, .cap.scrim .hero { letter-spacing: -0.01em; }
+      .cap.soft .w { color: #1c1917; text-shadow: none; }
+      /* Фраза на бумаге: слова копятся строкой и переносятся по ширине, не по одному на строку. */
+      .cap.stack { column-gap: 0.26em; }
+      .cap.stack .w { font: 600 76px/1.1 'Golos Text', sans-serif; letter-spacing: -0.012em; }
+      .w { position: relative; font: 600 54px/1.12 'Golos Text', sans-serif; color: #fff; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); visibility: hidden; white-space: nowrap; }
+      .cap.soft { font-size: 50px; }
+      .soft .w { font-size: 50px; }
+      .soft .w.key { font-size: 150px; }
+      .key, .hero { flex-basis: 100%; display: block; height: 1em; white-space: nowrap; }
+      .key { font: 700 150px/1 Oswald, sans-serif; text-transform: uppercase; }
+      .hero { font: 700 190px/1 Oswald, sans-serif; color: var(--hero, #ffd34d); font-variant-numeric: tabular-nums; }
+      .glyph { display: inline-block; transform-origin: 0 70%; }
+      .block { position: absolute; left: 0; top: 0.06em; height: 0.9em; background: currentColor; visibility: hidden; }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute">
+      <filter id="smearX" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur id="smearXd" stdDeviation="0 0" /></filter>
+      <filter id="smearY" x="-10%" y="-50%" width="120%" height="200%"><feGaussianBlur id="smearYd" stdDeviation="0 0" /></filter>
+      <filter id="smearS" x="-20%" y="-10%" width="140%" height="120%"><feGaussianBlur id="smearSd" stdDeviation="0 0" /></filter>
+    </svg>
+    <div id="root" data-composition-id="kinetic-explainer" data-start="0" data-width="1080" data-height="1920" data-duration="12" data-no-timeline
+      data-paper="#e8e6e1" data-hero="#ffd34d" data-seed="11">
+      <div id="paper"></div>
+      <!-- cadence:videos -->
+      <section id="scene" class="clip" data-start="0" data-duration="12" data-track-index="1">
+        <div id="marks"></div>
+        <div id="cards"></div>
+        <canvas id="tiles"></canvas>
+        <div id="stickers"></div>
+        <div id="caps"></div>
+        <div id="sweeps"></div>
+      </section>
+    </div>
+    <script type="application/json" id="film">
+      {}
+    </script>
+    <script type="module">
+      import {bindSeek, stage, spring, springTrack, smoothstep, expoOut, expoIn, invLerp, lerp, clamp, rng} from './lib/motion.js';
+
+      const {root, width: W, height: H} = stage();
+      const film = JSON.parse(document.getElementById('film').textContent);
+      const cfg = root.dataset;
+      const FPS = 30, F = 1 / FPS;
+      root.style.setProperty('--hero', cfg.hero);
+      await document.fonts.load('700 150px Oswald', 'АБВГДЕЁЖЗабвгд0123КОД');
+      await document.fonts.load('600 54px "Golos Text"', 'АБВГДЕЁЖЗабвгд0123');
+
+      // Бумага регистров «окно» и «карточки»: свой тон сцены + редкий точечный узор (статичный).
+      const paper = document.getElementById('paper');
+      paper.style.background = `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1.2px, transparent 1.6px) 0 0 / 36px 36px, radial-gradient(90% 70% at 50% 45%, #f6f5f3 0%, ${cfg.paper} 75%)`;
+      const inRanges = (t, ranges) => (ranges ?? []).some(([a, b]) => t >= a && t < b);
+
+      // Видео во весь кадр или в окне на бумаге (window: центр x, y, ширина w, высота h — доли кадра).
+      const marksBox = document.getElementById('marks');
+      const videos = (film.videos ?? []).map((v) => {
+        const el = document.getElementById(v.id);
+        const win = v.window ? {...v.window, w: v.window.w * W, h: v.window.h * H} : null;
+        if (win) {
+          el.classList.add('window');
+          Object.assign(el.style, {left: `${win.x * W - win.w / 2}px`, top: `${win.y * H - win.h / 2}px`, width: `${win.w}px`, height: `${win.h}px`});
+          // Метки кадрирования по углам окна.
+          win.marks = [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sy]) => {
+            const m = document.createElement('div');
+            m.className = 'mark';
+            marksBox.append(m);
+            return {el: m, sx, sy};
+          });
+        }
+        return {...v, el, win};
+      });
+      const smearX = document.getElementById('smearXd');
+      const smearY = document.getElementById('smearYd');
+
+      // --- Подписи: раскладка считается один раз со всеми словами, потом только видимость (без reflow).
+      const caps = document.getElementById('caps');
+      const thousands = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      const blocks = (film.captions ?? []).map((c) => {
+        const box = document.createElement('div');
+        // На видео — подложка (контраст не зависит от кадра), на бумаге — тёмный текст.
+        const onPaper = c.style === 'soft' || c.style === 'stack';
+        box.className = `cap ${c.align === 'center' ? 'center' : ''} ${onPaper ? 'soft' : ''} ${c.style === 'stack' ? 'stack' : ''} ${!onPaper && c.scrim !== false ? 'scrim' : ''}`;
+        const maxW = (c.maxW ?? 0.76) * W;
+        box.style.width = `${maxW}px`;
+        box.style.left = `${(c.align === 'center' ? c.x * W - maxW / 2 : c.x * W)}px`;
+        box.style.top = `${c.y * H}px`;
+        const items = c.items.map((it) => {
+          const kind = it.kind ?? 'word';
+          const el = document.createElement('span');
+          el.className = `w ${kind === 'key' ? 'key' : ''} ${kind === 'count' || kind === 'hero' ? 'hero' : ''}`;
+          const glyph = document.createElement('span');
+          glyph.className = 'glyph';
+          glyph.textContent = kind === 'count' ? thousands(it.to) + (it.suffix ?? '') : it.w;
+          el.append(glyph);
+          if (kind === 'key' || kind === 'count' || kind === 'hero') {
+            const block = document.createElement('span');
+            block.className = 'block';
+            el.append(block);
+            if (it.color) el.style.color = it.color;
+          }
+          if (kind === 'count' || kind === 'hero') {
+            // Объём: жёсткая тень-выдавливание + тонкий двухцветный сдвиг по краю.
+            const ext = Array.from({length: 9}, (_, i) => `${i + 1}px ${i + 1}px 0 #141210`).join(', ');
+            glyph.style.textShadow = ext;
+          }
+          box.append(el);
+          return {...it, kind, el, glyph, block: el.querySelector('.block')};
+        });
+        caps.append(box);
+        return {...c, box, items};
+      });
+      // Ширина плашки = ширина слова на посадке.
+      for (const b of blocks) {
+        b.box.style.visibility = 'hidden';
+        for (const it of b.items) if (it.block) it.block.style.width = `${it.glyph.getBoundingClientRect().width}px`;
+        // Подложка: размер после каждого слова (ширина самой длинной строки, низ последней) — по ним она растёт.
+        if (b.box.classList.contains('scrim')) {
+          const r = b.box.getBoundingClientRect(), cs = getComputedStyle(b.box);
+          const pr = parseFloat(cs.paddingRight), pb = parseFloat(cs.paddingBottom);
+          let right = 0, bottom = 0;
+          b.sizes = b.items.map((it) => {
+            right = Math.max(right, it.glyph.getBoundingClientRect().right - r.left + pr);
+            bottom = Math.max(bottom, it.el.getBoundingClientRect().bottom - r.top + pb);
+            return [it.at, Math.ceil(right), Math.ceil(bottom)];
+          });
+          b.box.style.width = `${Math.ceil(right)}px`;
+          b.plate = document.createElement('div');
+          b.plate.className = 'plate';
+          b.box.prepend(b.plate);
+        }
+      }
+
+      // --- Карточки-отпечатки.
+      const cardsBox = document.getElementById('cards');
+      const cards = (film.cards ?? []).map((c, i) => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        const w = (c.w ?? 0.8) * W;
+        el.style.width = `${w}px`;
+        el.innerHTML = `<div class="print"><img src="${c.src}" alt=""></div>`;
+        cardsBox.append(el);
+        return {...c, el, w, rot: c.rot ?? [-3, 2.5, -2][i % 3]};
+      });
+      await Promise.all([...cardsBox.querySelectorAll('img')].map((img) => img.decode().catch(() => {})));
+
+      // --- Стикеры: белые плашки с картинкой или знаком, выскакивают пружиной с поворотом.
+      const stickersBox = document.getElementById('stickers');
+      const stickers = (film.stickers ?? []).map((s) => {
+        const el = document.createElement('div');
+        el.className = 'sticker';
+        const size = (s.size ?? 0.11) * W;
+        Object.assign(el.style, {width: `${size}px`, height: `${size}px`, left: `${s.x * W - size / 2}px`, top: `${s.y * H - size / 2}px`});
+        el.innerHTML = s.src ? `<img src="${s.src}" alt="">` : `<span style="font-size:${size * 0.5}px;color:${s.color ?? '#141210'}">${s.text ?? ''}</span>`;
+        stickersBox.append(el);
+        return {...s, el, rot: s.rot ?? 0};
+      });
+
+      // --- Проезд крупной фразы: въезд справа с торможением, уход влево с разгоном, смаз по скорости.
+      const sweepsBox = document.getElementById('sweeps');
+      const sweeps = (film.sweeps ?? []).map((s) => {
+        const el = document.createElement('div');
+        el.className = 'sweep';
+        el.textContent = s.w;
+        if (s.size) el.style.fontSize = `${s.size * W}px`;
+        el.style.top = `${s.y * H}px`;
+        sweepsBox.append(el);
+        return {...s, el, width: el.getBoundingClientRect().width};
+      });
+      const sweepX = (s, t) => {
+        const u = invLerp(s.at, s.at + s.dur, t);
+        const hold = 0.5 * W - s.width / 2;
+        return u < 0.45 ? lerp(W, hold, expoOut(u / 0.45)) : lerp(hold, -s.width, expoIn((u - 0.45) / 0.55));
+      };
+      const smearS = document.getElementById('smearSd');
+
+      // --- Плитки смены регистра.
+      const tiles = document.getElementById('tiles');
+      tiles.width = W; tiles.height = H;
+      const tg = tiles.getContext('2d');
+      const T = film.tiles ?? null;
+      const cell = W / (T?.cols ?? 12);
+      const grid = [];
+      if (T) {
+        const rand = rng(Number(cfg.seed));
+        const ox = (T.originX ?? 0.5) * W, oy = (T.originY ?? 0.8) * H;
+        const far = Math.hypot(Math.max(ox, W - ox), Math.max(oy, H - oy));
+        for (let y = 0; y < H; y += cell) for (let x = 0; x < W; x += cell) {
+          const d = Math.hypot(x + cell / 2 - ox, y + cell / 2 - oy) / far;
+          grid.push({x, y, at: clamp(d * 0.72 + rand() * 0.28, 0, 0.98)});
+        }
+      }
+
+      // Наезд: ступеньки масштаба, каждая доезжает пружиной; cut:true — мгновенно, как джамп-кат.
+      function punch(t) {
+        let s = 1, prev = 1;
+        for (const [at, to, cut] of film.punch ?? []) {
+          if (cut) { if (t >= at) { s = to; prev = to; } continue; }
+          s += (to - prev) * spring(t - at, 18, 0.82);
+          prev = to;
+        }
+        return s;
+      }
+
+      function render(t) {
+        // 1. Видео: наезд + склейка-хлыст со смазом по X (одна склейка под максимумом смаза).
+        const wp = film.whip;
+        const mid = wp ? wp.at + wp.dur * 0.55 : Infinity;
+        let blurX = 0;
+        videos.forEach((v) => {
+          const inRange = t >= v.start && t < v.start + v.duration;
+          const isFrom = wp && v.id === wp.from, isTo = wp && v.id === wp.to;
+          const live = inRange && (isFrom ? t < mid : isTo ? t >= mid : true);
+          v.el.style.opacity = live ? 1 : 0;
+          if (v.win) {
+            // Окно: вырастает пружиной из 0,3, «линза» — короткий вдох масштаба, уход — сжатие в точку.
+            const w = v.win;
+            let s = 0.3 + 0.7 * spring(t - v.start, 14, 0.9);
+            for (const at of w.lens ?? []) { const u = invLerp(at, at + 0.36, t); if (u > 0 && u < 1) s *= 1 + 0.07 * Math.sin(Math.PI * u); }
+            if (w.exit != null && t >= w.exit) s *= 1 - expoIn(invLerp(w.exit, w.exit + 0.24, t));
+            v.el.style.transform = `scale(${s.toFixed(4)})`;
+            const marksOn = live && t >= v.start + 0.3 && (w.exit == null || t < w.exit);
+            for (const m of w.marks) {
+              m.el.style.visibility = marksOn ? 'inherit' : 'hidden';
+              m.el.style.left = `${w.x * W + m.sx * (w.w / 2 * s + 18) - 6}px`;
+              m.el.style.top = `${w.y * H + m.sy * (w.h / 2 * s + 18) - 6}px`;
+            }
+            return;
+          }
+          let x = 0;
+          if (isFrom && t >= wp.at) { const u = invLerp(wp.at, mid, t); x = -0.38 * W * expoIn(u); blurX = 70 * u; }
+          if (isTo && t >= mid) { const u = invLerp(mid, wp.at + wp.dur, t); x = 0.38 * W * (1 - expoOut(u)); blurX = 70 * (1 - expoOut(u)); }
+          // Сдвиг на хлысте не должен открывать край кадра: масштаб покрывает смещение и хвост смаза (3σ).
+          const cover = 1 + (2 * Math.abs(x) + (blurX > 0.5 ? 6 * blurX : 0)) / W;
+          const s = (v.punch ? punch(t) : 1 + 0.04 * invLerp(v.start, v.start + v.duration, t)) * cover;
+          v.el.style.transformOrigin = `50% ${v.focusY ?? 38}%`;
+          v.el.style.transform = `translateX(${x.toFixed(1)}px) scale(${s.toFixed(4)})`;
+          v.el.style.filter = live && blurX > 0.5 ? 'url(#smearX)' : 'none';
+        });
+        smearX.setAttribute('stdDeviation', `${blurX.toFixed(1)} 0`);
+
+        // 2. Плитки: квадраты «бумаги» закрывают кадр от точки, затем бумага целиком.
+        tg.clearRect(0, 0, W, H);
+        let paperOn = false;
+        if (T && t >= T.at) {
+          const u = invLerp(T.at, T.at + T.dur, t);
+          paperOn = u >= 1;
+          if (!paperOn) {
+            tg.fillStyle = cfg.paper;
+            for (const c of grid) if (u >= c.at) {
+              const k = clamp((u - c.at) / 0.12);
+              const s = cell * (0.55 + 0.45 * k);
+              tg.fillRect(c.x + (cell - s) / 2, c.y + (cell - s) / 2, s + 0.5, s + 0.5);
+            }
+          }
+        }
+        paper.style.opacity = paperOn || inRanges(t, film.paper) ? 1 : 0;
+
+        // Стикеры: пружина масштаба с перелётом, поворот докручивается, потом медленный дрейф.
+        for (const s of stickers) {
+          const on = t >= s.at && (s.until == null || t < s.until);
+          s.el.style.visibility = on ? 'inherit' : 'hidden';
+          if (!on) continue;
+          const k = spring(t - s.at, 20, 0.65);
+          const drift = (t - s.at) * (s.drift ?? 6);
+          s.el.style.transform = `translateY(${(-drift).toFixed(1)}px) rotate(${(s.rot - 16 * (1 - k)).toFixed(2)}deg) scale(${k.toFixed(4)})`;
+        }
+
+        // Проезд фразы: смаз пропорционален скорости.
+        let blurS = 0;
+        for (const s of sweeps) {
+          const on = t >= s.at && t < s.at + s.dur;
+          s.el.style.visibility = on ? 'inherit' : 'hidden';
+          if (!on) continue;
+          const x = sweepX(s, t);
+          blurS = Math.min(60, Math.abs(sweepX(s, t + F) - x) * 0.18);
+          s.el.style.transform = `translateX(${x.toFixed(1)}px)`;
+          s.el.style.filter = blurS > 0.5 ? 'url(#smearS)' : 'none';
+        }
+        smearS.setAttribute('stdDeviation', `${blurS.toFixed(1)} 0`);
+
+        // 3. Карточки: вход снизу со смазом по Y и посадкой, медленный дрейф, уход вверх на смене.
+        let blurY = 0;
+        cards.forEach((c, i) => {
+          const next = cards[i + 1];
+          const inEnd = c.at + 0.36, outStart = next ? next.at : Infinity, outEnd = outStart + 0.24;
+          let y = 0.42 * H, rot = c.rot, s = 1, vis = paperOn && t >= c.at && t < outEnd, blur = 0;
+          if (t < inEnd) {
+            const u = expoOut(invLerp(c.at, inEnd, t));
+            y = lerp(1.25 * H, 0.42 * H, u); rot = lerp(c.rot - 9, c.rot, u); blur = 46 * (1 - u);
+          } else if (t < outStart) {
+            const u = invLerp(inEnd, Math.min(outStart, inEnd + 4), t);
+            rot = c.rot + 0.7 * u; s = 1 + 0.035 * u;
+          } else {
+            const u = expoIn(invLerp(outStart, outEnd, t));
+            y = lerp(0.42 * H, -0.75 * H, u); rot = c.rot + 0.7 + 5 * u; s = 1.035 + 0.16 * u; blur = 46 * u;
+          }
+          c.el.style.opacity = vis ? 1 : 0;
+          c.el.style.transform = `translate(-50%, -50%) translateY(${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${s.toFixed(4)})`;
+          c.el.style.filter = vis && blur > 0.5 ? 'url(#smearY)' : 'none';
+          if (vis) blurY = Math.max(blurY, blur);
+        });
+        smearY.setAttribute('stdDeviation', `0 ${blurY.toFixed(1)}`);
+
+        // 4. Подписи: слово проявляется со своего события — подъём, проявление и размытие одной пружиной
+        //    без перелёта; подложка растёт за текстом; блок гаснет к концу. flash:true — штамп оригинала.
+        for (const b of blocks) {
+          const on = t >= b.from && t < b.to;
+          b.box.style.visibility = on ? 'inherit' : 'hidden';
+          if (!on) continue;
+          // Гаснет за 0,16 с: кадр перед склейкой уже пустой.
+          const out = 1 - smoothstep(b.to - 0.16, b.to - F, t);
+          if (b.plate) {
+            const [[at0, w0, h0], ...rest] = b.sizes;
+            const w = springTrack(t, w0, rest.map(([at, w]) => [at, w]), 18, 1);
+            const h = springTrack(t, h0, rest.map(([at, , h]) => [at, h]), 18, 1);
+            const k0 = spring(t - at0, 18, 1);
+            b.plate.style.width = `${w.toFixed(1)}px`;
+            b.plate.style.height = `${h.toFixed(1)}px`;
+            b.plate.style.opacity = (k0 * out).toFixed(3);
+            b.plate.style.transform = `scale(${(0.96 + 0.04 * k0).toFixed(4)})`;
+          }
+          for (const it of b.items) {
+            const shown = t >= it.at;
+            it.el.style.visibility = shown ? 'inherit' : 'hidden';
+            if (!shown) continue;
+            if (it.kind === 'count') {
+              const u = expoOut(invLerp(it.at, it.at + (it.dur ?? 0.8), t));
+              it.glyph.textContent = thousands(it.to * u) + (u >= 1 ? it.suffix ?? '' : '');
+            }
+            if (!it.flash) {
+              const big = it.kind !== 'word';
+              const k = spring(t - it.at, big ? 16 : 22, 1);
+              const blur = (1 - k) * (big ? 10 : 6);
+              it.el.style.opacity = (k * out).toFixed(3);
+              it.glyph.style.transform = `translateY(${((1 - k) * (big ? 0.18 : 0.3)).toFixed(3)}em) scale(${(big ? 0.94 + 0.06 * k : 1).toFixed(4)})`;
+              it.glyph.style.filter = blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : 'none';
+              continue;
+            }
+            it.el.style.opacity = out.toFixed(3);
+            if (!it.block) continue;
+            const flash = t < it.at + 2 * F;
+            // inherit, а не visible: иначе потомок перебивает скрытие блока подписи.
+            it.block.style.visibility = flash ? 'inherit' : 'hidden';
+            it.glyph.style.visibility = flash ? 'hidden' : 'inherit';
+            const land = t - (it.at + 2 * F);
+            const pop = it.kind === 'key' ? 0.08 : 0.14;
+            const k = 1 + pop * (1 - spring(land, 30, 0.75));
+            it.glyph.style.transform = `scale(${k.toFixed(4)})`;
+          }
+        }
+      }
+
+      bindSeek(render);
+    </script>
+  </body>
+</html>

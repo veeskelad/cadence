@@ -1,0 +1,63 @@
+{
+  "id": "video-director-skills",
+  "family": "cadence-visual-direction",
+  "title": "Режиссура ролика: сценарий, план битов, графика кодом",
+  "what": "Сценарий и раскадровка ролика по битам, графика-шаблоны, субтитры, камера и звук поверх говорящего видео или голоса за кадром, рендер в MP4 движком Cadence (HyperFrames).",
+  "when": [
+    "напиши сценарий короткого ролика по моей идее",
+    "сделай раскадровку и план графики под мой голос",
+    "собери ролик без лица: только голос и графика",
+    "добавь графику, субтитры и наезды в моё говорящее видео",
+    "смонтируй длинное видео 16:9 с графикой-объяснениями"
+  ],
+  "not_for": [
+    "готовые формы ролика без съёмки (стинг, лонч, чат → результат): cadence-structures",
+    "нарезка пауз и дублей, субтитры без графики: cadence-cut",
+    "ролик в бит под трек одним кодом: cadence-beat-reel и cadence-motion",
+    "публикация и загрузка в соцсети: вне набора"
+  ],
+  "capabilities": [
+    "beat-plan"
+  ],
+  "inputs": [
+    "готовая нарезка видео 9:16 или 16:9 (маршруты A и B) либо запись голоса (маршрут C) либо идея и заметки (только сценарий)",
+    "свои логотипы, скриншоты, музыка и звуки (в модуле их нет)"
+  ],
+  "outputs": [
+    "сценарий по битам (guides/reel-script.md)",
+    "план битов broll_plan.json",
+    "превью и финальный MP4 с субтитрами, графикой и звуком в $WORK/<проект>/out/"
+  ],
+  "run": "OUT_DIR=\"$WORK/<проект>/out\" bash modules/video-director-skills/routes/video-edit/scripts/render.sh <нарезка.mp4>",
+  "engine": "hyperframes",
+  "deps": {
+    "python": "requirements.txt",
+    "node": "hyperframes",
+    "system": [
+      "ffmpeg",
+      "node",
+      "python3"
+    ]
+  },
+  "install_mb": 2700,
+  "platform": [
+    "macos",
+    "linux"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "assets",
+      "hyperframes",
+      "requirements.txt",
+      "routes"
+    ],
+    "file": "video-director-skills-8e0822392e57.zip",
+    "sha256": "8e0822392e57fee904295264493c707c79be6cfc5df9c9a365f3ae220aa9ea7b",
+    "bytes": 1061951,
+    "expanded_bytes": 2857603,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/video-director-skills-8e0822392e57.zip"
+  }
+}

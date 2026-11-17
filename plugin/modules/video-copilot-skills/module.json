@@ -1,0 +1,64 @@
+{
+  "id": "video-copilot-skills",
+  "family": "cadence-cut",
+  "title": "Говорящий ролик под ключ: сценарий, монтаж, нарезка, B-roll",
+  "what": "Из одной записи человека делает готовый вертикальный ролик 1080x1920 (также 1:1 и 16:9): режет паузы, ставит доски с графикой на бумажную сцену над камерой, пословные субтитры, музыку, звук и текст поста; рядом справки по сценарию, нарезке длинного видео и своему B-roll.",
+  "when": [
+    "смонтируй мою запись в короткий ролик с субтитрами и графикой",
+    "напиши сценарии на неделю в моём голосе",
+    "нарежь это длинное видео на вертикальные шортсы",
+    "поставь мои B-roll на этот ролик",
+    "сделай из фото анимацию бумажным коллажем"
+  ],
+  "not_for": [
+    "Шортсы из длинного подкаста с оценкой кусков: модуль shorts-studio",
+    "Ролик из папки готовых кадров: модуль reels-crafter",
+    "Только убрать паузы или только субтитры: scripts/silence_cut.py и scripts/captions_whisper.py (навык cadence-cut)",
+    "Ролик без съёмки, весь из кода: навык cadence-motion и его структуры",
+    "Публикация и загрузка в соцсети, разбор чужих аккаунтов: в модуль не входят"
+  ],
+  "capabilities": [
+    "styled-reel"
+  ],
+  "inputs": [
+    "запись, где человек говорит (mp4, mov), или длинное видео для нарезки",
+    "по желанию свои B-roll, свой стиль style.json, лого, фото для коллажа"
+  ],
+  "outputs": [
+    "short-<слаг>.mp4 с постером и .srt",
+    "post.md с названием, подписью и хештегами",
+    "справочные файлы: сценарии недели, план нарезки, библиотека B-roll"
+  ],
+  "run": "python3 modules/video-copilot-skills/scripts/short_run.py <проект> all video-agent/edits/short-<слаг>",
+  "engine": "node",
+  "deps": {
+    "node": "engine",
+    "system": [
+      "ffmpeg",
+      "node",
+      "python3"
+    ]
+  },
+  "install_mb": 700,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "assets",
+      "engine",
+      "examples",
+      "scripts"
+    ],
+    "file": "video-copilot-skills-1facaa5edc80.zip",
+    "sha256": "1facaa5edc80e4f17505ccfd937934a778ec16ebfc21b7b0e3a29506d31d1796",
+    "bytes": 1808492,
+    "expanded_bytes": 3784477,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/video-copilot-skills-1facaa5edc80.zip"
+  }
+}

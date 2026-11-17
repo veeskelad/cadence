@@ -1,0 +1,10 @@
+{
+  "name": "b-roll-toolkit-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Зависимость отрисовки перебивок: управляемый браузер для рендера страницы.",
+  "type": "module",
+  "dependencies": {
+    "playwright-core": "^1.48.0"
+  }
+}

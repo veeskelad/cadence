@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Short</title>
+    <!--
+      Vertical short 1080x1920: the reframed clip, word-level animated captions (bold, bounce, clean),
+      a hook overlay for the first 3.5 s and a progress bar. render.mjs fills #short and the media tags;
+      everything below is a pure function of time t (bindSeek from lib/motion.js), no animation library.
+    -->
+    <style>
+      @font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Bold.ttf') format('truetype'); font-weight: 800; font-display: block; }
+      @font-face { font-family: 'Bangers'; src: url('fonts/Bangers-Regular.ttf') format('truetype'); font-weight: 400; font-display: block; }
+      @font-face { font-family: 'Inter'; src: url('fonts/Inter-Bold.ttf') format('truetype'); font-weight: 700; font-display: block; }
+      html, body { margin: 0; background: #000; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+      #root > video { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform, clip-path; }
+      .layer { position: absolute; inset: 0; pointer-events: none; }
+      .cap { position: absolute; bottom: 350px; display: flex; justify-content: center; align-items: center; }
+      .hook { position: absolute; top: 40px; left: 40px; right: 40px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .bar { position: absolute; bottom: 0; left: 0; width: 1080px; height: 4px; background: rgba(255, 255, 255, 0.2); }
+      .bar > div { height: 4px; background: #fff; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="short" data-start="0" data-width="1080" data-height="1920" data-duration="30" data-no-timeline>
+      <!-- shorts:media -->
+      <div id="caps" class="layer"></div>
+      <div id="hook" class="layer"></div>
+      <div id="bar" class="bar"><div></div></div>
+      <!-- each caption face drawn once off-screen, so the fonts are loaded before frame 0 -->
+      <div aria-hidden="true" style="position: absolute; left: -4000px; top: 0; opacity: 0">
+        <span style="font-family: 'Montserrat'; font-weight: 800">Aa Яя</span>
+        <span style="font-family: 'Bangers'">Aa</span>
+        <span style="font-family: 'Inter'; font-weight: 700">Aa Яя</span>
+      </div>
+    </div>
+    <script type="application/json" id="short">
+      {}
+    </script>
+    <script type="module">
+      import {bindSeek, spring, clamp} from './lib/motion.js';
+
+      const P = JSON.parse(document.getElementById('short').textContent);
+      const FPS = 30, W = 1080, H = 1920, HOOK_ZONE = 200;
+      const video = document.querySelector('#root > video');
+      const caps = document.getElementById('caps');
+      const hook = document.getElementById('hook');
+      const bar = document.getElementById('bar');
+      bar.style.display = P.showProgressBar === false ? 'none' : '';
+
+      const THEME = {
+        bold: {text: '#FFFFFF', active: '#FFD700', shadow: '#000000'},
+        bounce: {shadow: '#000000', rotating: ['#00FFFF', '#FF00FF', '#00FF00', '#FFFF00', '#FF6600', '#FF0066']},
+        clean: {text: '#FFFFFF', active: '#E0E0E0', shadow: 'rgba(0, 0, 0, 0.6)'},
+      };
+
+      // Spring of the old renderer (mass, damping, stiffness) in closed form: omega = sqrt(k/m), zeta = c / (2 sqrt(k m)).
+      const springOf = (seconds, damping, stiffness, mass = 1) =>
+        spring(seconds, Math.sqrt(stiffness / mass), damping / (2 * Math.sqrt(stiffness * mass)));
+      // Piecewise-linear interpolation, clamped on both ends.
+      function interp(x, xs, ys) {
+        if (x <= xs[0]) return ys[0];
+        for (let i = 1; i < xs.length; i++) {
+          if (x <= xs[i]) return ys[i - 1] + ((ys[i] - ys[i - 1]) * (x - xs[i - 1])) / (xs[i] - xs[i - 1] || 1);
+        }
+        return ys[ys.length - 1];
+      }
+      const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'})[c]);
+
+      // Word tokens -> pages of TikTok-style captions. A word that starts with a space opens a new page
+      // once the current page spans more than combineMs (words from Whisper carry a leading space).
+      function captionPages(captions, combineMs) {
+        const pages = [];
+        let text = '', tokens = [], from = 0, to = 0;
+        captions.forEach((c, i) => {
+          if (c.text.startsWith(' ') && to - from > combineMs) {
+            if (text !== '') pages.push({text: text.trimStart(), startMs: from, durationMs: to - from, tokens});
+            text = c.text.trimStart();
+            tokens = text ? [{text, fromMs: c.startMs, toMs: c.endMs}] : [];
+            from = c.startMs;
+            to = c.endMs;
+          } else {
+            if (text === '') from = c.startMs;
+            text = (text + c.text).trimStart();
+            if (c.text.trim() !== '') tokens.push({text: tokens.length === 0 ? c.text.trimStart() : c.text, fromMs: c.startMs, toMs: c.endMs});
+            to = c.endMs;
+          }
+          if (i === captions.length - 1 && text !== '') pages.push({text, startMs: from, durationMs: to - from, tokens});
+        });
+        return pages;
+      }
+      const COMBINE = {bold: 800, bounce: 600, clean: 1500};
+      const style = COMBINE[P.captionStyle] ? P.captionStyle : 'bold';
+      const pages = captionPages(P.captions ?? [], COMBINE[style]);
+
+      function drawVideo(sec) {
+        if (!video) return;
+        const crop = P.crop;
+        const scale = W / crop.w;
+        let cropX = crop.x;
+        const keys = P.cropKeyframes ?? [];
+        if (keys.length >= 2) cropX = interp(sec, keys.map((k) => k.t), keys.map((k) => k.x));
+        const sw = P.sourceWidth * scale, sh = P.sourceHeight * scale;
+        const tx = -cropX * scale, ty = -crop.y * scale;
+        // Framed layout (screen recordings): the picture is shorter than the frame and sits under the hook zone.
+        const framed = sh < H;
+        const top = framed ? HOOK_ZONE : 0;
+        const boxH = framed ? sh : H;
+        video.style.width = `${sw}px`;
+        video.style.height = `${sh}px`;
+        video.style.transform = `translate(${tx}px, ${top + ty}px)`;
+        // Window 1080 x boxH at (0, top), in the video's own coordinates.
+        const l = -tx, t = -ty;
+        video.style.clipPath = `inset(${t}px ${Math.max(0, sw - l - W)}px ${Math.max(0, sh - t - boxH)}px ${l}px)`;
+      }
+
+      function drawCaptions(frame) {
+        const ms = (frame / FPS) * 1000;
+        const i = pages.findIndex((p) => ms >= p.startMs && ms < p.startMs + p.durationMs);
+        if (i < 0) { caps.innerHTML = ''; return; }
+        const page = pages[i];
+        const local = frame - Math.floor((page.startMs / 1000) * FPS);
+        const active = (tk) => ms >= tk.fromMs && ms < tk.toMs;
+        if (style === 'bold') {
+          const s = springOf(local / FPS, 12, 200);
+          const sh = THEME.bold.shadow;
+          caps.innerHTML = `<div class="cap" style="left:40px;right:40px;flex-wrap:wrap;gap:12px;transform:scale(${s.toFixed(4)})">${page.tokens.map((tk) =>
+            `<span style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:72px;text-transform:uppercase;line-height:1.1;text-align:center;color:${active(tk) ? THEME.bold.active : THEME.bold.text};text-shadow:3px 3px 0 ${sh},-3px -3px 0 ${sh},3px -3px 0 ${sh},-3px 3px 0 ${sh}">${esc(tk.text.trim().toUpperCase())}</span>`).join('')}</div>`;
+        } else if (style === 'bounce') {
+          const s = 0.7 + springOf(local / FPS, 8, 180) * 0.3;
+          const color = THEME.bounce.rotating[i % THEME.bounce.rotating.length];
+          const sh = THEME.bounce.shadow;
+          caps.innerHTML = `<div class="cap" style="left:40px;right:40px;transform:scale(${s.toFixed(4)})"><span style="font-family:'Bangers',cursive;font-size:84px;color:${color};text-shadow:4px 4px 0 ${sh},-4px -4px 0 ${sh},4px -4px 0 ${sh},-4px 4px 0 ${sh};text-align:center;line-height:1;text-transform:uppercase">${esc(page.text.trim().toUpperCase())}</span></div>`;
+        } else {
+          const o = clamp(local / 6);
+          caps.innerHTML = `<div class="cap" style="left:60px;right:60px;opacity:${o.toFixed(4)}">${page.tokens.map((tk) =>
+            `<span style="font-family:'Inter',sans-serif;font-weight:700;font-size:56px;line-height:1.3;text-align:center;margin-right:8px;color:${active(tk) ? THEME.clean.active : THEME.clean.text};text-shadow:2px 2px 8px ${THEME.clean.shadow}">${esc(tk.text.trim())}</span>`).join('')}</div>`;
+        }
+      }
+
+      function drawHook(frame) {
+        const sec = frame / FPS;
+        if (!(P.hookLine1 || P.hookLine2) || sec < 0.3 || sec > 3.5) { hook.innerHTML = ''; return; }
+        const s = springOf(Math.max(0, frame - Math.floor(0.3 * FPS)) / FPS, 14, 200);
+        const o = interp(sec, [3.0, 3.5], [1, 0]);
+        hook.innerHTML = `<div class="hook" style="opacity:${o.toFixed(4)};transform:scale(${s.toFixed(4)})">` +
+          (P.hookLine1 ? `<div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:48px;color:#fff;text-shadow:3px 3px 0 #000,-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000;text-align:center;line-height:1.2">${esc(P.hookLine1)}</div>` : '') +
+          (P.hookLine2 ? `<div style="font-family:'Inter',sans-serif;font-weight:600;font-size:28px;color:#00BFFF;text-shadow:2px 2px 0 #000;text-align:center;line-height:1.3">${esc(P.hookLine2)}</div>` : '') +
+          '</div>';
+      }
+
+      const totalFrames = Math.ceil(P.durationInSeconds * FPS);
+      function render(t) {
+        // Frame number of the old renderer: rounding, so float error never lands on the previous frame.
+        const frame = Math.round(t * FPS);
+        drawVideo(frame / FPS);
+        drawCaptions(frame);
+        drawHook(frame);
+        bar.firstElementChild.style.width = `${W * Math.min(frame / totalFrames, 1)}px`;
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>

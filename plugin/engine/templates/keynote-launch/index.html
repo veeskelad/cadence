@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — keynote launch</title>
+    <!--
+      Keynote-лонч:
+      светлый фарфоровый фон, слова приходят через размытие — сначала серые, потом темнеют,
+      акцентные — цветом, «^слово» выделяется как текст в iOS; гигантское слово с наводкой фокуса
+      сжимается в строку; разделители глав — тёмный экран, где список глав прокручивается барабаном;
+      интерфейс (карточка или iPhone) с печатью, ответом, наездом камеры и нажатием; пейзаж со
+      стеклянной карточкой; «И ещё кое-что»; финальная плашка.
+      Сценарий — JSON в #film (сборщик: --film <file.json>), длина считается из долей трека.
+      Времена внутри сцен заданы для 123 BPM (REF_BPM) и масштабируются под темп сценария.
+      Звук (музыка и эффекты по событиям сцен) вставляет сборщик по cues.json.
+    -->
+    <!-- cadence:fonts -->
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+        --porcelain: #f3f3f2;
+        --paper-ink: #1d1d1f;
+        --paper-muted: #9a9aa0;
+        --dark: #0b0c0e;
+      }
+      html, body { margin: 0; background: var(--porcelain); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: Onest, Manrope, system-ui, sans-serif; }
+      #stage { position: absolute; inset: 0; }
+      .scene { position: absolute; inset: 0; opacity: 0; overflow: hidden; }
+      .light { background: var(--porcelain); color: var(--paper-ink); }
+      .dark { background: radial-gradient(120% 90% at 30% 40%, #1a1c20, var(--dark)); color: #f5f5f7; }
+      .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; }
+      .center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; }
+      .lines { font-size: calc(var(--u) * 8.4); line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; }
+      .lines .row { display: block; white-space: nowrap; }
+      .w { display: inline-block; white-space: pre; position: relative; }
+      .w.strike i { position: absolute; left: 0; right: 0.3em; top: 55%; height: 0.07em; background: var(--signal-2); transform-origin: left; }
+      /* выделение текста как в iOS: заливка и две ручки */
+      .sel { position: absolute; left: -0.04em; top: 0.08em; bottom: 0.02em; background: color-mix(in srgb, var(--signal-2) 24%, transparent); transform-origin: left; z-index: -1; }
+      .sel i { position: absolute; width: 0.05em; background: var(--signal-2); }
+      .sel i::after { content: ''; position: absolute; left: 50%; width: 0.2em; height: 0.2em; margin-left: -0.1em; border-radius: 50%; background: var(--signal-2); }
+      .sel .h1 { left: -0.025em; top: 0; bottom: 0; }
+      .sel .h1::after { top: -0.18em; }
+      .sel .h2 { right: -0.025em; top: 0; bottom: 0; }
+      .sel .h2::after { bottom: -0.18em; }
+      .giant { font-size: calc(var(--u) * 26); font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
+      .mark { width: calc(var(--u) * 11); height: calc(var(--u) * 11); border-radius: 50%; background: var(--signal-2); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: calc(var(--u) * 6); flex: none; }
+      .lockup { display: flex; align-items: center; gap: calc(var(--u) * 3.4); }
+      .wordmark { font-size: calc(var(--u) * 9); font-weight: 600; letter-spacing: -0.02em; overflow: hidden; white-space: nowrap; }
+      .divider { position: absolute; top: 50%; left: 50%; display: flex; align-items: center; gap: calc(var(--u) * 5); font-size: calc(var(--u) * 8.4); font-weight: 500; }
+      .divider .lead { color: var(--signal-2); }
+      .divider .list { position: relative; height: calc(var(--u) * 8.4 * 1.25); perspective: calc(var(--u) * 60); }
+      .divider .item { position: absolute; left: 0; top: 0; white-space: nowrap; line-height: 1.25; transform-origin: 0 50%; }
+      /* интерфейс: карточка чата или экран iPhone с тем же содержимым */
+      .holder { position: absolute; left: 50%; top: 50%; }
+      .card { width: 82%; background: #fff; border-radius: calc(var(--u) * 3.2); box-shadow: 0 30px 90px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.05); padding: 1.1em; box-sizing: border-box; color: var(--paper-ink); }
+      .phone { filter: drop-shadow(0 40px 60px rgba(0,0,0,.22)); }
+      .phone .frame { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+      .phone .screen { position: absolute; background: #fff; overflow: hidden; color: var(--paper-ink); display: flex; flex-direction: column; box-sizing: border-box; padding: 3.4em 0.9em 0.9em; }
+      .head { display: flex; align-items: center; gap: 0.5em; padding-bottom: 0.7em; margin-bottom: 0.4em; border-bottom: 1px solid #ececef; font-weight: 600; }
+      .head .mark { width: 1.6em; height: 1.6em; font-size: 0.9em; }
+      .thread { display: flex; flex-direction: column; }
+      .phone .thread { flex: 1; justify-content: flex-end; }
+      .bubble { position: relative; max-width: 80%; padding: 0.5em 0.8em; border-radius: 1.1em; margin: 0.35em 0; line-height: 1.3; }
+      .bubble.me { align-self: flex-end; background: var(--signal-2); color: #fff; transform-origin: 100% 100%; }
+      .bubble.agent { align-self: flex-start; background: #ececf0; transform-origin: 0 100%; }
+      .dots { position: absolute; left: 0.8em; top: 50%; display: flex; gap: 0.25em; transform: translateY(-50%); }
+      .dots i { width: 0.4em; height: 0.4em; border-radius: 50%; background: #9a9aa2; }
+      .approve { border: 1px solid #e4e4e8; border-radius: 1em; padding: 0.8em; margin-top: 0.5em; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+      .approve b { display: block; margin-bottom: 0.6em; }
+      .btns { display: flex; gap: 0.45em; flex-wrap: nowrap; }
+      .btn { padding: 0.4em 0.85em; border-radius: 999px; background: #eeeef1; font-weight: 600; white-space: nowrap; }
+      .btn.primary { background: var(--signal-2); color: #fff; }
+      .input { display: flex; align-items: center; margin-top: 0.7em; padding: 0.45em 0.8em; border: 1px solid #dcdce0; border-radius: 999px; color: var(--paper-ink); min-height: 1.3em; line-height: 1.3; }
+      .input .ph { color: #8e8e93; }
+      .input .caret { display: inline-block; width: 0.08em; height: 1.1em; background: var(--signal-2); margin-left: 0.04em; vertical-align: -0.15em; }
+      .cursor { position: absolute; width: calc(var(--u) * 4.4); height: calc(var(--u) * 4.4); left: 0; top: 0; z-index: 5; }
+      .touch { position: absolute; left: 0; top: 0; width: calc(var(--u) * 7); height: calc(var(--u) * 7); margin: calc(var(--u) * -3.5) 0 0 calc(var(--u) * -3.5); border-radius: 50%; background: rgba(120,120,128,.35); border: 2px solid rgba(255,255,255,.8); z-index: 5; }
+      .ripple { position: absolute; left: 0; top: 0; width: calc(var(--u) * 9); height: calc(var(--u) * 9); margin: calc(var(--u) * -4.5) 0 0 calc(var(--u) * -4.5); border-radius: 50%; border: 3px solid var(--signal-2); opacity: 0; z-index: 4; }
+      .plate { position: absolute; inset: -6%; }
+      .plate svg { width: 100%; height: 100%; display: block; }
+      .plate img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .plate-title { position: absolute; left: 0; right: 0; top: 24%; text-align: center; color: #fff; font-size: calc(var(--u) * 7.4); font-weight: 600; text-shadow: 0 2px 30px rgba(0,0,0,.25); }
+      .glass { position: absolute; left: 50%; top: 52%; width: 74%; transform: translate(-50%, -50%); border-radius: calc(var(--u) * 3.4); padding: calc(var(--u) * 3.6) calc(var(--u) * 4); box-sizing: border-box;
+        background: rgba(255,255,255,.62); -webkit-backdrop-filter: blur(26px) saturate(1.5); backdrop-filter: blur(26px) saturate(1.5); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 20px 60px rgba(0,0,0,.18); color: var(--paper-ink); font-size: calc(var(--u) * 4.2); }
+      .glass .it { display: flex; align-items: center; gap: calc(var(--u) * 2); padding: calc(var(--u) * 1.3) 0; }
+      .glass .it i { width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.6); border-radius: 30%; border: 3px solid var(--signal-2); box-sizing: border-box; flex: none; }
+      .pill { padding: calc(var(--u) * 2.6) calc(var(--u) * 5.4); border-radius: 999px; background: var(--paper-ink); color: #fff; font-size: calc(var(--u) * 5.2); font-weight: 600; white-space: nowrap; }
+      .tile { position: absolute; left: 50%; top: 50%; width: calc(var(--u) * 12); height: calc(var(--u) * 12); border-radius: 26%; box-shadow: 0 20px 40px rgba(0,0,0,.18); }
+      /* 16:9: карточки уже, иначе интерфейс не влезает по высоте и стекло наезжает на заголовок */
+      .wide .card { width: 56%; }
+      .wide .glass { width: 44%; top: 60%; }
+      .wide .plate-title { top: 14%; }
+      .tag { margin-top: calc(var(--u) * 3); font-size: calc(var(--u) * 4.2); color: var(--paper-muted); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="keynote-launch" data-start="0" data-width="1080" data-height="1920" data-duration="42.927" data-no-timeline data-seed="4">
+      <section id="scene" class="clip" data-start="0" data-duration="42.927" data-track-index="1">
+        <div id="stage"></div>
+      </section>
+      <!-- cadence:audio -->
+    </div>
+    <script type="application/json" id="film">
+{
+  "bpm": 123,
+  "brand": "Cadence",
+  "mark": "C",
+  "scenes": [
+    {"type": "open", "beats": 8, "text": "Представляем"},
+    {"type": "focus", "beats": 8, "giant": "Знакомься", "rows": [["Знакомься:"], ["Cadence —"], ["*монтаж", "*в", "*ритме"]]},
+    {"type": "divider", "beats": 4, "lead": "Твои", "items": ["Эффекты", "Монтаж", "Звук", "Рендер"], "active": 0},
+    {"type": "lines", "beats": 8, "rows": [["3D", "и", "шейдеры"], ["^кодом,"], ["без", "стоков"]]},
+    {"type": "divider", "beats": 4, "lead": "Твой", "items": ["Эффекты", "Монтаж", "Звук", "Рендер"], "active": 1},
+    {"type": "ui", "beats": 12, "title": "Cadence", "me": "Смонтируй рилс из вчерашней съёмки", "agent": "Нашёл 14 дублей и трек. Собираю черновик в Resolve.", "ask": "Изменить проект Resolve?", "buttons": ["Разрешить", "Нет"], "done": "Разрешено"},
+    {"type": "lines", "beats": 6, "rows": [["Важные", "шаги —"], ["*только", "*с", "*твоего"], ["^согласия"]]},
+    {"type": "plate", "beats": 10, "title": "Всё в ритме трека", "items": ["Склейки на долях", "Звук под музыку", "9:16 и 16:9", "Рендер локально"]},
+    {"type": "focus", "beats": 6, "giant": "Ещё", "rows": [["И", "ещё", "кое-что"]]},
+    {"type": "pill", "beats": 8, "text": "Cadence для Reels"},
+    {"type": "lines", "beats": 8, "rows": [["Ты", "решаешь,"], ["*что", "*важно."], ["Агент", "делает"], ["остальное"]]},
+    {"type": "end", "beats": 6, "tag": "монтаж и моушн в ритме трека"}
+  ]
+}
+    </script>
+    <script type="module">
+      import {bindSeek, stage as getStage, expoOut, premium, spring, invLerp, lerp, clamp, rng, smoothstep} from './lib/motion.js';
+
+      const REF_BPM = 123;                       // для него заданы времена внутри сцен и в cues.json
+      const {root, width, height} = getStage();
+      const U = Math.min(width, height) / 100;
+      root.style.setProperty('--u', `${U}px`);
+      const wide = width > height;
+      root.classList.add(wide ? 'wide' : 'tall');
+      const film = JSON.parse(document.getElementById('film').textContent);
+      const beat = 60 / film.bpm;
+      const tempo = film.bpm / REF_BPM;
+      const rand = rng(Number(root.dataset.seed));
+      const stageEl = document.getElementById('stage');
+      const accent = getComputedStyle(root).getPropertyValue('--signal-2').trim();
+      const el = (tag, cls, parent, text) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        if (parent) parent.appendChild(e);
+        return e;
+      };
+
+      // Строки из слов. «*слово» — акцент цветом, «^слово» — выделение как в iOS, «~слово» — зачёркнуто.
+      function buildRows(parent, rows) {
+        const box = el('div', 'lines', parent);
+        const words = [];
+        for (const row of rows) {
+          const r = el('span', 'row', box);
+          row.forEach((raw, i) => {
+            const mark = '*^~'.includes(raw[0]) ? raw[0] : '';
+            const text = mark ? raw.slice(1) : raw;
+            const w = el('span', 'w' + (mark === '~' ? ' strike' : ''), r);
+            el('span', '', w, text);
+            if (i < row.length - 1) el('span', '', w, ' ');
+            const o = {w, accent: mark === '*', strike: mark === '~', sel: null};
+            if (mark === '~') o.line = el('i', '', w);
+            if (mark === '^') {
+              o.sel = el('b', 'sel', w);
+              o.sel.style.width = `${w.firstChild.offsetWidth}px`;
+              el('i', 'h1', o.sel); el('i', 'h2', o.sel);
+            }
+            words.push(o);
+          });
+        }
+        return {box, words};
+      }
+      // Слово приходит справа через размытие, серым; через 0.35 с темнеет (акцент — в цвет),
+      // выделение растягивается слева направо после того, как слово встало.
+      function streamWords(words, t, t0, stagger, dark) {
+        words.forEach((o, i) => {
+          const s = t0 + i * stagger;
+          const a = expoOut(invLerp(s, s + 0.45, t));
+          const settle = smoothstep(s + 0.25, s + 0.75, t);
+          o.w.style.opacity = a;
+          o.w.style.filter = `blur(${(1 - a) * 0.9 * U}px)`;
+          o.w.style.transform = `translateX(${(1 - a) * 2.2 * U}px)`;
+          const base = dark ? [245, 245, 247] : [29, 29, 31];
+          const grey = dark ? [110, 110, 118] : [178, 178, 184];
+          if (o.accent && settle > 0.5) o.w.style.color = accent;
+          else o.w.style.color = `rgb(${base.map((c, k) => Math.round(lerp(grey[k], c, settle))).join(',')})`;
+          if (o.line) o.line.style.transform = `scaleX(${expoOut(invLerp(s + 0.6, s + 1.0, t))})`;
+          if (o.sel) {
+            const k = expoOut(invLerp(s + 0.9, s + 1.25, t));
+            o.sel.style.opacity = k > 0 ? 1 : 0;
+            o.sel.style.transform = `scaleX(${k})`;
+            for (const h of o.sel.children) h.style.transform = `scaleX(${k > 0 ? 1 / Math.max(k, 0.05) : 1})`;
+          }
+        });
+      }
+
+      // Процедурный пейзаж на случай, когда своего кадра нет: небо, три гряды, вода.
+      function landscape(seed) {
+        const r = rng(seed);
+        const ridge = (y0, amp, n) => {
+          let d = `M0 ${y0}`;
+          for (let i = 0; i <= n; i++) d += ` L${(i / n) * 1000} ${y0 - amp * (0.3 + r() * 0.7)}`;
+          return d + ' L1000 1000 L0 1000 Z';
+        };
+        return `<svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9cc3e6"/><stop offset=".55" stop-color="#f3d9c4"/><stop offset="1" stop-color="#f7e6d6"/></linearGradient>
+          <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb3c9"/><stop offset="1" stop-color="#3f7896"/></linearGradient></defs>
+          <rect width="1000" height="1000" fill="url(#sky)"/>
+          <path d="${ridge(560, 220, 9)}" fill="#8aa6bf" opacity=".7"/>
+          <path d="${ridge(620, 180, 13)}" fill="#5f7f99"/>
+          <path d="${ridge(680, 120, 18)}" fill="#3c5a6e"/>
+          <rect y="700" width="1000" height="300" fill="url(#lake)"/>
+          <rect y="700" width="1000" height="3" fill="#ffffff" opacity=".55"/>
+        </svg>`;
+      }
+      const darkScene = (box, s) => {
+        box.classList.add('dark');
+        const bg = s.bg ?? film.darkBg;
+        if (bg) el('img', 'bg', box).src = bg;
+      };
+
+      // iPhone-мокап: экран внутри рамки задан долями PNG (film.device = {src, screen: [x, y, w, h], radius}).
+      function buildHolder(cam, s) {
+        const dev = s.device ?? film.device;
+        if (!dev) {
+          const card = el('div', 'holder card', cam);
+          card.style.fontSize = `${U * 3.9}px`;
+          return {holder: card, content: card, phone: false};
+        }
+        const [sx, sy, sw, sh] = dev.screen;
+        const hgt = height * (wide ? 0.9 : 0.8);
+        const wdt = hgt * dev.aspect;
+        const phone = el('div', 'holder phone', cam);
+        Object.assign(phone.style, {width: `${wdt}px`, height: `${hgt}px`});
+        const screen = el('div', 'screen', phone);
+        Object.assign(screen.style, {left: `${sx * 100}%`, top: `${sy * 100}%`, width: `${sw * 100}%`, height: `${sh * 100}%`,
+          borderRadius: `${dev.radius * wdt}px`, fontSize: `${wdt * 0.058}px`});
+        el('img', 'frame', phone).src = dev.src;
+        return {holder: phone, content: screen, phone: true};
+      }
+
+      // Сцены: build() строит DOM и возвращает draw(t, dur) — кадр по локальному времени в секундах REF_BPM.
+      const kinds = {
+        open(s, box) {
+          darkScene(box, s);
+          const c = el('div', 'center', box);
+          const lock = el('div', 'lockup', c);
+          const mark = el('div', 'mark', lock, film.mark);
+          const word = el('div', 'wordmark', lock, film.brand);
+          const light = el('div', 'scene light', box);
+          const lc = el('div', 'center', light);
+          const lock2 = el('div', 'lockup', lc);
+          el('div', 'mark', lock2, film.mark).style.transform = 'scale(.62)';
+          const intro = el('div', 'wordmark', lock2, `${s.text} ${film.brand}`);
+          intro.style.fontSize = `${U * 5.6}px`;
+          return (t, dur) => {
+            mark.style.transform = `scale(${spring(t - 0.15, 11, 0.75)})`;
+            const w = expoOut(invLerp(0.7, 1.4, t));
+            word.style.maxWidth = `${w * 70 * U}px`;
+            word.style.opacity = w;
+            const cut = dur * 0.5;
+            light.style.opacity = t >= cut ? 1 : 0;
+            const k = expoOut(invLerp(cut, cut + 0.6, t));
+            intro.style.opacity = k;
+            intro.style.filter = `blur(${(1 - k) * U}px)`;
+          };
+        },
+        focus(s, box) {
+          box.classList.add('light');
+          const c = el('div', 'center', box);
+          const g = el('div', 'giant', c, s.giant);
+          const c2 = el('div', 'center', box);
+          const {words} = buildRows(c2, s.rows);
+          return (t) => {
+            // Наводка фокуса: 0–0.35 с резкость, держим, 1.1–1.6 с слово сжимается в строку.
+            const f = expoOut(invLerp(0, 0.35, t));
+            const shrink = premium(invLerp(1.1, 1.6, t));
+            g.style.opacity = f * (1 - smoothstep(1.45, 1.6, t));
+            g.style.filter = `blur(${(1 - f) * 2.4 * U}px)`;
+            g.style.transform = `scale(${lerp(1, 0.26, shrink)})`;
+            streamWords(words, t, 1.55, 0.16, false);
+            words[0].w.style.opacity = t >= 1.55 ? 1 : 0;           // первое слово — продолжение гиганта
+            words[0].w.style.filter = 'none';
+            words[0].w.style.transform = 'none';
+          };
+        },
+        lines(s, box) {
+          if (s.dark) darkScene(box, s); else box.classList.add('light');
+          const c = el('div', 'center', box);
+          const {words} = buildRows(c, s.rows);
+          return (t) => streamWords(words, t, 0.1, 0.17, s.dark);
+        },
+        divider(s, box) {
+          darkScene(box, s);
+          const d = el('div', 'divider', box);
+          const lead = el('div', 'lead', d, s.lead);
+          const list = el('div', 'list', d);
+          const items = s.items.map((txt) => el('div', 'item', list, txt));
+          const n = items.length;
+          return (t) => {
+            const lineH = parseFloat(getComputedStyle(d).fontSize) * 1.25;
+            // Барабан: список прокручивается на три пункта и тормозит на активном;
+            // пункты уходят по цилиндру (поворот по X), гаснут и размываются по расстоянию.
+            const roll = expoOut(invLerp(0.05, 1.05, t));
+            const pos = s.active - 3 + 3 * roll;
+            items.forEach((it, i) => {
+              let off = (((i - pos) % n) + n) % n;
+              if (off >= n / 2) off -= n;
+              const a = Math.abs(off);
+              it.style.transform = `translateY(${Math.sin(off * 0.62) * lineH * 1.45}px) rotateX(${-off * 34}deg)`;
+              it.style.opacity = a > 1.75 ? 0 : clamp(1 - a * 0.62, 0, 1);
+              it.style.filter = `blur(${Math.max(0, a - 0.3) * 0.5 * U}px)`;
+              it.style.color = a < 0.5 ? '#f5f5f7' : '#8e8e96';
+            });
+            const l = expoOut(invLerp(0, 0.45, t));
+            lead.style.opacity = l;
+            lead.style.filter = `blur(${(1 - l) * U}px)`;
+            lead.style.transform = `translateX(${(l - 1) * 5 * U}px)`;
+            const shift = premium(invLerp(0, 0.9, t));
+            d.style.transform = `translate(${lerp(-44, -50, shift)}%, -50%)`;
+          };
+        },
+        ui(s, box) {
+          box.classList.add('light');
+          const cam = el('div', '', box);
+          Object.assign(cam.style, {position: 'absolute', inset: '0', transformOrigin: '0 0'});
+          const {holder, content, phone} = buildHolder(cam, s);
+          const head = el('div', 'head', content);
+          el('div', 'mark', head, film.mark);
+          el('span', '', head, s.title ?? film.brand);
+          const thread = el('div', 'thread', content);
+          const me = el('div', 'bubble me', thread, s.me);
+          const agent = el('div', 'bubble agent', thread);
+          const agentText = el('span', '', agent, s.agent);
+          const dots = el('div', 'dots', agent);
+          for (let i = 0; i < 3; i++) el('i', '', dots);
+          const ap = el('div', 'approve', thread);
+          el('b', '', ap, s.ask);
+          const btns = el('div', 'btns', ap);
+          const bs = s.buttons.map((b, i) => el('div', 'btn' + (i === 0 ? ' primary' : ''), btns, b));
+          const input = el('div', 'input', content);
+          const typed = el('span', '', input);
+          const caret = el('span', 'caret', input);
+          const ph = el('span', 'ph', input, 'Сообщение');
+          const ripple = el('div', 'ripple', cam);
+          const pointer = el('div', phone ? 'touch' : 'cursor', cam);
+          if (!phone) pointer.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M4 2l16 10-7 1.6L9.4 21z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+          const center = (node, z, fx, fy) => {
+            const r = node.getBoundingClientRect(), rr = root.getBoundingClientRect();
+            const px = rr.width / width;                                   // масштаб превью плеера
+            return [((r.left + r.width / 2 - rr.left) / px - (fx - fx * z)) / z, ((r.top + r.height / 2 - rr.top) / px - (fy - fy * z)) / z];
+          };
+          const T = {type0: 0.45, type1: 1.6, send: 1.75, dots: 2.0, reply: 2.6, ask: 2.95, zoom0: 3.0, zoom1: 4.0, move: 3.7, click: 4.75};
+          return (t) => {
+            const up = expoOut(invLerp(0, 0.7, t));
+            holder.style.opacity = expoOut(invLerp(0, 0.4, t));
+            // печать: символы по времени, каретка мигает до отправки
+            const nChars = Math.round(s.me.length * clamp(invLerp(T.type0, T.type1, t)));
+            const sent = t >= T.send;
+            typed.textContent = sent ? '' : s.me.slice(0, nChars);
+            ph.style.display = nChars > 0 && !sent ? 'none' : '';
+            caret.style.opacity = t < T.send + 0.1 && Math.floor(t * 3) % 2 === 0 || (nChars > 0 && !sent) ? 1 : 0;
+            const m = spring(t - T.send, 16, 0.7);
+            me.style.display = sent ? '' : 'none';
+            me.style.transform = `scale(${m})`;
+            agent.style.display = t >= T.dots ? '' : 'none';
+            agent.style.transform = `scale(${spring(t - T.dots, 16, 0.75)})`;
+            const replied = t >= T.reply;
+            agentText.style.display = replied ? '' : 'none';
+            agent.style.minWidth = replied ? '' : '2.4em';
+            agent.style.minHeight = replied ? '' : '1.3em';
+            dots.style.display = replied ? 'none' : 'flex';
+            [...dots.children].forEach((d, i) => { d.style.opacity = 0.35 + 0.65 * Math.max(0, Math.sin(t * 9 - i * 0.9)); });
+            ap.style.display = t >= T.ask ? '' : 'none';
+            const k = expoOut(invLerp(T.ask, T.ask + 0.45, t));
+            ap.style.opacity = k;
+            ap.style.transform = `translateY(${(1 - k) * 1.2}em)`;
+            bs[0].textContent = t > T.click + 0.3 ? `✓ ${s.done ?? s.buttons[0]}` : s.buttons[0];
+            // Камера: замер в покое, затем наезд на блок подтверждения.
+            cam.style.transform = 'none';
+            bs[0].style.transform = 'none';
+            holder.style.transform = `translate(-50%, ${lerp(-42, -50, up)}%)`;
+            const z = lerp(1, phone ? 1.45 : 1.28, premium(invLerp(T.zoom0, T.zoom1, t)));
+            const [ax, ay] = center(ap, 1, 0, 0);
+            const fx = lerp(width / 2, ax, 0.8), fy = lerp(height / 2, ay, 0.8);
+            cam.style.transform = `translate(${fx - fx * z}px, ${fy - fy * z}px) scale(${z})`;
+            const [bx, by] = center(bs[0], z, fx, fy);
+            const mv = premium(invLerp(T.move, T.click - 0.05, t));
+            const px0 = phone ? bx + width * 0.12 : width * 0.95, py0 = phone ? by + height * 0.18 : height * 0.9;
+            const press = smoothstep(T.click - 0.05, T.click, t) * (1 - smoothstep(T.click + 0.12, T.click + 0.3, t));
+            if (phone) {
+              pointer.style.opacity = smoothstep(T.move, T.move + 0.2, t) * (1 - smoothstep(T.click + 0.25, T.click + 0.5, t));
+              pointer.style.transform = `translate(${lerp(px0, bx, mv)}px, ${lerp(py0, by, mv)}px) scale(${(1 - press * 0.25) / z})`;
+            } else {
+              pointer.style.transform = `translate(${lerp(px0, bx, mv)}px, ${lerp(py0, by, mv)}px) scale(${1 / z})`;
+            }
+            bs[0].style.transform = `scale(${1 - press * 0.08})`;
+            const r = invLerp(T.click, T.click + 0.6, t);
+            ripple.style.opacity = r > 0 && r < 1 ? 1 - r : 0;
+            ripple.style.transform = `translate(${bx}px, ${by}px) scale(${(0.3 + r) / z})`;
+          };
+        },
+        plate(s, box) {
+          const plate = el('div', 'plate', box);
+          if (s.src) el('img', '', plate).src = s.src;
+          else plate.innerHTML = landscape(Number(root.dataset.seed));
+          const title = el('div', 'plate-title', box, s.title);
+          const glass = el('div', 'glass', box);
+          const its = s.items.map((txt) => { const r = el('div', 'it', glass); el('i', '', r); el('span', '', r, txt); return r; });
+          return (t, dur) => {
+            plate.style.transform = `scale(${lerp(1, 1.06, t / dur)})`;           // медленный наезд на пейзаж
+            const a = expoOut(invLerp(0.2, 0.8, t));
+            title.style.opacity = a; title.style.filter = `blur(${(1 - a) * U}px)`;
+            const g = expoOut(invLerp(0.8, 1.4, t));
+            glass.style.opacity = g;
+            glass.style.transform = `translate(-50%, ${lerp(-44, -50, g)}%)`;
+            its.forEach((it, i) => { const k = expoOut(invLerp(1.3 + i * 0.35, 1.7 + i * 0.35, t)); it.style.opacity = k; it.style.transform = `translateY(${(1 - k) * 1.5 * U}px)`; });
+          };
+        },
+        pill(s, box) {
+          box.classList.add('light');
+          const c = el('div', 'center', box);
+          const colors = ['--signal', '--signal-2', '--line', '--surface'];
+          const tiles = Array.from({length: 10}, (_, i) => {
+            const tl = el('div', 'tile', box);
+            tl.style.background = `var(${colors[i % colors.length]})`;
+            return {tl, ang: (i / 10) * Math.PI * 2 + rand() * 0.4, rad: 30 + rand() * 12, rot: (rand() - 0.5) * 40, size: 0.6 + rand() * 0.6, delay: rand() * 0.4};
+          });
+          const pill = el('div', 'pill', c, s.text);
+          return (t) => {
+            const p = spring(t - 0.1, 10, 0.72);
+            pill.style.transform = `scale(${p})`;
+            tiles.forEach((o) => {
+              const k = spring(t - 0.5 - o.delay, 8, 0.8);
+              const ang = o.ang + t * 0.12;
+              const x = Math.cos(ang) * o.rad * U * (0.6 + 0.4 * k);
+              const y = Math.sin(ang) * o.rad * U * 1.35 * (0.6 + 0.4 * k);
+              o.tl.style.opacity = clamp(k);
+              o.tl.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${o.rot + t * 8}deg) scale(${o.size * k})`;
+            });
+          };
+        },
+        end(s, box) {
+          box.classList.add('light');
+          const c = el('div', 'center', box);
+          const col = el('div', '', c);
+          const lock = el('div', 'lockup', col);
+          const mark = el('div', 'mark', lock, film.mark);
+          const word = el('div', 'wordmark', lock, film.brand);
+          word.style.color = 'var(--paper-ink)';
+          const tag = el('div', 'tag', col, s.tag);
+          return (t) => {
+            mark.style.transform = `scale(${spring(t - 0.05, 11, 0.8)})`;
+            const w = expoOut(invLerp(0.45, 1.1, t));
+            word.style.maxWidth = `${w * 70 * U}px`;
+            word.style.opacity = w;
+            const g = expoOut(invLerp(1.1, 1.7, t));
+            tag.style.opacity = g; tag.style.filter = `blur(${(1 - g) * U}px)`;
+          };
+        },
+      };
+
+      await document.fonts.ready;
+      await Promise.all([...document.images].map((img) => img.decode().catch(() => {})));
+      // Крупный текст не шире 88 % кадра: длина слов в сценарии любая.
+      const fit = (node, share = 0.88) => {
+        const k = Math.min(1, (width * share) / node.scrollWidth);
+        if (k < 1) node.style.fontSize = `${parseFloat(getComputedStyle(node).fontSize) * k}px`;
+      };
+      let at = 0;
+      const scenes = film.scenes.map((s) => {
+        const box = el('div', 'scene', stageEl);
+        const dur = s.beats * beat;
+        const draw = kinds[s.type](s, box);
+        const sc = {box, start: at, dur, draw};
+        at += dur;
+        return sc;
+      });
+      await Promise.all([...document.images].map((img) => img.decode().catch(() => {})));
+      stageEl.querySelectorAll('.giant, .lines').forEach((n) => fit(n));
+      stageEl.querySelectorAll('.sel').forEach((n) => { n.style.width = `${n.parentElement.firstChild.offsetWidth}px`; });
+      stageEl.querySelectorAll('.divider .list').forEach((n) => {
+        n.style.width = `${Math.max(...[...n.children].map((c) => c.scrollWidth))}px`;
+      });
+      stageEl.querySelectorAll('.divider').forEach((n) => fit(n, 0.9));
+
+      function render(t) {
+        for (const sc of scenes) {
+          const on = t >= sc.start && t < sc.start + sc.dur;
+          sc.box.style.opacity = on ? 1 : 0;
+          if (on) sc.draw((t - sc.start) * tempo, sc.dur * tempo);
+        }
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>

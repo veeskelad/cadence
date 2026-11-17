@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — ролик в бит</title>
+    <!--
+      Ролик в бит. Три части на сетке долей трека (сборщик считает её по треку):
+      1) хук — заголовок расшифровывается из глифов, пока трек ещё тихий;
+      2) дроп — заголовок разлетается вперёд, и дальше на каждый удар новый кадр моушна,
+         нарисованный кодом (21 генератор × 8 тонов тёплой гаммы); в последнем такте — на полдоли;
+         внизу полоса ударов трека с плейхедом;
+      3) знак — маленькие кадры слетаются в кольцо вокруг названия, подпись, кнопка.
+      Кадр — чистая функция времени: render(t) рисует всё заново.
+    -->
+    <!-- cadence:fonts -->
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+      }
+      html, body { margin: 0; background: #000; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--canvas); }
+      #c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="beat-reel" data-start="0" data-width="1080" data-height="1920" data-duration="12" data-no-timeline>
+      <section id="scene" class="clip" data-start="0" data-duration="12" data-track-index="1">
+        <canvas id="c" width="1080" height="1920"></canvas>
+      </section>
+      <!-- cadence:audio -->
+    </div>
+    <script type="application/json" id="film">
+{"hook": {"title": "Весь этот ролик", "accent": "— код", "sub": "его написал агент"}, "mark": {"name": "Cadence", "tag": "дизайн · моушн · монтаж · звук", "cta": "Забирай скилл бесплатно"},
+ "reel": {"bpm": 100, "beat": 0.6, "total": 20, "hook": 3, "cuts": 12, "mark": 5, "perBeat": 16, "kick": []}}
+    </script>
+    <script type="module">
+      import {bindSeek, clamp, lerp, invLerp, smoothstep, expoOut, spring, rng} from './lib/motion.js';
+      import * as S from './lib/shots.js';
+      import {safeArea, fitText, safeShotContext} from './lib/reel-layout.js';
+
+      const film = JSON.parse(document.getElementById('film').textContent);
+      const R = film.reel, B = R.beat, b = (n) => n * B;
+      const root = document.getElementById('root');
+      const W = Number(root.dataset.width), H = Number(root.dataset.height);
+      const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+      const A = safeArea(W, H);
+      const g = safeShotContext(cv.getContext('2d'), A, W, H);
+      const css = getComputedStyle(root);
+      const C = (name) => css.getPropertyValue(name).trim();
+      // палитра генераторов — из пака (цвета сигнала, фона и текста)
+      Object.assign(S.PAL, {ink: C('--canvas'), panel: C('--surface'), cream: C('--ink'), ash: C('--muted'), coral: C('--signal'), amber: C('--signal-2'), line: C('--line')});
+      S.configure({bpm: R.bpm, kick: R.kick, perBeat: R.perBeat, title: film.trackTitle ?? 'твой трек', tools: film.tools ?? ['трек', 'код', 'агент', 'ролик'], toolsTitle: film.toolsTitle ?? 'всё в одном месте'});
+
+      // шрифты для canvas: без образца кириллицы браузер грузит только латинский поднабор
+      const CYR = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя—·';
+      await Promise.all(['400 200px "Literata Variable"', '800 200px Onest', '600 52px "JetBrains Mono"', '700 120px "JetBrains Mono"', '700 60px Manrope', '500 108px Onest']
+        .map((f) => document.fonts.load(f, CYR + 'ABCabc0123456789')));
+
+      const SERIF = '"Literata Variable", Georgia, serif', MONO = '"JetBrains Mono", monospace', SANS = 'Manrope, sans-serif';
+      const eo = (x) => expoOut(clamp(x));
+      const order = [S.shotType, S.shotRings, S.shotHalftone, S.shotGrid, S.shotSlice, S.shotKinetic, S.shotWave, S.shotSpiral, S.shotCube,
+        S.shotContours, S.shotCount, S.shotStripes, S.shotWarp, S.shotEq, S.shotOrbits, S.shotGlyphC, S.shotBlobs, S.shotLissajous, S.shotDecode, S.shotGrid];
+      const T_DROP = R.hook, T_MARK = R.hook + R.cuts;
+
+      // смены кадра: по одной на долю; последний такт — на полдоли (ускорение к знаку)
+      const cutBeats = [];
+      for (let k = 0; k < R.cuts; k++) {
+        const at = T_DROP + k;
+        cutBeats.push(at);
+        if (k >= R.cuts - 4) cutBeats.push(at + 0.5);
+      }
+
+      // ---------- хук ----------
+      function drawHook(beat, frame, alpha = 1) {
+        const lines = [
+          {text: film.hook.title, font: (s) => `400 ${s}px ${SERIF}`, size: 118, col: S.PAL.cream, y: A.cy - 50, at: 0.1},
+          {text: film.hook.accent, font: (s) => `400 ${s}px ${SERIF}`, size: 250, col: S.PAL.coral, y: A.cy + 190, at: 0.45},
+          {text: film.hook.sub ?? '', font: (s) => `500 ${s}px ${MONO}`, size: 44, col: S.PAL.ash, y: A.cy + 300, at: 0.85},
+        ];
+        g.textBaseline = 'alphabetic';
+        lines.forEach((ln, i) => {
+          if (!ln.text) return;
+          // Sum character advances: glyph-by-glyph drawing does not retain whole-word kerning.
+          const fitted = fitText(g, ln.text, ln.font, ln.size, A.width * 0.82);
+          const p = clamp((beat - ln.at) / 0.6), chars = [...ln.text], shown = Math.floor(p * (chars.length + 1));
+          let x = A.cx - fitted.width / 2;
+          chars.forEach((ch, j) => {
+            const cw = g.measureText(ch).width;
+            if (ch !== ' ') {
+              if (j < shown) { g.globalAlpha = alpha; g.fillStyle = ln.col; g.textAlign = 'left'; g.fillText(ch, x, ln.y); }
+              else { g.globalAlpha = alpha * 0.55; g.fillStyle = S.PAL.coral; g.textAlign = 'center'; g.fillText(S.glyph(i + 31, j, frame), x + cw / 2, ln.y); }
+            }
+            x += cw;
+          });
+        });
+        g.globalAlpha = 1; g.textAlign = 'left';
+      }
+
+      // ---------- полоса ударов внизу: зритель видит, что смена — ровно на удар ----------
+      function drawStrip(beat, alpha) {
+        if (alpha <= 0) return;
+        const y = A.bottom - 90, hh = 70, ppb = 150, play = A.cx;
+        g.save(); g.globalAlpha = alpha;
+        g.fillStyle = S.PAL.ink; g.globalAlpha = alpha * 0.88; g.fillRect(0, y - 70, W, hh + 120); g.globalAlpha = alpha;
+        const bw = ppb / R.perBeat;
+        for (let i = 0; i < R.kick.length; i++) {
+          const bt = i / R.perBeat, x = play + (bt - beat) * ppb;
+          if (x < -10 || x > W + 10) continue;
+          const v = 3 + R.kick[i] * (hh / 2 - 4);
+          g.fillStyle = bt <= beat ? S.PAL.coral : S.PAL.line;
+          g.fillRect(x, y + hh / 2 - v, Math.max(2, bw - 3), v * 2);
+        }
+        cutBeats.forEach((cb) => {
+          const x = play + (cb - beat) * ppb; if (x < -10 || x > W + 10) return;
+          const hot = Math.max(0, 1 - Math.abs(beat - cb) / 0.3);
+          g.fillStyle = `rgba(255,138,76,${0.45 + 0.55 * hot})`; g.fillRect(x - 1.5 - hot * 2, y - 8, 3 + hot * 4, hh + 16);
+        });
+        g.fillStyle = S.PAL.cream; g.fillRect(play - 2, y - 24, 4, hh + 40);
+        g.font = `600 28px ${MONO}`; g.fillStyle = S.PAL.coral; g.textBaseline = 'alphabetic';
+        const label = `${Math.round(R.bpm)} BPM`;
+        g.fillText(label, A.left + 24, y - 34);
+        g.fillStyle = S.PAL.ash; g.fillText(' · смена кадра на удар', A.left + 24 + g.measureText(label).width, y - 34);
+        g.restore();
+      }
+
+      // ---------- знак: маленькие кадры слетаются в кольцо вокруг названия ----------
+      const RING_N = 28, ringR = Math.min(A.width * 0.35, A.height * 0.27), TW = 78, TH = TW * 16 / 9;
+      const tileCv = Array.from({length: RING_N}, () => { const c = document.createElement('canvas'); c.width = 180; c.height = 320; return c; });
+      const tr = rng(11);
+      const tiles = Array.from({length: RING_N}, (_, i) => {
+        const a = -Math.PI / 2 + (i / RING_N) * Math.PI * 2;
+        const fromA = tr() * Math.PI * 2, fromR = Math.hypot(W, H) * (0.6 + tr() * 0.3);
+        return {a, fx: A.cx + Math.cos(fromA) * fromR, fy: A.cy - 70 + Math.sin(fromA) * fromR, rot: (tr() - 0.5) * 3, fn: order[(i * 7) % order.length], tone: S.TONES[(i * 3) % S.TONES.length], delay: (i / RING_N) * 0.9};
+      });
+      function drawMark(beat, t) {
+        const t0 = b(T_MARK), cx = A.cx, cy = A.cy - 70;
+        tiles.forEach((tl, i) => {
+          const local = t - t0 - tl.delay * B;
+          if (local < 0) return;
+          const p = clamp(spring(local, 10, 0.82), 0, 1.06);
+          const tx = cx + Math.cos(tl.a) * ringR, ty = cy + Math.sin(tl.a) * ringR;
+          const x = lerp(tl.fx, tx, p), y = lerp(tl.fy, ty, p);
+          const c = tileCv[i].getContext('2d');
+          S.withTone(tl.tone, () => { c.save(); c.scale(0.25, 0.25); tl.fn(c, 0, 0, 720, 1280, 0.4 + (beat - T_MARK) * 0.7 + i * 0.13, beat + i * 0.37); c.restore(); });
+          g.save(); g.translate(x, y); g.rotate(lerp(tl.rot, tl.a + Math.PI / 2, clamp(p)));
+          g.drawImage(tileCv[i], -TW / 2, -TH / 2, TW, TH); g.restore();
+        });
+        const m = film.mark;
+        const fade = (start, dur = 0.5) => eo((beat - start) / dur);
+        // Name starts on the cut, so offscreen tiles never leave a black interval.
+        const a1 = 0.18 + 0.82 * fade(T_MARK, 0.4), a2 = fade(T_MARK + 1.8), a3 = fade(T_MARK + 2.4);
+        g.textAlign = 'center'; g.textBaseline = 'middle';
+        let size = 170; g.font = `400 ${size}px ${SERIF}`;
+        const tw = g.measureText(m.name).width; if (tw > ringR * 1.5) { size = Math.floor(size * ringR * 1.5 / tw); g.font = `400 ${size}px ${SERIF}`; }
+        g.globalAlpha = a1; g.fillStyle = S.PAL.cream; g.fillText(m.name, cx, cy + (1 - a1) * 30);
+        if (m.tag) { g.globalAlpha = a2; fitText(g, m.tag.toUpperCase(), (size) => `500 ${size}px ${MONO}`, 34, A.width - 48); g.fillStyle = S.PAL.ash; g.fillText(m.tag.toUpperCase(), cx, A.bottom - 230 + (1 - a2) * 16); }
+        if (m.cta) {
+          g.globalAlpha = a3; fitText(g, m.cta, (size) => `700 ${size}px ${SANS}`, 44, A.width - 148);
+          const pw = g.measureText(m.cta).width + 100, py = A.bottom - 92 + (1 - a3) * 24;
+          g.fillStyle = S.PAL.coral; S.roundRect(g, cx - pw / 2, py - 46, pw, 92, 46); g.fill();
+          g.fillStyle = S.PAL.ink; g.fillText(m.cta, cx, py + 2);
+        }
+        g.globalAlpha = 1; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+      }
+
+      function render(t) {
+        const beat = t / B, frame = Math.round(t * 30);
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.fillStyle = S.PAL.ink; g.fillRect(0, 0, W, H);
+        if (beat < T_MARK) {
+          // кадр моушна: последняя смена не позже текущей доли
+          let k = -1; cutBeats.forEach((cb, i) => { if (beat >= cb) k = i; });
+          if (k >= 0) {
+            const start = cutBeats[k], p = beat - start, sc = 1 + 0.05 * (1 - eo(p * 4));
+            g.save(); g.translate(A.cx, A.cy); g.scale(sc, sc); g.translate(-A.cx, -A.cy);
+            S.withTone(S.TONES[(k * 3) % S.TONES.length], () => order[k % order.length](g, A.left, A.top, A.width, A.height, p, beat));
+            g.restore();
+          }
+          // хук: до дропа читается, на дропе разлетается вперёд
+          const out = clamp((beat - T_DROP) / 0.25);
+          if (out < 1) {
+            const sc = 1 + 0.04 * smoothstep(T_DROP - 1, T_DROP, beat) + 0.1 * out * out;
+            g.save(); g.translate(A.cx, A.cy); g.scale(sc, sc); g.translate(-A.cx, -A.cy);
+            drawHook(beat, frame, 1 - out); g.restore();
+          }
+          drawStrip(beat, smoothstep(T_DROP - 0.2, T_DROP + 0.3, beat) * (1 - smoothstep(T_MARK - 0.4, T_MARK, beat)));
+        } else {
+          // Hold the outgoing shot while the first tiles travel into view.
+          const overlap = 1 - smoothstep(0, 0.45, t - b(T_MARK));
+          if (overlap > 0) {
+            const k = cutBeats.length - 1;
+            g.save(); g.globalAlpha = overlap;
+            S.withTone(S.TONES[(k * 3) % S.TONES.length], () => order[k % order.length](g, A.left, A.top, A.width, A.height, T_MARK - cutBeats[k], T_MARK));
+            g.restore();
+          }
+          drawMark(beat, t);
+        }
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>

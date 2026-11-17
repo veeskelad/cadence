@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — three hero object</title>
+    <!--
+      Предмет крупным планом в студии (галерея Opus 5.5: petert-635793, per-simmons-944727).
+      Макро-наезд по поверхности → отъезд → предмет в полный рост с подписью.
+      Параметры — data-* на корне: label, caption, kicker, seed. Цвета — CSS-переменные ниже.
+    -->
+    <!-- cadence:fonts -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three/three.module.min.js",
+          "three/addons/": "./vendor/three/addons/"
+        }
+      }
+    </script>
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+      }
+      html, body { margin: 0; background: var(--canvas); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+      #bg { position: absolute; inset: 0; background: radial-gradient(120% 70% at 50% 38%, var(--surface), var(--canvas) 70%); }
+      #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      #copy { position: absolute; left: 96px; right: 96px; bottom: 300px; color: var(--ink); font-family: Onest, Manrope, system-ui, sans-serif; }
+      #kicker { font: 500 34px/1.2 "JetBrains Mono", ui-monospace, monospace; color: var(--signal); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0; }
+      #caption { margin-top: 20px; font-weight: 700; font-size: 104px; line-height: 0.98; letter-spacing: -0.03em; opacity: 0; }
+      #grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.07; mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='7'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="three-hero-object" data-start="0" data-width="1080" data-height="1920" data-duration="8" data-no-timeline
+      data-label="CADENCE" data-kicker="новый выпуск" data-caption="Собрано кодом" data-seed="7" data-ssaa="2">
+      <section id="scene" class="clip" data-start="0" data-duration="8" data-track-index="1">
+        <div id="bg"></div>
+        <canvas id="gl"></canvas>
+        <div id="copy"><div id="kicker"></div><div id="caption"></div></div>
+        <div id="grain"></div>
+      </section>
+    </div>
+    <script type="module">
+      import * as THREE from 'three';
+      import {RoomEnvironment} from 'three/addons/RoomEnvironment.js';
+      import {bindSeek, stage, token, expoOut, premium, invLerp, lerp, rng} from './lib/motion.js';
+
+      const {root, width, height} = stage();
+      const cfg = root.dataset;
+      document.getElementById('kicker').textContent = cfg.kicker;
+      document.getElementById('caption').textContent = cfg.caption;
+      // Canvas рисует текст только загруженным шрифтом, иначе молча берёт запасной.
+      await Promise.all([document.fonts.load('800 100px Onest'), document.fonts.load('500 40px "JetBrains Mono"')]);
+
+      const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('gl'), antialias: true, alpha: true, preserveDrawingBuffer: true});
+      // Суперсэмплинг: буфер в ssaa раз больше кадра, браузер ужимает его до размера кадра.
+      renderer.setPixelRatio(Number(cfg.ssaa));
+      renderer.setSize(width, height, false);
+      const maxAniso = renderer.capabilities.getMaxAnisotropy();
+      // Neutral сохраняет оттенок: ACES уводил коралл пака в жёлто-серый.
+      renderer.toneMapping = THREE.NeutralToneMapping;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      const scene = new THREE.Scene();
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      const camera = new THREE.PerspectiveCamera(30, width / height, 0.05, 100);
+
+      const canvasTexture = (c) => {
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = maxAniso;
+        return tex;
+      };
+
+      // Фон этикетки — плавный градиент и полоса: низкие частоты, им хватает одной
+      // текстуры на всю окружность банки.
+      function bodyTexture() {
+        const c = document.createElement('canvas');
+        c.width = 2048; c.height = 1024;
+        const g = c.getContext('2d');
+        const grad = g.createLinearGradient(0, 0, 0, 1024);
+        grad.addColorStop(0, token('--surface')); grad.addColorStop(1, token('--canvas'));
+        g.fillStyle = grad; g.fillRect(0, 0, 2048, 1024);
+        g.fillStyle = token('--signal');
+        g.fillRect(0, 700, 2048, 44);
+        return canvasTexture(c);
+      }
+
+      // Надпись — отдельная наклейка на дуге 1.7 рад. Та же ширина текстуры на дуге
+      // вместо всей окружности даёт плотность в ~4 раза выше: в макро край буквы не
+      // превращается в лесенку, на общем плане mip-уровни не размывают текст.
+      const DECAL_ARC = 1.7, DECAL_Y0 = -1.25, DECAL_Y1 = 0.6;
+      function decalTexture() {
+        const W = Math.min(4096, renderer.capabilities.maxTextureSize);
+        const H = Math.round((W * (DECAL_Y1 - DECAL_Y0)) / DECAL_ARC);
+        const c = document.createElement('canvas');
+        c.width = W; c.height = H;
+        const g = c.getContext('2d');
+        const px = H / (DECAL_Y1 - DECAL_Y0);                  // пикселей на единицу высоты банки
+        const yOf = (y) => (DECAL_Y1 - y) * px;
+        g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillStyle = token('--ink');
+        g.font = `800 ${Math.round(0.56 * px)}px Onest, Manrope, system-ui, sans-serif`;
+        g.fillText(cfg.label, W / 2, yOf(0.13), W * 0.9);
+        g.font = `500 ${Math.round(0.175 * px)}px "JetBrains Mono", monospace`;
+        g.fillStyle = token('--muted');
+        g.fillText('— 01 —', W / 2, yOf(-1.05));
+        return canvasTexture(c);
+      }
+
+      // Банка: тело с этикеткой + металлические кромки. Геометрия процедурная.
+      const obj = new THREE.Group();
+      const labelMat = {roughness: 0.32, metalness: 0.15, clearcoat: 1, clearcoatRoughness: 0.08};
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(1, 1, 3.2, 128, 1, true),
+        new THREE.MeshPhysicalMaterial({map: bodyTexture(), ...labelMat}),
+      );
+      obj.add(body);
+      const decalMat = new THREE.MeshPhysicalMaterial({map: decalTexture(), transparent: true, depthWrite: false, ...labelMat});
+      // Две наклейки с противоположных сторон (u = 0.25 и 0.75): надпись видна при любом повороте.
+      for (const center of [Math.PI / 2, (3 * Math.PI) / 2]) {
+        const geo = new THREE.CylinderGeometry(1.002, 1.002, DECAL_Y1 - DECAL_Y0, 96, 1, true, center - DECAL_ARC / 2, DECAL_ARC);
+        const decal = new THREE.Mesh(geo, decalMat);
+        decal.position.y = (DECAL_Y0 + DECAL_Y1) / 2;
+        obj.add(decal);
+      }
+      const metal = new THREE.MeshStandardMaterial({color: 0xd8dde3, metalness: 1, roughness: 0.18});
+      const rimProfile = [[0.0, 1.6], [1.0, 1.6], [1.02, 1.66], [0.96, 1.76], [0.84, 1.8], [0.0, 1.8]].map(([x, y]) => new THREE.Vector2(x, y));
+      const top = new THREE.Mesh(new THREE.LatheGeometry(rimProfile, 128), metal);
+      obj.add(top);
+      const bottom = top.clone(); bottom.scale.y = -1; obj.add(bottom);
+
+      // Конденсат: сид задаёт одни и те же капли в любом кадре.
+      const rand = rng(Number(cfg.seed));
+      // Капля = полупрозрачная линза с бликами окружения. transmission здесь хуже:
+      // он пересчитывает сцену без самой банки, и капли выходят тёмными шариками.
+      const dropGeo = new THREE.SphereGeometry(1, 24, 16);
+      const dropMat = new THREE.MeshPhysicalMaterial({color: token('--surface'), roughness: 0.04, metalness: 0, clearcoat: 1, clearcoatRoughness: 0, transparent: true, opacity: 0.6, envMapIntensity: 3.2});
+      const drops = new THREE.InstancedMesh(dropGeo, dropMat, 420);
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
+      for (let i = 0; i < drops.count; i++) {
+        const a = rand() * Math.PI * 2, y = (rand() - 0.5) * 3.0, r = 0.01 + Math.pow(rand(), 3) * 0.035;
+        p.set(Math.cos(a) * 1.005, y, Math.sin(a) * 1.005);
+        s.set(r, r * 1.25, r * 0.55);
+        q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), p.clone().setY(0).normalize());
+        drops.setMatrixAt(i, m.compose(p, q, s));
+      }
+      obj.add(drops);
+      scene.add(obj);
+
+      // Пол-отражение и ключевой контровой свет.
+      const floor = new THREE.Mesh(new THREE.CircleGeometry(40, 64), new THREE.MeshStandardMaterial({color: token('--canvas'), metalness: 0, roughness: 1, envMapIntensity: 0.25}));
+      floor.rotation.x = -Math.PI / 2; floor.position.y = -1.8; scene.add(floor);
+      // Туман цвета фона прячет край пола: горизонта нет, предмет «висит» в студии.
+      scene.fog = new THREE.Fog(token('--canvas'), 10, 26);
+      const rim = new THREE.DirectionalLight(token('--signal'), 3.2); rim.position.set(-4, 3, -3); scene.add(rim);
+      const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(3, 4, 5); scene.add(key);
+
+      if (width > height) Object.assign(document.getElementById('copy').style, {bottom: '140px', right: '50%'});
+      const kicker = document.getElementById('kicker');
+      const caption = document.getElementById('caption');
+
+      // Раскадровка: 0–2.2 макро по этикетке, 2.2–4.6 отъезд, 4.6–8 герой + подпись.
+      // В герое кадр не стоит: банка медленно поворачивается, камера доезжает и чуть
+      // обходит предмет, ключевой свет проходит по металлу и этикетке бликом.
+      function render(t) {
+        // Надпись (u = 0.25) смотрит в камеру (азимут 0.35) при rotation.y ≈ -1.22.
+        const pull = premium(invLerp(1.6, 4.6, t));
+        // Поворот убывает: надпись въезжает справа и читается слева направо, с первой буквы.
+        const hold = invLerp(4.0, 8, t);
+        obj.rotation.y = -0.65 - t * 0.03 - expoOut(invLerp(0, 4.6, t)) * 0.45 + (hold * hold * (3 - 2 * hold)) * 0.32;
+        obj.position.y = lerp(0, 0.5, pull);
+        const dist = lerp(3.4, 12.5, pull) - premium(invLerp(4.6, 8, t)) * 1.6;
+        const camY = lerp(0.35, 1.6, pull);
+        const az = 0.35 - hold * 0.22;
+        camera.position.set(Math.sin(az) * dist, camY, Math.cos(az) * dist);
+        // В 16:9 предмет уходит в правую треть, слева остаётся место под подпись.
+        const side = width > height ? -2.6 * pull : 0;
+        camera.lookAt(side * Math.cos(0.35), lerp(0.25, 0, pull), -side * Math.sin(0.35));
+        camera.fov = lerp(20, 26, pull);
+        camera.updateProjectionMatrix();
+        rim.intensity = 3.2 + Math.sin(t * 0.9) * 0.4;
+        const sweep = lerp(0.54, -1.06, premium(invLerp(4.2, 7.6, t)));  // блик проходит по банке
+        key.position.set(Math.sin(sweep) * 6, 4, Math.cos(sweep) * 6);
+        key.intensity = 1.6 + 1.2 * Math.exp(-Math.pow((t - 6.1) / 0.9, 2));
+
+        const k = expoOut(invLerp(4.7, 5.4, t));
+        kicker.style.opacity = k;
+        kicker.style.transform = `translateY(${(1 - k) * 30}px)`;
+        const c = expoOut(invLerp(4.9, 5.8, t));
+        caption.style.opacity = c;
+        caption.style.transform = `translateY(${(1 - c) * 60}px)`;
+        caption.style.filter = `blur(${(1 - c) * 12}px)`;
+
+        renderer.render(scene, camera);
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>

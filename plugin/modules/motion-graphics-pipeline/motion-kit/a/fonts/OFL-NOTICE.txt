@@ -1,0 +1,4 @@
+Шрифт Inter (inter-latin-*.woff2)
+Copyright (c) The Inter Project Authors (https://github.com/rsms/inter)
+Лицензия: SIL Open Font License 1.1 (https://openfontlicense.org).
+Шрифт можно использовать, встраивать в ролики и распространять вместе с модулем; продавать отдельно нельзя.

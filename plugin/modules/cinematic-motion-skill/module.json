@@ -1,0 +1,68 @@
+{
+  "id": "cinematic-motion-skill",
+  "family": "cadence-motion",
+  "title": "Фильм-рассказ под голос, нарисованный кодом",
+  "what": "Из сценария и записи голоса собирает фильм 30 секунд – 4 минуты: сцены на пружинах по сетке голоса, настоящий интерфейс, субтитры, музыка, проверка критиками; на выходе 16:9 и 9:16.",
+  "when": [
+    "сделай фильм про наш продукт под мою озвучку, всё нарисовано кодом",
+    "нужен ролик в стиле шоурила моушн-дизайнера со сценарием и раундами проверки",
+    "собери объяснялку по цифрам и схемам с красивой анимацией под голос",
+    "сделай вертикальную и горизонтальную версию фильма с субтитрами и музыкой"
+  ],
+  "not_for": "Ролик в бит под готовый трек без голоса, заставки и титры собирает движок `engine/` через `cadence-motion` (`word-scenes` и соседние модули); готовую озвучку с пересборкой на видео делает `cadence-sound`; обычные субтитры по речи делает `cadence-cut`.",
+  "capabilities": [
+    "voice-film"
+  ],
+  "inputs": [
+    "бриф и источники материала",
+    "записи голоса по строкам сценария (audio/vo/<id>.wav)",
+    "скриншоты и бренд-материалы по желанию"
+  ],
+  "outputs": [
+    "фильмы 16:9 и 9:16 (mp4, 60 к/с)",
+    "сценарий, раскадровка и журнал критики",
+    "стоп-кадры и контрольные листы"
+  ],
+  "run": "sh modules/cinematic-motion-skill/scripts/init.sh \"$WORK/<проект>/film\" --preset blank",
+  "engine": "node",
+  "deps": {
+    "python": "requirements.txt",
+    "node": "toolchain",
+    "system": [
+      "ffmpeg",
+      "node",
+      "python3"
+    ]
+  },
+  "install_mb": 900,
+  "platform": [
+    "macos",
+    "linux"
+  ],
+  "network": "runtime",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "VERSION",
+      "defaults.json",
+      "docs",
+      "engine",
+      "examples",
+      "library",
+      "presets",
+      "reference",
+      "requirements.lock",
+      "requirements.txt",
+      "scripts",
+      "templates",
+      "tests",
+      "toolchain"
+    ],
+    "file": "cinematic-motion-skill-21d0d736fb9f.zip",
+    "sha256": "21d0d736fb9fda0960d34887cd43c52e428d634fa7db85c82d308139cdfece54",
+    "bytes": 3702310,
+    "expanded_bytes": 7219195,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/cinematic-motion-skill-21d0d736fb9f.zip"
+  }
+}

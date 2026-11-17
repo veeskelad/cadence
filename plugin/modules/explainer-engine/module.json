@@ -1,0 +1,66 @@
+{
+  "id": "explainer-engine",
+  "family": "cadence-structures",
+  "title": "Эксплейнер с голосом и демо продукта",
+  "what": "Из текста сценария и файла сцен делает ролик с дикторским голосом: локальная озвучка или своя запись, анимация по словам, субтитры, обложка, вертикальные версии.",
+  "when": [
+    "сделай объяснялку с озвучкой про то, как это работает",
+    "нужен обучающий ролик: диктор, схемы и подсветка по словам",
+    "собери демо моего продукта: запись экрана сайта и голос за кадром",
+    "хочу короткое вертикальное видео с диктором и субтитрами",
+    "смонтируй мою запись по словам: убери слова и паузы"
+  ],
+  "not_for": "Ролик под готовую озвучку без своего сценария собирает `motion-graphics-pipeline`; ролик в бит под трек, заставки и титры — движок `engine/` через `cadence-motion`; озвучка и сведение звука в готовом ролике — `cadence-sound`.",
+  "capabilities": [
+    "explainer"
+  ],
+  "inputs": [
+    "тема или готовый текст (script.md)",
+    "по желанию: своя запись голоса, музыка, скриншоты, адрес сайта для захвата"
+  ],
+  "outputs": [
+    "MP4 с озвучкой, субтитрами и обложкой",
+    "web-плеер",
+    "папка для ручной загрузки на площадку"
+  ],
+  "run": "node modules/explainer-engine/bin/explainroo.js init \"$WORK/<проект>/video\"",
+  "engine": "node",
+  "deps": {
+    "node": ".",
+    "system": [
+      "node",
+      "ffmpeg"
+    ]
+  },
+  "install_mb": 450,
+  "platform": [
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "network": "runtime",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "AGENTS.md",
+      "bin",
+      "dev",
+      "docs",
+      "engine",
+      "examples",
+      "fonts",
+      "formats",
+      "package-lock.json",
+      "package.json",
+      "scripts",
+      "src",
+      "templates"
+    ],
+    "file": "explainer-engine-ee74187c2659.zip",
+    "sha256": "ee74187c265946f6b084fa5f93ec37348af9d09e4f9ca6bc08a919428726dcc3",
+    "bytes": 2484183,
+    "expanded_bytes": 4399593,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/explainer-engine-ee74187c2659.zip"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "id": "code-to-film-engine",
+  "family": "cadence-motion",
+  "title": "Фильм кодом в одном из 56 стилей: от страницы до MP4",
+  "what": "Короткий фильм, нарисованный кодом на странице, в одном из 56 образцов стиля (доска, чертёж, пиксели, пластилин, гравюра, интерфейс и другие): общий рендерер снимает страницу покадрово в MP4, рядом инструменты звука, субтитров и проверки текста.",
+  "when": [
+    "сделай мне мини-фильм в стиле чертежа или школьной доски",
+    "нужно объяснение моей идеи анимацией, нарисованной кодом, в стиле гравюры",
+    "покажи, какие бывают визуальные стили для такого видео, и сделай одно",
+    "собери кинематографичный ролик на несколько минут с голосом и музыкой кодом",
+    "проверь, что текст в моём ролике успевают прочитать"
+  ],
+  "not_for": "Десять секунд по готовому стилю из пятнадцати: `motion-graphics-presets`. Ролик в бит под трек, анонс и шоурил по шаблонам Cadence: движок `engine/` и навык `cadence-motion` без этого модуля. Эффекты на живом видео: `cadence-cut` и `cadence-resolve`. Фильмы из архивных съёмок и новостные подборки: примеров в модуле нет, нужны свои кадры.",
+  "capabilities": [
+    "style-film",
+    "style-mini-film"
+  ],
+  "inputs": [
+    "идея и текст фильма",
+    "выбранный стиль-образец (список: run.py --styles)",
+    "по желанию озвучка и музыка"
+  ],
+  "outputs": [
+    "$WORK/<проект>/film/ с твоей страницей",
+    "MP4 без звука и кадры в $WORK/<проект>/out/",
+    "события звука и отчёт о читаемости текста"
+  ],
+  "run": "python3 modules/code-to-film-engine/run.py <проект> video",
+  "engine": "node",
+  "deps": {
+    "python": "requirements.txt",
+    "node": ".",
+    "system": [
+      "node",
+      "ffmpeg",
+      "python3"
+    ]
+  },
+  "install_mb": 380,
+  "platform": [
+    "macos",
+    "linux"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "REUSE.toml",
+      "core",
+      "package-lock.json",
+      "package.json",
+      "requirements-music.txt",
+      "requirements-voice.txt",
+      "requirements.txt",
+      "run.py",
+      "styles"
+    ],
+    "file": "code-to-film-engine-6d3ec40177a4.zip",
+    "sha256": "6d3ec40177a4db3398bf29562b31c75fdee03d17d89beee2582f5f7f78074cff",
+    "bytes": 3763149,
+    "expanded_bytes": 9801218,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/code-to-film-engine-6d3ec40177a4.zip"
+  }
+}

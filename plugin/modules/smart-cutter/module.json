@@ -1,0 +1,47 @@
+{
+  "id": "smart-cutter",
+  "family": "cadence-cut",
+  "title": "Быстрая нарезка и экспорт таймлайна (auto-editor, Nim)",
+  "what": "Вырезает тишину, неподвижность и чёрные кадры или режет по словам, и отдаёт новый ролик либо таймлайн для Resolve, Premiere, Final Cut, Shotcut, Kdenlive и EDL.",
+  "when": [
+    "вырежи паузы и тишину, но с экспортом в Resolve или Premiere",
+    "убери неподвижные куски и чёрные кадры из записи",
+    "нарежи по словам: оставь только места, где я говорю определённое слово",
+    "собери проект для монтажной программы из этой нарезки",
+    "разрежь запись на отдельные клипы по кускам речи"
+  ],
+  "not_for": [
+    "Просто вырезать паузы из речи без сборки программы: scripts/silence_cut.py (функция pauses)",
+    "Собрать ролик из дублей: scripts/takes_cut.py",
+    "Работа внутри открытого проекта DaVinci Resolve: навык cadence-resolve"
+  ],
+  "capabilities": [
+    "timeline-export"
+  ],
+  "inputs": [
+    "видео или звук",
+    "метод разметки (--edit audio|motion|blackdetect|subtitle|word)",
+    "по желанию формат --export"
+  ],
+  "outputs": [
+    "новый MP4 или звук",
+    "таймлайн .fcpxml/.xml/.mlt/.kdenlive/.edl/.v3",
+    "клипы по кускам"
+  ],
+  "run": "python3 modules/smart-cutter/scripts/ae_run.py <видео> --edit audio:threshold=0.04 --export resolve",
+  "engine": "nim",
+  "deps": {
+    "system": [
+      "nim",
+      "ffmpeg"
+    ]
+  },
+  "install_mb": 400,
+  "platform": [
+    "macos",
+    "linux"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta"
+}

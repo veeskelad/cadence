@@ -1,0 +1,56 @@
+{
+  "id": "mlx-audio-engine",
+  "family": "cadence-sound",
+  "title": "Озвучка и распознавание речи на Mac (Apple Silicon)",
+  "what": "На Mac с чипом M1 и новее озвучивает текст и распознаёт речь локальными моделями: русский голос, образец тембра, субтитры и время слов; видеокарта NVIDIA не нужна.",
+  "when": [
+    "озвучь текст на моём Маке, без видеокарты",
+    "сделай закадровый голос для ролика без микрофона",
+    "расшифруй запись в субтитры на Маке быстро"
+  ],
+  "not_for": "Озвучка на компьютере с NVIDIA: voice-synthesis-toolkit, neural-tts-engine или expressive-voice-synth. Основной путь к субтитрам: scripts/captions_whisper.py. Музыка, эффекты, сведение: навык cadence-sound.",
+  "capabilities": [
+    "voice-clone",
+    "voiceover"
+  ],
+  "inputs": [
+    "текст или файл с текстом (озвучка)",
+    "или звук/видео с речью (распознавание)",
+    "по желанию: образец голоса и слова из него; только с согласия владельца голоса"
+  ],
+  "outputs": [
+    "озвучка: <имя>.wav в $WORK/<проект>/out/",
+    "распознавание: <имя>.srt, .vtt, .txt или .json (со временем слов) там же"
+  ],
+  "run": "python3 modules/mlx-audio-engine/run.py tts --text-file <сценарий.txt> --lang ru --ref-audio <образец.wav> --project <проект>",
+  "engine": "python",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "ffmpeg",
+      "python3"
+    ]
+  },
+  "install_mb": 3000,
+  "platform": [
+    "macos"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "beta",
+  "payload": {
+    "paths": [
+      "docs",
+      "examples",
+      "mlx_audio",
+      "pyproject.toml",
+      "requirements.txt",
+      "run.py"
+    ],
+    "file": "mlx-audio-engine-9e34ae4ba5bd.zip",
+    "sha256": "9e34ae4ba5bd85908cf816cac878be45c8c2be775f8deb9f4cdd66736bd57886",
+    "bytes": 2240416,
+    "expanded_bytes": 7827212,
+    "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/mlx-audio-engine-9e34ae4ba5bd.zip"
+  }
+}

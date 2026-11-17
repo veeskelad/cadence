@@ -1,0 +1,47 @@
+{
+ "key-1.wav": {
+  "onset": 0.0,
+  "peak": 0.005,
+  "length": 0.09
+ },
+ "key-2.wav": {
+  "onset": 0.0,
+  "peak": 0.005,
+  "length": 0.09
+ },
+ "key-3.wav": {
+  "onset": 0.0,
+  "peak": 0.005,
+  "length": 0.09
+ },
+ "tick.wav": {
+  "onset": 0.0,
+  "peak": 0.005,
+  "length": 0.06
+ },
+ "whoosh.wav": {
+  "onset": 0.046,
+  "peak": 0.551,
+  "length": 1.2
+ },
+ "swell.wav": {
+  "onset": 0.388,
+  "peak": 1.314,
+  "length": 2.2
+ },
+ "riser.wav": {
+  "onset": 0.623,
+  "peak": 1.88,
+  "length": 2.0
+ },
+ "hit.wav": {
+  "onset": 0.0,
+  "peak": 0.007,
+  "length": 1.6
+ },
+ "bell.wav": {
+  "onset": 0.0,
+  "peak": 0.01,
+  "length": 3.0
+ }
+}

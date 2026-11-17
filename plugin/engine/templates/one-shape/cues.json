@@ -1,0 +1,17 @@
+{
+  "about": "Звук «одной формы»: события в долях ролика (hook — длина хука, cuts — смен фигуры, mark — знак). Пик каждого файла ложится на событие. Тик на каждой смене тихий: музыка главная.",
+  "events": [
+    ["riser", "hook"],
+    ["hit", "hook"],
+    ["tick", "range(hook + 1, hook + cuts, 1)"],
+    ["whoosh", "hook + cuts"],
+    ["bell", "hook + cuts + 1"]
+  ],
+  "defaultSfx": {
+    "tick": {"src": "sounds/tick.wav", "onset": 0, "peak": 0.005, "volume": 0.16},
+    "riser": {"src": "sounds/riser.wav", "onset": 0.623, "peak": 1.88, "volume": 0.3},
+    "hit": {"src": "sounds/hit.wav", "onset": 0, "peak": 0.007, "volume": 0.4},
+    "whoosh": {"src": "sounds/whoosh.wav", "onset": 0.046, "peak": 0.551, "volume": 0.35},
+    "bell": {"src": "sounds/bell.wav", "onset": 0, "peak": 0.01, "volume": 0.3}
+  }
+}

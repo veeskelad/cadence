@@ -1,0 +1,367 @@
+import std/[algorithm, strformat, strutils, tables]
+from std/math import ceil, round
+import ../util/xml
+
+import ../[ffmpeg, log, media, timeline]
+import ../util/[fun, lang, rational]
+import ../lib/speedmap
+
+#[
+Export a FCPXML 11 file readable with Final Cut Pro 10.6.8 or later.
+
+See docs here:
+https://developer.apple.com/documentation/professional_video_applications/fcpxml_reference
+
+]#
+
+{.push raises: [AutoEditorError].}
+
+func getColorspace(mi: MediaInfo): string {.raises: [].} =
+  # See: https://developer.apple.com/documentation/professional_video_applications/fcpxml_reference/asset#3686496
+
+  if mi.v.len == 0:
+    return "1-1-1 (Rec. 709)"
+
+  let s = mi.v[0]
+  if s.pix_fmt == AV_PIX_FMT_RGB24:
+    return "sRGB IEC61966-2.1"
+  if s.color_space == 5: # "bt470bg"
+    return "5-1-6 (Rec. 601 PAL)"
+  if s.color_space == 6: # "smpte170m"
+    return "6-1-6 (Rec. 601 NTSC)"
+  if s.color_primaries == 9: # "bt2020"
+    # See: https://video.stackexchange.com/questions/22059/how-to-identify-hdr-video
+    if s.color_transfer == 16 or s.color_transfer == 18: # "smpte2084" "arib-std-b67"
+      return "9-18-9 (Rec. 2020 HLG)"
+    return "9-1-9 (Rec. 2020)"
+
+  return "1-1-1 (Rec. 709)"
+
+func makeName(mi: MediaInfo, tb: AVRational): string {.raises: [].} =
+  if mi.getRes()[1] == 720'i32 and tb ~= 30:
+    return "FFVideoFormat720p30"
+  if mi.getRes()[1] == 720'i32 and tb ~= 25:
+    return "FFVideoFormat720p25"
+  if mi.getRes() == (3840'i32, 2160'i32) and tb ~= AVRational(num: 24000, den: 1001):
+    return "FFVideoFormat3840x2160p2398"
+  return "FFVideoFormatRateUndefined"
+
+proc parseSMPTE*(val: string, fps: AVRational): int =
+  if val.len == 0:
+    return 0
+
+  try:
+    let isDrop = ';' in val
+    let parts = val.replace(";", ":").split(":")
+    if len(parts) != 4:
+      raise newException(ValueError, "Invalid SMPTE format")
+
+    let hours = parseInt(parts[0])
+    let minutes = parseInt(parts[1])
+    let seconds = parseInt(parts[2])
+    let frames = parseInt(parts[3])
+
+    if hours < 0 or minutes < 0 or minutes >= 60 or seconds < 0 or seconds >=
+        60 or frames < 0:
+      raise newException(ValueError, "Invalid SMPTE values")
+
+    let timecodeFps = int(round(fps.num / fps.den))
+    if frames >= timecodeFps:
+      raise newException(ValueError,
+        &"Frame count {frames} exceeds timecode fps {timecodeFps}")
+
+    result = (hours * 3600 + minutes * 60 + seconds) * timecodeFps + frames
+    if isDrop and fps.num mod fps.den != 0:
+      let d = timecodeFps div 15
+      let totalMinutes = hours * 60 + minutes
+      result -= d * (totalMinutes - totalMinutes div 10)
+  except ValueError as e:
+    error &"Cannot parse SMPTE timecode '{val}': {e.msg}"
+
+func timecode(self: MediaInfo): string {.raises: [].} = # In SMPTE
+  for d in self.d:
+    if d.timecode.len > 0:
+      return d.timecode
+  for v in self.v:
+    if v.timecode.len > 0:
+      return v.timecode
+  return "00:00:00:00"
+
+func fraction(val: int64, tb: AVRational): string {.raises: [].} =
+  if val == 0:
+    return "0s"
+  return &"{val * tb.den}/{tb.num}s"
+
+func mediaFraction(frames: float64, tb: AVRational): string {.raises: [].} =
+  ## A media time between frames, to a thousandth of one.
+  let n = int64(round(frames * 1000))
+  if n == 0: "0s" else: &"{n * tb.den}/{tb.num * 1000}s"
+
+func fcpLang(lang: Lang): string {.raises: [].} =
+  ## The two-letter code a caption role wants; English when unknown, since
+  ## the role needs one.
+  case $lang
+  of "eng", "und", "": "en"
+  of "spa": "es"
+  of "fra", "fre": "fr"
+  of "deu", "ger": "de"
+  of "ita": "it"
+  of "por": "pt"
+  of "jpn": "ja"
+  of "kor": "ko"
+  of "zho", "chi": "zh"
+  of "rus": "ru"
+  of "ara": "ar"
+  of "hin": "hi"
+  of "nld", "dut": "nl"
+  of "swe": "sv"
+  of "pol": "pl"
+  of "tur": "tr"
+  else: $lang # a three-letter tag is itself a language subtag
+
+type CueOrder = seq[(int64, int)] # each cue's start and index, by start
+
+func cueOrders(tl: v3): seq[CueOrder] {.raises: [].} =
+  ## Cues needn't be sorted, so search a sorted index of each track's.
+  for track in tl.c:
+    var order = newSeq[(int64, int)](track.cues.len)
+    for i, cue in track.cues: order[i] = (cue.start, i)
+    order.sort()
+    result.add order
+
+proc anchorCaptions(asset: XmlNode, tl: v3, orders: seq[CueOrder], clip: Clip,
+    startPoint: int64, lo, hi: int64, styleId: var int) {.raises: [].} =
+  ## The cues starting in timeline frames [lo, hi), connected to `asset`, the
+  ## clip they start during. A cue before the clip is clipped to its start.
+  for t, track in tl.c:
+    var hits: seq[int]
+    var k = orders[t].lowerBound((lo, 0))
+    while k < orders[t].len and orders[t][k][0] < hi:
+      hits.add orders[t][k][1]
+      inc k
+    hits.sort() # in track order
+    for i in hits:
+      template cue: Caption = track.cues[i]
+      let start = max(cue.start, clip.start)
+      let dur = cue.start + cue.dur - start
+      if dur <= 0: continue
+      inc styleId
+      let caption = newElement("caption")
+      var name = cue.text
+      let nl = name.find('\n')
+      if nl >= 0: name = name[0 ..< nl]
+      caption.attrs = {
+        "lane": $(t + 1),
+        "offset": fraction(clip.offset + startPoint + start - clip.start, tl.tb),
+        "name": name,
+        "duration": fraction(dur, tl.tb),
+        "role": "SRT?captionFormat=SRT." & fcpLang(track.lang),
+      }.toXmlAttributes
+      let text = newElement("text")
+      let styled = newElement("text-style")
+      styled.attrs = {"ref": "ts" & $styleId}.toXmlAttributes
+      styled.add newText(cue.text)
+      text.add styled
+      caption.add text
+      let def = newElement("text-style-def")
+      def.attrs = {"id": "ts" & $styleId}.toXmlAttributes
+      let style = newElement("text-style")
+      style.attrs = {"font": "Helvetica", "fontSize": "63", "fontFace": "Regular",
+        "fontColor": "1 1 1 1", "backgroundColor": "0 0 0 0.75",
+        "alignment": "center"}.toXmlAttributes
+      def.add style
+      caption.add def
+      asset.add caption
+
+proc makeClip(spine: XmlNode, tl: v3, sources: seq[MediaInfo],
+    ptrToIdx: Table[ptr string, int], projName: string, srcDur: int,
+    clip: Clip): (XmlNode, int64) =
+  ## The clip's element, and its media's start point.
+  let i = ptrToIdx.getOrDefault(clip.src)
+  let startPoint = parseSMPTE(sources[i].timecode, tl.tb)
+
+  let asset = newElement("asset-clip")
+  asset.attrs = {
+    "name": projName,
+    "ref": "r" & $(i * 2 + 2),
+    "offset": fraction(clip.start, tl.tb),
+    "duration": fraction(clip.dur, tl.tb),
+    "start": fraction(clip.offset + startPoint, tl.tb),
+    "tcFormat": "NDF"
+  }.toXmlAttributes
+
+  spine.add(asset)
+
+  # See the "Time Maps" section. Points map the clip's own time, which its
+  # start is in, to its media's, across the whole asset.
+  # https://developer.apple.com/documentation/professional_video_applications/fcpxml_reference/story_elements/timemap/
+  let effectGroup = tl.effects[clip.effects]
+  let map = initSpeedMap(effectGroup)
+  if map.mean != 1.0 or map.ramp:
+    let timemap = newElement("timeMap")
+    # A template, not a closure: capturing `tl` would copy the whole
+    # timeline on every call.
+    template point(time: int64, value: float64, interp: string) =
+      let p = newElement("timept")
+      p.attrs = {"time": fraction(time, tl.tb), "value": mediaFraction(value, tl.tb),
+        "interp": interp}.toXmlAttributes
+      timemap.add p
+    point(0, 0.0, "smooth2")
+    if not map.ramp:
+      point(int64(srcDur.float / map.mean), srcDur.float, "smooth2")
+    else:
+      # Straight lines between frames along the ramp follow it closely;
+      # before and after the clip the media plays at its end speeds.
+      if clip.offset > 0: point(clip.offset, map.mean * clip.offset.float, "linear")
+      let n = min(clip.dur, 32)
+      var value = 0.0
+      for j in 1 .. n:
+        let local = clip.dur * j div n
+        value = map.mean * (clip.offset.float + clip.dur.float *
+          map.mediaAt(local.float / clip.dur.float))
+        point(clip.offset + local, value, "linear")
+      let last = effectGroup.speedOf(1.0)
+      if srcDur.float > value:
+        point(clip.offset + clip.dur + int64(ceil((srcDur.float - value) / last)),
+          srcDur.float, "linear")
+    asset.add timemap
+  (asset, startPoint)
+
+proc addTransition(spine: XmlNode, tl: v3, dissolveId: string,
+    t: Transition) {.raises: [].} =
+  # A spine transition overlaps the edit point; the neighboring clips keep
+  # their trimmed extents and the editor pulls handle media from the source.
+  let tr = newElement("transition")
+  tr.attrs = {"name": "Cross Dissolve", "offset": fraction(t.spanStart, tl.tb),
+    "duration": fraction(t.dur, tl.tb)}.toXmlAttributes
+  if tl.v.len > 0:
+    let fv = newElement("filter-video")
+    fv.attrs = {"ref": dissolveId, "name": "Cross Dissolve"}.toXmlAttributes
+    tr.add fv
+  spine.add tr
+
+proc fcp11WriteXml*(groupName: string, version: uint8, output: string,
+    resolve: bool, tl: v3) =
+  let verStr =
+    if version == 11: "1.11"
+    elif version == 10: "1.10"
+    else: error &"Unknown FCPXML version: {version} (use 10 for 1.10 or 11 for 1.11)"
+
+  let fcpxml = <>fcpxml(version = verStr)
+  let resources = newElement("resources")
+  fcpxml.add(resources)
+
+  var srcDur = 0
+  var projName: string
+  var ptrToIdx = initTable[ptr string, int]()
+
+  var sources: seq[MediaInfo]
+  for track in tl.v & tl.a:
+    for clip in track:
+      if clip.src != nil and clip.src notin ptrToIdx:
+        ptrToIdx[clip.src] = sources.len
+        sources.add initMediaInfo(clip.src[])
+
+  for i, mi in sources:
+    # An asset's duration is that of the source media itself, not the
+    # (shorter) edited timeline. Clips reference positions in the source.
+    let assetDur = int(mi.duration * tl.tb)
+
+    if i == 0:
+      projName = agSplitFile(mi.path).name
+      srcDur = assetDur
+
+    let id = "r" & $(i * 2 + 1)
+    let width = $tl.res[0]
+    let height = $tl.res[1]
+    resources.add(<>format(id = id, name = makeName(mi, tl.tb),
+        frameDuration = fraction(1, tl.tb), width = width, height = height,
+        colorSpace = getColorspace(mi)))
+
+    let id2 = "r" & $(i * 2 + 2)
+    let hasVideo = (if mi.v.len > 0: "1" else: "0")
+    let hasAudio = (if mi.a.len > 0: "1" else: "0")
+    let audioChannels = (if mi.a.len == 0: "2" else: $mi.a[0].channels)
+
+    let startPoint = parseSMPTE(mi.timecode, tl.tb)
+    let r2 = <>asset(id = id2, name = agSplitFile(mi.path).name,
+        start = fraction(startPoint, tl.tb), hasVideo = hasVideo, format = id,
+        hasAudio = hasAudio, audioSources = "1",
+        audioChannels = audioChannels, duration = fraction(assetDur, tl.tb))
+
+    let mediaRep = newElement("media-rep")
+    mediaRep.attrs = {
+      "kind": "original-media",
+      "src": mi.path.absPath.pathToUri(),
+    }.toXmlAttributes
+
+    r2.add mediaRep
+    resources.add r2
+
+  var clips: seq[Clip]
+  var transitions: seq[Transition]
+  if tl.v.len > 0 and tl.v[0].len > 0:
+    clips = tl.v[0]
+    if tl.vt.len > 0: transitions = tl.vt[0]
+  elif tl.a.len > 0 and tl.a[0].len > 0:
+    clips = tl.a[0]
+    if tl.at.len > 0: transitions = tl.at[0]
+
+  # FCP matches this uid to its built-in Cross Dissolve Motion template;
+  # Resolve matches the transition by name.
+  let dissolveId = "r" & $(sources.len * 2 + 1)
+  if transitions.len > 0:
+    resources.add <>effect(id = dissolveId, name = "Cross Dissolve",
+      uid = "FxPlug:4731E73A-8DAC-4113-9A30-AE85B1761265")
+
+  let lib = <>library()
+  let evt = <>event(name = group_name)
+  let proj = <>project(name = projName)
+  # FCP/Resolve sequences only accept "stereo" or "surround"; map any
+  # other layout (e.g. "mono", "5.1") to one of these.
+  let audioLayout = (if tl.layout.nb_channels > 2: "surround" else: "stereo")
+  let audioRate = if tl.sr == 44100: "44.1k" else: "48k"
+  let sequence = <>sequence(format = "r1", tcStart = "0s", tcFormat = "NDF",
+      audioLayout = audioLayout, audioRate = audioRate)
+  let spine = <>spine()
+
+  sequence.add spine
+  proj.add sequence
+  evt.add proj
+  lib.add evt
+  fcpxml.add lib
+
+  if resolve:
+    for i in countdown(tl.a.len - 1, 1):
+      for clip in tl.a[i]:
+        if clip.src != nil:
+          discard spine.makeClip(tl, sources, ptrToIdx, projName, srcDur, clip)
+
+  let plan = transitionPlan(clips, transitions)
+  let orders = cueOrders(tl)
+  var styleId = 0
+  for i, clip in clips:
+    if clip.src != nil:
+      # A centered incoming transition is already emitted as the previous
+      # clip's outgoing one.
+      if plan[i].incoming >= 0 and
+          transitions[plan[i].incoming].alignment == taStart:
+        spine.addTransition(tl, dissolveId, transitions[plan[i].incoming])
+      let (asset, startPoint) = spine.makeClip(tl, sources, ptrToIdx, projName,
+        srcDur, clip)
+      # Cues up to the next clip with media belong to this one: a gap writes
+      # no element, and cues before the first clip or after the last are
+      # those clips' too.
+      let lo = (if i == 0: 0'i64 else: clip.start)
+      var hi = high(int64)
+      for j in i + 1 ..< clips.len:
+        if clips[j].src != nil:
+          hi = clips[j].start
+          break
+      asset.anchorCaptions(tl, orders, clip, startPoint, lo, hi, styleId)
+      if plan[i].outgoing >= 0:
+        spine.addTransition(tl, dissolveId, transitions[plan[i].outgoing])
+
+  writeXml(fcpxml, output)
+
+{.pop.}

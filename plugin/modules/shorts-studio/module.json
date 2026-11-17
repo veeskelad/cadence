@@ -1,0 +1,43 @@
+{
+  "id": "shorts-studio",
+  "family": "cadence-cut",
+  "title": "Шортсы из длинного видео",
+  "what": "Из длинной записи выбирает лучшие куски, режет их по границам фраз, делает вертикальные 1080x1920 с анимированными субтитрами и кодирует под Shorts, TikTok и Reels.",
+  "when": [
+    "нарежь из этого длинного видео шортсы",
+    "вытащи из подкаста самые сильные куски в вертикальные клипы",
+    "сделай из часовой записи несколько рилсов с субтитрами",
+    "найди моменты, которые зайдут как шортс, и отрендери их"
+  ],
+  "not_for": "Один готовый вертикальный ролик из папки своих кадров — модуль reels-crafter; хайлайт длинного видео без речи — scripts/highlight_cut.py; только субтитры на готовый ролик — scripts/captions_whisper.py; убрать паузы — scripts/silence_cut.py.",
+  "capabilities": [
+    "shorts-from-long"
+  ],
+  "inputs": [
+    "длинное видео с речью (mp4, mov, mkv)"
+  ],
+  "outputs": [
+    "таблица кандидатов с оценкой",
+    "вертикальные клипы short_NN.mp4 1080x1920 с субтитрами",
+    "варианты под YouTube Shorts, TikTok и Instagram Reels"
+  ],
+  "run": "bash modules/shorts-studio/scripts/preflight.sh <видео> work/<проект>/out/shorts",
+  "engine": "hyperframes",
+  "deps": {
+    "python": "requirements.txt",
+    "system": [
+      "ffmpeg",
+      "ffprobe",
+      "node",
+      "python3"
+    ]
+  },
+  "install_mb": 700,
+  "platform": [
+    "macos",
+    "linux"
+  ],
+  "network": "install",
+  "keys": [],
+  "status": "ready"
+}

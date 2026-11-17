@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Cadence — scale dive</title>
+    <!--
+      Нырок через масштабы (галерея Opus 5.5: ai-ba-reza-113363 «дата-центр → атом»).
+      Четыре уровня вложены в одну точку; камера приближается по логарифму расстояния,
+      поэтому каждый следующий уровень вырастает из центра предыдущего без склейки.
+      Подписи глав — data-chapters через «|».
+    -->
+    <!-- cadence:fonts -->
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three/three.module.min.js" } }
+    </script>
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+      }
+      html, body { margin: 0; background: var(--canvas); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+      #fill { position: absolute; inset: 0; background: radial-gradient(90% 60% at 50% 45%, var(--surface), var(--canvas)); }
+      #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      #shade { position: absolute; left: 0; right: 0; bottom: 0; height: 620px; background: linear-gradient(transparent, var(--canvas) 70%); opacity: 0.92; }
+      #hud { position: absolute; left: 72px; right: 72px; bottom: 220px; color: var(--ink); }
+      #step { font: 500 28px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--signal); letter-spacing: 0.14em; }
+      #chapter { margin-top: 18px; font: 700 76px/1.02 Onest, Manrope, system-ui, sans-serif; letter-spacing: -0.02em; text-transform: uppercase; }
+      #scale { margin-top: 18px; font: 500 26px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); letter-spacing: 0.1em; }
+      #bar { position: absolute; left: 72px; right: 72px; top: 120px; height: 3px; background: var(--line); opacity: 0.35; }
+      #bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--signal); width: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="scale-dive" data-start="0" data-width="1080" data-height="1920" data-duration="12" data-no-timeline
+      data-chapters="Дата-центр|Плата|Логические ячейки|Атомы кремния" data-scales="100 м|10 см|1 мкм|0,2 нм" data-seed="11" data-ssaa="2">
+      <section id="scene" class="clip" data-start="0" data-duration="12" data-track-index="1">
+        <div id="fill"></div>
+        <canvas id="gl"></canvas>
+        <div id="shade"></div>
+        <div id="bar"><i></i></div>
+        <div id="hud"><div id="step"></div><div id="chapter"></div><div id="scale"></div></div>
+      </section>
+    </div>
+    <script type="module">
+      import * as THREE from 'three';
+      import {bindSeek, stage, token, premium, expoOut, invLerp, rng, smoothstep} from './lib/motion.js';
+
+      const {root, width, height, duration} = stage();
+      const cfg = root.dataset;
+      const chapters = cfg.chapters.split('|');
+      const scales = cfg.scales.split('|');
+      const rand = rng(Number(cfg.seed));
+
+      const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('gl'), antialias: true, alpha: true, preserveDrawingBuffer: true});
+      renderer.setPixelRatio(Number(cfg.ssaa));                          // суперсэмплинг, см. README
+      renderer.setSize(width, height, false);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(40, width / height, 1e-6, 1000);
+      scene.add(new THREE.HemisphereLight(0xffffff, token('--canvas'), 1.4));
+      const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(3, 6, 2); scene.add(sun);
+
+      const C = (v) => new THREE.Color(token(v));
+      const S = 0.06;                       // во сколько раз следующий уровень меньше
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), pos = new THREE.Vector3(), scl = new THREE.Vector3();
+
+      // Уровень = группа в масштабе S^k; материалы прозрачные, чтобы уровень мог погаснуть.
+      function level(k) {
+        const g = new THREE.Group();
+        g.scale.setScalar(Math.pow(S, k));
+        g.userData.mats = [];
+        scene.add(g);
+        return g;
+      }
+      function mat(color, emissive = 0) {
+        const m = new THREE.MeshStandardMaterial({color, emissive: emissive ? color : 0x000000, emissiveIntensity: emissive, roughness: 0.55, metalness: 0.3, transparent: true});
+        return m;
+      }
+      // Рамка-цель вокруг центра: следующий уровень вырастает внутри неё и не перекрыт.
+      const frame = (s, w = 0.04) => [[0, 0.01, -s / 2, s, 0.02, w], [0, 0.01, s / 2, s, 0.02, w], [-s / 2, 0.01, 0, w, 0.02, s], [s / 2, 0.01, 0, w, 0.02, s]];
+      // Пол уровня верхом на y = -0.02 (в своём масштабе): пол внешнего уровня всегда ниже вложенного.
+      const floor = (w, d) => [0, -0.03, 0, w, 0.02, d];
+      function boxes(g, list, material) {
+        const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), material, list.length);
+        list.forEach(([x, y, z, sx, sy, sz], i) => mesh.setMatrixAt(i, m4.compose(pos.set(x, y, z), q, scl.set(sx, sy, sz))));
+        g.add(mesh); g.userData.mats.push(material);
+      }
+
+      // 0 — стойки дата-центра: центральная подсвечена, в неё и ныряем.
+      const L0 = level(0), racks = [], leds = [];
+      for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) {
+        if (i === 0 && j === 0) continue;
+        racks.push([i * 1.5, 1.2, j * 1.9, 1.0, 2.4, 0.9]);
+        for (let s = 0; s < 6; s++) if (rand() > 0.35) leds.push([i * 1.5 + (rand() - 0.5) * 0.6, 0.3 + s * 0.36, j * 1.9 + 0.46, 0.12, 0.03, 0.01]);
+      }
+      boxes(L0, racks, mat(C('--surface').lerp(C('--line'), 0.35)));
+      boxes(L0, leds, mat(C('--signal'), 2.5));
+      boxes(L0, frame(1.2), mat(C('--signal'), 1.2));
+      boxes(L0, [floor(14, 16)], mat(C('--canvas')));
+
+      // 1 — плата: кристаллы и дорожки.
+      const L1 = level(1), dies = [], traces = [];
+      for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) {
+        if (Math.abs(i) + Math.abs(j) === 0) continue;
+        dies.push([i * 1.2, 0.12, j * 1.2, 0.8, 0.24 + rand() * 0.2, 0.8]);
+        if (rand() > 0.5) traces.push([i * 1.2 + 0.6, 0.02, j * 1.2, 0.05, 0.02, 1.2]);
+        if (rand() > 0.5) traces.push([i * 1.2, 0.02, j * 1.2 + 0.6, 1.2, 0.02, 0.05]);
+      }
+      boxes(L1, dies, mat(C('--line')));
+      boxes(L1, traces, mat(C('--signal'), 1.8));
+      boxes(L1, frame(1.0), mat(C('--signal'), 1.2));
+      boxes(L1, [floor(12, 12)], mat(C('--surface')));
+
+      // 2 — логические ячейки: плотный лес столбиков, «биты» светятся.
+      const L2 = level(2), cells = [], bits = [];
+      for (let i = -24; i <= 24; i++) for (let j = -24; j <= 24; j++) {
+        if (Math.abs(i) < 2 && Math.abs(j) < 2) continue;
+        const h = 0.1 + rand() * 0.5;
+        (rand() > 0.93 ? bits : cells).push([i * 0.25, h / 2, j * 0.25, 0.18, h, 0.18]);
+      }
+      boxes(L2, cells, mat(C('--muted')));
+      boxes(L2, bits, mat(C('--signal'), 2));
+      boxes(L2, frame(0.5, 0.02), mat(C('--signal'), 1.2));
+      boxes(L2, [floor(14, 14)], mat(C('--canvas')));
+
+      // 3 — кристаллическая решётка кремния.
+      const L3 = level(3);
+      const atomMat = mat(C('--ink'));
+      const hotMat = mat(C('--signal'), 2);
+      const sphere = new THREE.SphereGeometry(1, 20, 14);
+      const atoms = [], hot = [];
+      for (let i = -8; i <= 8; i++) for (let j = -8; j <= 8; j++) for (let y = 0; y < 3; y++) {
+        const p = [i * 0.6 + (y % 2) * 0.3, y * 0.42, j * 0.6 + (y % 2) * 0.3];
+        (i === 0 && j === 0 && y === 2 ? hot : atoms).push(p);
+      }
+      for (const [list, material, r] of [[atoms, atomMat, 0.17], [hot, hotMat, 0.2]]) {
+        const mesh = new THREE.InstancedMesh(sphere, material, list.length);
+        list.forEach(([x, y, z], i) => mesh.setMatrixAt(i, m4.compose(pos.set(x, y, z), q, scl.setScalar(r))));
+        L3.add(mesh); L3.userData.mats.push(material);
+      }
+      const levels = [L0, L1, L2, L3];
+
+      const hud = {step: document.getElementById('step'), chapter: document.getElementById('chapter'), scale: document.getElementById('scale'), bar: document.querySelector('#bar i')};
+
+      // p — непрерывный номер уровня: на каждом держим ~40 % главы, остальное — перелёт.
+      function progress(t) {
+        const per = duration / levels.length;
+        const k = Math.min(levels.length - 1, Math.floor(t / per));
+        const local = (t - k * per) / per;
+        return k + premium(invLerp(0.45, 1, local)) * (k < levels.length - 1 ? 1 : 0);
+      }
+
+      function render(t) {
+        const p = progress(t);
+        const d = 15 * Math.pow(S, p);                                 // расстояние камеры в мировых единицах
+        const tilt = 0.95 + 0.12 * Math.sin(t * 0.4);
+        const yaw = 0.6 + t * 0.05;
+        const y0 = 0.02 * Math.pow(S, p);                               // смотрим чуть выше «пола» уровня
+        camera.position.set(Math.sin(yaw) * Math.cos(tilt) * d, Math.sin(tilt) * d + y0, Math.cos(yaw) * Math.cos(tilt) * d);
+        camera.near = d * 0.01; camera.far = d * 60;
+        camera.lookAt(0, y0, 0);
+        camera.updateProjectionMatrix();
+        levels.forEach((g, k) => {
+          const rel = p - k;                                            // <0 — уровень ещё мал, >0 — мы внутри
+          const a = smoothstep(-1.15, -0.6, rel) * (1 - smoothstep(0.35, 0.75, rel));
+          g.visible = a > 0.002;
+          for (const m of g.userData.mats) { m.opacity = a; m.depthWrite = a > 0.98; }
+        });
+        const k = Math.round(p);
+        const hold = 1 - Math.min(1, Math.abs(p - k) * 4);
+        hud.step.textContent = `УРОВЕНЬ ${String(k + 1).padStart(2, '0')} / ${String(levels.length).padStart(2, '0')}`;
+        hud.chapter.textContent = chapters[k] ?? '';
+        hud.scale.textContent = `масштаб ≈ ${scales[k] ?? ''}`;
+        for (const el of [hud.chapter, hud.scale]) { el.style.opacity = expoOut(hold); el.style.transform = `translateY(${(1 - hold) * 24}px)`; }
+        hud.bar.style.width = `${(p / (levels.length - 1)) * 100}%`;
+        renderer.render(scene, camera);
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>

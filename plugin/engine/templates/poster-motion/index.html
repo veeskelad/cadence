@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Cadence — poster motion</title>
+    <!--
+      Семь приёмов «постерного» моушна, каждый — своя сцена (рецепты в knowledge/effects-bank/look-*.md):
+      prism   — плитка-брусок поворачивается к следующей грани, материал меняется (чёрная, белая, цветное стекло),
+                стороны упруго выгибаются, знак смазывается от скорости;
+      gradient — плывущий mesh-градиент с зерном, слои текста по очереди уходят в расфокус и возвращаются;
+      stream  — строки крупного шрифта едут с разной скоростью, смаз движения по оси и цветная кайма, инверсия на ударе;
+      goo     — капля прокатывается сквозь слово, буквы слипаются (метаболлы);
+      liquid  — крупные цифры плавятся под шумом, мелкий текст печатается поверх;
+      halftone — буква из сетки точек, по штриху бежит волна крупных точек;
+      ascii   — слово из моноширинных символов по яркости, проявляется волной с перебором знаков, по нему идёт полоса света.
+      Сценарий — #film (bpm и доли), общий код — lib/looks.js. Всё — функция времени t.
+    -->
+    <!-- cadence:fonts -->
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        /* /cadence:tokens */
+        --paper: #ececec;
+        --dark: #0b0b0c;
+        --fringe: #7fb4ff;
+      }
+      html, body { margin: 0; background: var(--dark); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Inter Tight', Onest, system-ui, sans-serif; }
+      #stage { position: absolute; inset: 0; }
+      .scene { position: absolute; inset: 0; visibility: hidden; overflow: hidden; }
+      .abs { position: absolute; }
+      .center { position: absolute; inset: 0; display: grid; place-items: center; }
+      /* призма */
+      .persp { position: absolute; left: 50%; top: 50%; }
+      .cube { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
+      .face { position: absolute; left: 0; top: 0; backface-visibility: hidden; }
+      .face .fill { position: absolute; inset: 0; display: grid; place-items: center; }
+      .face .mark { font-weight: 700; letter-spacing: -0.06em; line-height: 1; }
+      /* постер */
+      .p-t { position: absolute; color: #0b0b0c; font-weight: 600; letter-spacing: -0.035em; line-height: 0.92; white-space: nowrap; transform-origin: left center; }
+      .p-s { position: absolute; color: #fff; text-shadow: 0 1px 2px rgba(10,30,80,.35), 0 1px 16px rgba(10,30,80,.5); font-weight: 500; letter-spacing: -0.01em; line-height: 1.15; white-space: nowrap; }
+      /* поток */
+      .row { position: absolute; left: 0; white-space: nowrap; font-weight: 700; letter-spacing: -0.045em; line-height: 0.86; will-change: transform, filter; }
+      .ghost { position: absolute; left: 0; white-space: nowrap; font-weight: 700; letter-spacing: -0.045em; line-height: 0.86; color: var(--fringe); }
+      /* липкое слово и жидкие цифры */
+      .goo { position: absolute; inset: 0; }
+      .goo .w { position: absolute; left: 50%; top: 50%; color: #f5f5f2; font-weight: 600; letter-spacing: -0.03em; line-height: 1; white-space: nowrap; transform: translate(-50%, -50%); }
+      .goo .drop { position: absolute; border-radius: 50%; background: #f5f5f2; }
+      .liq { position: absolute; inset: -10%; display: grid; place-items: center; }
+      .liq span { color: #ececec; font-weight: 700; font-style: italic; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; }
+      .type { position: absolute; left: 50%; top: 50%; transform: translateX(-50%); text-align: center; color: #0b0b0c; font-weight: 500; line-height: 1.05; mix-blend-mode: difference; }
+      .type div { color: #f5f5f2; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="poster-motion" data-start="0" data-width="1920" data-height="1080" data-duration="24" data-no-timeline data-seed="5">
+      <section id="scene" class="clip" data-start="0" data-duration="24" data-track-index="1">
+        <div id="stage"></div>
+      </section>
+      <!-- cadence:audio -->
+    </div>
+    <script type="application/json" id="film">
+{
+  "bpm": 120,
+  "mark": "c",
+  "scenes": [
+    {"type": "prism", "beats": 10, "faces": ["ink", "paper", "glass"]},
+    {"type": "gradient", "beats": 10, "title": ["Мягкий", "свет"], "big": "16—24 мая", "labels": ["Cadence", "студия", "моушн кодом", "16", "24 мая", "весна", "локально"], "colors": ["#2f6fe0", "#ff6a3d", "#ff4d8d", "#4f8fe8", "#e8733a"], "base": "#3270dc"},
+    {"type": "stream", "beats": 9, "words": ["ТУМАН", "РИТМ", "КАДР", "СВЕТ"], "invertAt": 2.2},
+    {"type": "goo", "beats": 7, "word": "лаб"},
+    {"type": "liquid", "beats": 9, "numbers": ["125", "300", "906", "121"], "lines": ["глубокий", "звук", "#121", "17 сентября", "22:00"]},
+    {"type": "halftone", "beats": 8, "glyph": "а"},
+    {"type": "ascii", "beats": 8, "word": "код"}
+  ]
+}
+    </script>
+    <script type="module">
+      import {bindSeek, stage as getStage, clamp, lerp, smoothstep, invLerp, spring} from './lib/motion.js';
+      import {meshGradient, focus, focusWave, motionBlur, gooey, liquid, halftone, ascii, squirclePath, prismState} from './lib/looks.js';
+
+      const {root, width, height} = getStage();
+      const U = Math.min(width, height) / 100;
+      root.style.setProperty('--u', `${U}px`);
+      const wide = width > height;
+      const film = JSON.parse(document.getElementById('film').textContent);
+      const beat = 60 / film.bpm;
+      const stageEl = document.getElementById('stage');
+      const el = (tag, cls, parent, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; };
+      const css = (e, o) => Object.assign(e.style, o);
+
+      // Материалы граней: тёмный, светлый и цветное матовое стекло с радужной кромкой.
+      const MATERIAL = {
+        ink: {bg: '#0b0b0c', mark: '#f5f5f2'},
+        paper: {bg: '#fbfbfa', mark: '#0b0b0c'},
+        glass: {bg: 'radial-gradient(70% 70% at 50% 45%, #cfe4ff 0%, #8db8f2 45%, #5d93dd 100%)', mark: 'rgba(255,255,255,.75)', rim: true},
+      };
+
+      const kinds = {
+        prism(s, box) {
+          box.style.background = 'var(--paper)';
+          const S = U * (wide ? 30 : 34);
+          const persp = el('div', 'persp', box);
+          persp.style.perspective = `${S * 1.7}px`;
+          const cube = el('div', 'cube', persp);
+          css(cube, {width: `${S}px`, height: `${S}px`, left: `${-S / 2}px`, top: `${-S / 2}px`});
+          const faces = [0, 1, 2, 3].map((k) => {
+            const f = el('div', 'face', cube);
+            css(f, {width: `${S}px`, height: `${S}px`, transform: `rotateY(${-k * 90}deg) translateZ(${S / 2}px)`});
+            const fill = el('div', 'fill', f);
+            const m = el('div', 'mark', fill, film.mark);
+            m.style.fontSize = `${S * 0.62}px`;
+            return {f, fill, m};
+          });
+          const mats = s.faces.map((n) => MATERIAL[n]);
+          return (t) => {
+            const st = prismState(t, mats.length);
+            cube.style.transform = `translateZ(${-S / 2}px) rotateY(${-st.angle}deg)`;
+            // упругий выгиб сторон и смаз знака — от скорости поворота
+            const v = st.vel;
+            const wob = Math.sin(t * 9) * 0.012 + v * 0.03;
+            faces.forEach((o, k) => {
+              const front = ((k - Math.floor(st.turns)) % 4 + 4) % 4;
+              const mat = mats[(Math.floor(st.turns) + front) % mats.length];
+              o.fill.style.background = mat.bg;
+              o.fill.style.boxShadow = mat.rim ? 'inset 0 0 0 3px rgba(255,255,255,.55), inset 0 0 40px rgba(255,190,255,.35)' : 'none';
+              o.m.style.color = mat.mark;
+              o.m.style.filter = v > 0.2 ? `blur(${Math.min(14, v * 3.2).toFixed(1)}px)` : 'none';
+              o.f.style.clipPath = `path('${squirclePath(S, S, 0.24, [wob * 0.6, wob, wob * 0.6, wob])}')`;
+            });
+            // лёгкое «дыхание» в паузе
+            const breath = 1 + 0.012 * Math.sin(t * 2.4);
+            persp.style.transform = `translate(0,0) scale(${breath})`;
+          };
+        },
+
+        gradient(s, box) {
+          const bg = el('div', 'abs', box); css(bg, {inset: '0'});
+          const draw = meshGradient(bg, {colors: s.colors, base: s.base, seed: 7});
+          const L = [];
+          const big = U * (wide ? 15 : 17);
+          s.title.forEach((w, i) => { const e = el('div', 'p-t', box, w); css(e, {left: `${U * 5 + i * big * 0.9}px`, top: `${U * 6 + i * big * 0.86}px`, fontSize: `${big}px`}); L.push(e); });
+          const date = el('div', 'p-t', box, s.big); css(date, {left: `${U * 2}px`, top: wide ? `${height * 0.5}px` : `${height * 0.42}px`, fontSize: `${big * 0.62}px`}); L.push(date);
+          const small = U * 3.2;
+          const spots = wide ? [[0.62, 0.10], [0.12, 0.42], [0.42, 0.55], [0.72, 0.62], [0.72, 0.68], [0.42, 0.84], [0.62, 0.90]]
+                             : [[0.6, 0.08], [0.12, 0.3], [0.36, 0.36], [0.6, 0.55], [0.6, 0.58], [0.4, 0.84], [0.25, 0.9]];
+          const labs = s.labels.map((tx, i) => { const e = el('div', 'p-s', box, tx); css(e, {left: `${spots[i][0] * width}px`, top: `${spots[i][1] * height}px`, fontSize: `${small}px`}); return e; });
+          return (t) => {
+            draw(t);
+            L.forEach((e, i) => focus(e, focusWave(i, L.length, t + 0.2, 3.6, 0.85), {maxBlur: U * 1.6}));
+            labs.forEach((e, i) => { e.style.opacity = smoothstep(0.1 + i * 0.08, 0.4 + i * 0.08, t); });
+          };
+        },
+
+        stream(s, box) {
+          const bgc = el('div', 'abs', box); css(bgc, {inset: '0', background: '#d6f1fb'});
+          const n = wide ? 4 : 7, fs = height / n * 1.12;
+          const rows = Array.from({length: n}, (_, i) => {
+            const line = Array.from({length: 16}, (_, k) => s.words[(i + k) % s.words.length]).join(' ');
+            const gh = el('div', 'ghost', box, line); const r = el('div', 'row', box, line);
+            gh.dataset.layoutIgnore = ''; r.dataset.layoutIgnore = '';  // строки — фактура, наложение задумано
+            [gh, r].forEach((e) => css(e, {top: `${i * height / n - fs * 0.05}px`, fontSize: `${fs}px`}));
+            const mb = motionBlur(r), mg = motionBlur(gh);
+            return {r, gh, mb, mg, dir: i % 2 ? 1 : -1, sp: 0.7 + i * 0.22};
+          });
+          // положение: равномерный ход + рывки; скорость — производная той же функции
+          // старт: строка, едущая вправо, начинается от своей середины, чтобы слева не было пустоты в любом формате
+          const X = (t, o) => o.dir * (t * 120 * o.sp + 260 * Math.sin(t * 1.6 + o.sp * 3) + 900 * smoothstep(1.4, 2.0, t)) - (o.dir > 0 ? o.len * 0.5 : width * 0.4);
+          return (t) => {
+            rows.forEach((o) => { o.len ??= o.r.scrollWidth; });
+            const inv = t > s.invertAt && t < s.invertAt + 0.9;
+            bgc.style.background = inv ? '#0b0b0c' : '#d6f1fb';
+            rows.forEach((o) => {
+              const x = X(t, o), v = (X(t + 1 / 60, o) - X(t - 1 / 60, o)) * 30;
+              o.r.style.transform = `translateX(${x}px)`;
+              o.r.style.color = inv ? '#e6f4ff' : '#0b0b0c';
+              o.mb(v);
+              // кайма отстаёт против движения, видна только на скорости
+              o.gh.style.transform = `translateX(${x - Math.sign(v) * Math.min(60, Math.abs(v) * 0.03)}px)`;
+              o.gh.style.opacity = clamp(Math.abs(v) / 700);
+              o.mg(v * 1.4);
+            });
+          };
+        },
+
+        goo(s, box) {
+          box.style.background = '#111';
+          const g = el('div', 'goo', box);
+          const set = gooey(g, {blur: U * 0.9, contrast: 26});
+          const fs = U * (wide ? 26 : 30);
+          const w = el('div', 'w', g, s.word); w.style.fontSize = `${fs}px`; w.dataset.layoutIgnore = '';  // капля проходит сквозь слово
+          const drops = [0, 1].map(() => el('div', 'drop', g));
+          let bw = 0;
+          return (t, dur) => {
+            if (!bw) bw = w.offsetWidth;
+            const cx = width / 2, cy = height / 2 + fs * 0.12;
+            drops.forEach((d, i) => {
+              const p = ((t / dur) * 1.6 + i * 0.5) % 1;
+              const x = cx + lerp(-bw * 0.55, bw * 0.55, p);
+              const r = fs * (0.2 + 0.1 * Math.sin(p * Math.PI)) * (i ? 0.75 : 1);
+              const y = cy + Math.sin(p * Math.PI * 2 + i) * fs * 0.12;
+              css(d, {left: `${x - r}px`, top: `${y - r}px`, width: `${r * 2}px`, height: `${r * 2}px`});
+            });
+            set(U * (0.8 + 0.25 * Math.sin(t * 3)));
+          };
+        },
+
+        liquid(s, box) {
+          box.style.background = '#000';
+          const lq = el('div', 'liq', box);
+          const sp = el('span', '', lq); sp.style.fontSize = `${U * (wide ? 52 : 46)}px`; sp.dataset.layoutIgnore = '';  // цифры — фон под текстом
+          const set = liquid(lq, {freq: 0.0045, scale: U * 9, seed: 9});
+          const type = el('div', 'type', box); type.style.fontSize = `${U * 3.4}px`; type.style.top = `${height * 0.3}px`;
+          const lines = s.lines.map((tx) => el('div', '', type, ''));
+          return (t, dur) => {
+            const k = Math.floor(t / 0.9) % s.numbers.length;
+            sp.textContent = s.numbers[k];
+            const ph = (t % 0.9) / 0.9;
+            sp.style.transform = `skewX(-14deg) rotate(-12deg) scale(${1 + 0.05 * Math.sin(ph * Math.PI)})`;
+            set(t, {amount: 0.6 + 0.6 * Math.sin(ph * Math.PI), drift: 1.6});
+            let left = Math.floor(t * 14);
+            s.lines.forEach((tx, i) => { const n = clamp(left, 0, tx.length); lines[i].textContent = tx.slice(0, n); left -= tx.length + 2; });
+          };
+        },
+
+        halftone(s, box) {
+          box.style.background = '#111';
+          const cv = el('canvas', 'abs', box);
+          const side = Math.min(width, height) * 0.86;
+          cv.width = Math.round(side); cv.height = Math.round(side);
+          css(cv, {left: `${(width - side) / 2}px`, top: `${(height - side) / 2}px`, width: `${side}px`, height: `${side}px`});
+          const draw = halftone(cv, {text: s.glyph, font: `700 ${Math.round(side * 0.95)}px "Inter Tight"`, cell: Math.round(side / 34)});
+          return (t) => draw(t, {speed: 0.55, span: 0.22});
+        },
+
+        ascii(s, box) {
+          box.style.background = '#0b0b0c';
+          const cv = el('canvas', 'abs', box);
+          cv.width = width; cv.height = height; css(cv, {left: '0', top: '0', width: `${width}px`, height: `${height}px`});
+          cv.dataset.layoutIgnore = '';  // символы — фактура формы
+          // форма: слово, по которому проходит полоса света — яркость меняется, символы ряда меняются вместе с ней
+          const fs = Math.min(width * 0.36, height * 0.62);
+          const shape = (g, W, H, t) => {
+            const x = ((t * 0.32) % 1.4 - 0.2) * W;
+            const gr = g.createLinearGradient(x - W * 0.25, 0, x + W * 0.25, 0);
+            gr.addColorStop(0, 'rgba(255,255,255,.35)'); gr.addColorStop(0.5, '#fff'); gr.addColorStop(1, 'rgba(255,255,255,.35)');
+            g.fillStyle = gr; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `700 ${Math.round(fs)}px "Inter Tight"`;
+            g.fillText(s.word, W / 2, H / 2 + fs * 0.04);
+          };
+          const draw = ascii(cv, {shape, cell: Math.round(Math.min(width, height) / 64), live: true});
+          return (t) => draw(t, {reveal: smoothstep(0.1, 1.6, t) * 1.25, flicker: 0.015});
+        },
+      };
+
+      await document.fonts.ready;
+      await document.fonts.load(`700 200px "Inter Tight"`, 'АБВабвcab0123');
+      let at = 0;
+      const scenes = film.scenes.map((s) => {
+        const box = el('div', 'scene', stageEl);
+        const dur = s.beats * beat;
+        const draw = kinds[s.type](s, box);
+        const sc = {box, start: at, dur, draw};
+        at += dur;
+        return sc;
+      });
+      function render(t) {
+        for (const sc of scenes) {
+          const on = t >= sc.start && t < sc.start + sc.dur;
+          sc.box.style.visibility = on ? 'visible' : 'hidden';
+          if (on) sc.draw(t - sc.start, sc.dur);
+        }
+      }
+      bindSeek(render);
+    </script>
+  </body>
+</html>
