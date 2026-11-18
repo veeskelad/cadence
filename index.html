@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
 <meta name="description" content="Cadence — система эффектов и моушна для Claude Code и Codex: 424 приёма монтажа, больше 440 блоков графики и звук под события в кадре. Бесплатно и без ключей.">
-<meta name="theme-color" content="#071A32">
+<meta name="theme-color" content="#EEF2F9">
 <style>
 /* Шрифты вшиты, чтобы слово «Cadence» рисовалось сразу. Ролики и картинки лежат в media/: это общий каталог
    для сайта и Mini App off-grid, порядок замены описан в README, раздел «Медиа». */
@@ -282,7 +282,36 @@ p{margin:0 0 14px}
   .diagram .ln{stroke-dashoffset:0}.diagram .node{opacity:1;transform:none}
 }
 :root{--img-m5:url(media/cadence-motion-1.jpg?v=4b1ac94e);--img-m6:url(media/cadence-motion-2.jpg?v=674249d5);--img-m7:url(media/cadence-motion-3.jpg?v=6e69e1bc);}
+
+/* схема «Лёд» (18.11): светлая тема, фон — мягкие размытые волны (шейдер в конце страницы), карточки — светлое матовое стекло */
+:root{--g0:#EEF2F9;--g1:#8FB0FF;--g2:#D3DFFF;--g3:#B4C8FF;--acc:#1E57E6;
+  --black:#EEF2F9;--ink:#11141C;--dim:#4C5263;--dim2:#6E7484;--edge:rgba(17,20,28,.12);--edge2:rgba(17,20,28,.24);--lav:#1E57E6;color-scheme:light}
+html{background:radial-gradient(60% 55% at 88% 18%,#8FB0FF,transparent 70%),radial-gradient(55% 50% at 8% 62%,#D3DFFF,transparent 70%),var(--g0) fixed}
+body{background:transparent}
+body::after{display:none}
+canvas.bgs{position:fixed;left:0;top:0;width:100vw;height:100lvh;z-index:-2;display:block;pointer-events:none}
+.hero{background:transparent}
+.hero .light{display:none}
+.hero .lead{color:#262A35}.hero .trust{color:#4C5263}
+.nav{background:color-mix(in srgb,var(--g0) 78%,transparent);border-bottom-color:rgba(17,20,28,.08)}
+.nav nav a{color:#3A3F4D}.nav nav a:hover{color:#11141C}
+.logo svg g{fill:var(--ink)}
+.hero .btn:not(.line),.nav .btn{background:var(--acc);color:#fff}
+.diagram{background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:26px}
+.card,.box{background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),0 18px 50px -26px rgba(20,40,110,.35)}
+:is(.card,.box,.end,details){--mint:#7CCB9C;--pink:#EE8FA7;--peach:#F0A574;--yellow:#E6C540;--lilac:#9F8AEE;--ink:#11141C;--dim:#4C5263;--dim2:#6E7484;--edge:rgba(17,20,28,.1);--edge2:rgba(17,20,28,.2);--code:rgba(17,20,28,.05);--black:#FFFFFF;--lav:var(--acc);color:#11141C}
+.pill{background-color:rgba(255,255,255,.72);color:#11141C}
+.fxv .name,.frame .snd{color:#fff}
+.foot{color:var(--dim)}
+.sndv .wave{fill:rgba(30,87,230,.28)}
+.cutv .gap{fill:rgba(17,20,28,.14)}
+.end .btn:not(.line){background:var(--acc);color:#fff}
+.diagram .ln{stroke:rgba(30,87,230,.45)}
+.diagram .pulse{fill:var(--acc)}
+.diagram circle[fill="#FFFFFF"]{fill:var(--acc)}
+.diagram path[stroke="#071A32"]{stroke:#fff}
 </style></head><body>
+<canvas class="bgs" aria-hidden="true"></canvas>
 <script>document.documentElement.className="js";
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("#copy");if(!b)return;
 var s=document.querySelector("#prompt .cmd").innerText.trim();
@@ -713,7 +742,7 @@ create-only в `./releases/RELEASE_ID`. Существующие выпуски 
   W=r.width;H=r.height;fs=parseFloat(cs.fontSize);step=fs*STEP;
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px';
   var font='700 '+fs+'px "Inter Tight"';
-  function draw(c,blur){var x=c.getContext('2d');x.scale(dpr,dpr);x.font=font;x.letterSpacing=cs.letterSpacing;x.fillStyle='#fff';
+  function draw(c,blur){var x=c.getContext('2d');x.scale(dpr,dpr);x.font=font;x.letterSpacing=cs.letterSpacing;x.fillStyle=(getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#fff');
    if(blur)x.filter='blur('+blur+'px)';var m=x.measureText('Cadence');
    var base=(H-(m.fontBoundingBoxAscent+m.fontBoundingBoxDescent))/2+m.fontBoundingBoxAscent;
    x.fillText('Cadence',parseFloat(cs.paddingLeft),base);return c}
@@ -723,7 +752,7 @@ create-only в `./releases/RELEASE_ID`. Существующие выпуски 
  function sm(a,b,v){v=Math.min(1,Math.max(0,(v-a)/(b-a)));return v*v*(3-2*v)}
  function frame(x,y){
   var R=fs*LENS,X=x*dpr,Y=y*dpr,l=L.getContext('2d'),c=C2.getContext('2d');
-  l.setTransform(1,0,0,1,0,0);l.clearRect(0,0,L.width,L.height);l.setTransform(dpr,0,0,dpr,0,0);l.fillStyle='#fff';
+  l.setTransform(1,0,0,1,0,0);l.clearRect(0,0,L.width,L.height);l.setTransform(dpr,0,0,dpr,0,0);l.fillStyle=(getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#fff');
   var off=step/2,i0=Math.max(0,Math.floor((x-R-step-off)/step)),i1=Math.ceil((x+R+step-off)/step),j0=Math.max(0,Math.floor((y-R-step-off)/step)),j1=Math.ceil((y+R+step-off)/step);
   for(var j=j0;j<=j1;j++){var cy=off+j*step;if(cy>H)break;
    for(var i=i0;i<=i1;i++){var cx=off+i*step;if(cx>W)break;
@@ -759,4 +788,51 @@ create-only в `./releases/RELEASE_ID`. Существующие выпуски 
 </script>
 <!-- Cloudflare Web Analytics: public collection identifier, not an API credential. -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"5c68e47a99f841d2ac6bc59819b45b14"}'></script>
+<script>/* Фон сайта: мягкие размытые волны (схема «Лёд»), WebGL. Цвета берутся из --g0..--g3.
+   Без WebGL остаётся CSS-градиент страницы. При prefers-reduced-motion — один кадр, без движения. */
+(function () {
+  var cv = document.querySelector('canvas.bgs'); if (!cv) return;
+  var gl = cv.getContext('webgl', {antialias: false, alpha: false});
+  if (!gl) { cv.remove(); return; }
+  var FS = [
+    'precision highp float;',
+    'uniform vec2 R; uniform float T, SC; uniform vec3 C0, C1, C2, C3;',
+    'float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}',
+    'float band(vec2 p,float t,float ar,float base,float amp,float f,float sp,float ph,float w){',
+    '  float cx=ar*(base+amp*sin(p.y*f+t*sp+ph)+amp*.35*sin(p.y*f*2.3-t*sp*1.4+ph*2.));',
+    '  float d=(p.x-cx)/(w*(1.+.25*sin(p.y*1.3+t*.1+ph)));',
+    '  return exp(-d*d);}',
+    'void main(){',
+    '  vec2 fc=gl_FragCoord.xy; float ar=R.x/R.y, nar=step(ar,1.), t=T;',
+    '  vec2 p=vec2(fc.x/R.y,(R.y-fc.y)/R.y+SC);',
+    '  float g1=band(p,t,ar,nar>.5?.75:.8,nar>.5?.35:.16,1.1,.12,0.,nar>.5?.32:.38);',
+    '  float g2=band(p,t,ar,nar>.5?.2:.18,nar>.5?.3:.2,.8,.09,2.1,nar>.5?.3:.42);',
+    '  float g3=band(p,t,ar,.5,nar>.5?.4:.35,.55,.07,4.2,nar>.5?.34:.5);',
+    '  vec3 c=C0; c=mix(c,C2,g2*.75); c=mix(c,C3,g3*.6); c=mix(c,C1,g1*.85);',
+    '  gl_FragColor=vec4(c+(h(floor(fc))-.5)*.04,1.);',
+    '}'].join('\n');
+  var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+  function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+  var pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) { cv.remove(); return; }
+  gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  var uR = gl.getUniformLocation(pr, 'R'), uT = gl.getUniformLocation(pr, 'T'), uS = gl.getUniformLocation(pr, 'SC');
+  var cs = getComputedStyle(document.documentElement);
+  ['C0', 'C1', 'C2', 'C3'].forEach(function (k, i) {
+    var v = cs.getPropertyValue('--g' + i).trim().replace('#', '');
+    gl.uniform3f(gl.getUniformLocation(pr, k), parseInt(v.substr(0, 2), 16) / 255, parseInt(v.substr(2, 2), 16) / 255, parseInt(v.substr(4, 2), 16) / 255);
+  });
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, t0 = performance.now(), last = 0;
+  function size() { cv.width = innerWidth; cv.height = innerHeight; gl.viewport(0, 0, cv.width, cv.height); }
+  function draw(now) {
+    gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uT, reduce ? 4 : (now - t0) / 1000);
+    gl.uniform1f(uS, scrollY / innerHeight * (reduce ? 1 : .8)); gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  function loop(now) { if (now - last > 33) { last = now; draw(now); } requestAnimationFrame(loop); }
+  size(); addEventListener('resize', function () { size(); draw(performance.now()); });
+  if (reduce) { draw(0); addEventListener('scroll', function () { draw(0); }, {passive: true}); } else requestAnimationFrame(loop);
+})();
+</script>
 </body></html>
