@@ -1,0 +1,538 @@
+{
+  "about": "Каталог медиа Cadence: один источник для сайта и Mini App off-grid. Поля type, bytes, sha256, width, height, duration пишет tools/media_catalog.py.",
+  "base": "https://veeskelad.github.io/cadence/media/",
+  "files": [
+    {
+      "file": "cadence-reel.mp4",
+      "title": "Промо Cadence, 9:16",
+      "poster": "cadence-reel.jpg",
+      "source": "сессия «Ролик о новом бренде», промо v9",
+      "used": [
+        {
+          "where": "site",
+          "place": "первый экран"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-reel.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 2129723,
+      "sha256": "2b92aa7064f43792e2e387cc578573debcedfb288c349d223aa63ed614d81864",
+      "width": 540,
+      "height": 960,
+      "duration": 61.21
+    },
+    {
+      "file": "cadence-reel.jpg",
+      "title": "Постер промо",
+      "used": [
+        {
+          "where": "site",
+          "place": "первый экран"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-reel.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 21538,
+      "sha256": "897cdd7c26ae3e29b81de7b501b9c5be1cf698f5f4ec36cb06859edd3a70de4d",
+      "width": 540,
+      "height": 960
+    },
+    {
+      "file": "cadence-fx-speed-ramp.mp4",
+      "title": "Эффект «Рампа скорости»",
+      "poster": "cadence-fx-speed-ramp.jpg",
+      "source": "Cadence scripts/video_fx.py",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-speed-ramp.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 136231,
+      "sha256": "4d8d4d2a79f373b280aa0ebac08ed9b98cfe4f10b59c39609176c7b54f02134c",
+      "width": 512,
+      "height": 320,
+      "duration": 4.23
+    },
+    {
+      "file": "cadence-fx-speed-ramp.jpg",
+      "title": "Постер эффекта «Рампа скорости»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-speed-ramp.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 18677,
+      "sha256": "94e4f4cd12a3b3431f3f7401ad7b0834a2bffbecd932fb42804bf97782b16cfd",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-fx-smear-pass.mp4",
+      "title": "Эффект «Смазанный пролёт»",
+      "poster": "cadence-fx-smear-pass.jpg",
+      "source": "Cadence scripts/video_fx.py",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-smear-pass.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 168079,
+      "sha256": "6f60194d2347712c990335ccd3ca88245f5a6b284382e500d54e71e0ffecb51e",
+      "width": 512,
+      "height": 320,
+      "duration": 3.0
+    },
+    {
+      "file": "cadence-fx-smear-pass.jpg",
+      "title": "Постер эффекта «Смазанный пролёт»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-smear-pass.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 11575,
+      "sha256": "1ef4d0951f6bfde063d597823ba4efee4385ab9116b53223eab095c1b4dc3afa",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-fx-push-in.mp4",
+      "title": "Эффект «Резкий наезд»",
+      "poster": "cadence-fx-push-in.jpg",
+      "source": "Cadence scripts/video_fx.py",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-push-in.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 59553,
+      "sha256": "5cf91296b7c7f6333ec7558d9f0d364c7861eb5c81a42bd657175c50c0e61e29",
+      "width": 512,
+      "height": 320,
+      "duration": 2.8
+    },
+    {
+      "file": "cadence-fx-push-in.jpg",
+      "title": "Постер эффекта «Резкий наезд»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-push-in.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 10354,
+      "sha256": "0a96817c1ff2a03362fee21bc0126e5320f0ac7e1b7e3ffca0ef2b1ac2111b60",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-fx-zoom-cut.mp4",
+      "title": "Эффект «Зум-переход»",
+      "poster": "cadence-fx-zoom-cut.jpg",
+      "source": "Cadence scripts/video_fx.py",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-zoom-cut.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 140931,
+      "sha256": "81cebc6a4679879e5c14f1142b6cba7a425f7bd0a2aa526efe93234048b0fa01",
+      "width": 512,
+      "height": 320,
+      "duration": 3.0
+    },
+    {
+      "file": "cadence-fx-zoom-cut.jpg",
+      "title": "Постер эффекта «Зум-переход»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-zoom-cut.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 20781,
+      "sha256": "1a0d3483f40d2d6c5f6a13aaea2541f9ed9f6888718430983f8fdee25294454e",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-fx-camera-shake.mp4",
+      "title": "Эффект «Тряска камеры»",
+      "poster": "cadence-fx-camera-shake.jpg",
+      "source": "Cadence scripts/video_fx.py",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-camera-shake.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 65407,
+      "sha256": "dfac08931537dd8f5668f528b6d77f3f5281c054d53bb1fa12cf0295f6a8a5d2",
+      "width": 512,
+      "height": 320,
+      "duration": 2.4
+    },
+    {
+      "file": "cadence-fx-camera-shake.jpg",
+      "title": "Постер эффекта «Тряска камеры»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-camera-shake.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 12041,
+      "sha256": "e5dd818a8cf86f9f471ba9293a80be0e7520bae0966457d12520e445a6fd98d6",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-fx-flash.mp4",
+      "title": "Эффект «Вспышка»",
+      "poster": "cadence-fx-flash.jpg",
+      "source": "Cadence scripts/video_fx.py",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-flash.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 75844,
+      "sha256": "e000213b498d96c5d44936d88ecd239b9e1360db13f9fc8cace887130781c594",
+      "width": 512,
+      "height": 320,
+      "duration": 2.97
+    },
+    {
+      "file": "cadence-fx-flash.jpg",
+      "title": "Постер эффекта «Вспышка»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-flash.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 5753,
+      "sha256": "5c80d3989363e7f01118eefcf1a14f5a5e7b273dd027813c1fbd9e080bc3e392",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-fx-match-cut.mp4",
+      "title": "Эффект «Склейка по форме»",
+      "poster": "cadence-fx-match-cut.jpg",
+      "source": "Cadence scripts/video_fx.py",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-match-cut.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 58588,
+      "sha256": "96fa8c2f4550d21db543dfd1b5dc7783e74102f191692b70187a970fb42887ac",
+      "width": 512,
+      "height": 320,
+      "duration": 2.73
+    },
+    {
+      "file": "cadence-fx-match-cut.jpg",
+      "title": "Постер эффекта «Склейка по форме»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-match-cut.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 7992,
+      "sha256": "e7941c2965627ad2f3828469014f61dc3f44f72de7de4433721722e3fa2472b7",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-fx-freeze.mp4",
+      "title": "Эффект «Стоп-кадр»",
+      "poster": "cadence-fx-freeze.jpg",
+      "source": "Cadence scripts/video_fx.py, плашка «это я» в пастели (cadence-site-demos-pastel/stop)",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 02 «Эффекты»"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-freeze.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 66507,
+      "sha256": "536895ec1cf142e3f135ffd2e3513bfbc985c1cf0bc5e0be3a6f30cd8ef8963d",
+      "width": 512,
+      "height": 320,
+      "duration": 2.4
+    },
+    {
+      "file": "cadence-fx-freeze.jpg",
+      "title": "Постер эффекта «Стоп-кадр»",
+      "source": "кадр на 40% ролика",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-freeze.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 16314,
+      "sha256": "6e45f5b6c51a9157dcab640245272c666d23225cffbf92da939831776b567db1",
+      "width": 512,
+      "height": 320
+    },
+    {
+      "file": "cadence-breakdown.mp4",
+      "title": "Демо «Разбор ролика»",
+      "poster": "cadence-breakdown.jpg",
+      "source": "cadence-site-demos-pastel/pastel.py, движок Cadence 2.0",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка «Разбор ролика» (f-ref)"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-breakdown.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 338089,
+      "sha256": "a1824e4e00395fb5f983abffe34593be7dfab69b06d06a37e8bf61439e35dec2",
+      "width": 960,
+      "height": 600,
+      "duration": 6.0
+    },
+    {
+      "file": "cadence-breakdown.jpg",
+      "title": "Постер: Демо «Разбор ролика»",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка «Разбор ролика» (f-ref)"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-breakdown.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 76516,
+      "sha256": "8f935761844c7667fff91765c40d8c1dd879bc4f09b3fc5fee006a5584b1b7cf",
+      "width": 960,
+      "height": 600
+    },
+    {
+      "file": "cadence-words.mp4",
+      "title": "Демо «Мысль словами»",
+      "poster": "cadence-words.jpg",
+      "source": "cadence-site-demos-pastel/pastel.py, движок Cadence 2.0",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 11 «Без съёмки» (f-forms)"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-words.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 355837,
+      "sha256": "cee1ec66ef1f7126395e3202e6e19ee52e07000f29abf01774b83b4905e5daa5",
+      "width": 960,
+      "height": 600,
+      "duration": 6.0
+    },
+    {
+      "file": "cadence-words.jpg",
+      "title": "Постер: Демо «Мысль словами»",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 11 «Без съёмки» (f-forms)"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-words.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 57406,
+      "sha256": "c537c95e8216fb0bb42d76d7a8527c45061f6d4c1aa87922c4ea0db54197b8ac",
+      "width": 960,
+      "height": 600
+    },
+    {
+      "file": "cadence-design.mp4",
+      "title": "Демо «Дизайн-система»",
+      "poster": "cadence-design.jpg",
+      "source": "cadence-site-demos-pastel/pastel.py, движок Cadence 2.0",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 12 «Дизайн-система» (f-brand)"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-design.mp4"
+        }
+      ],
+      "type": "video/mp4",
+      "bytes": 321747,
+      "sha256": "c6b97c9cbc9c7940c2f86046c9695d265b9e2720635faa589d1681f133ceb682",
+      "width": 960,
+      "height": 600,
+      "duration": 6.0
+    },
+    {
+      "file": "cadence-design.jpg",
+      "title": "Постер: Демо «Дизайн-система»",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка 12 «Дизайн-система» (f-brand)"
+        },
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-design.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 96120,
+      "sha256": "19016c86d6b7cbaf85518081c6763045d439bb8320f8f31756858a7e4004ea0e",
+      "width": 960,
+      "height": 600
+    },
+    {
+      "file": "cadence-motion-1.jpg",
+      "title": "Кадр моушна: пастельные плитки",
+      "source": "cadence-site-demos-pastel/motion",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка «Моушн-графика»"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 52777,
+      "sha256": "4b1ac94e64d99a81bffe46faa43f9f486c616e1b9238f96bfc6c659945929b16",
+      "width": 360,
+      "height": 640
+    },
+    {
+      "file": "cadence-motion-2.jpg",
+      "title": "Кадр моушна: знак-полутон из кадров",
+      "source": "cadence-site-demos-pastel/motion",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка «Моушн-графика»"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 48561,
+      "sha256": "674249d59a7f4bacf83cba6d5aeba1cc67f55c14864613e3ced0eae8cbacd344",
+      "width": 360,
+      "height": 640
+    },
+    {
+      "file": "cadence-motion-3.jpg",
+      "title": "Кадр моушна: частицы пастелью",
+      "source": "cadence-site-demos-pastel/motion",
+      "used": [
+        {
+          "where": "site",
+          "place": "карточка «Моушн-графика»"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 40970,
+      "sha256": "6e69e1bcb9b342f63723f6b270809ba56e24f490bbfbd33d51dbb251162c66ef",
+      "width": 360,
+      "height": 640
+    },
+    {
+      "file": "cadence-card.jpg",
+      "title": "Обложка карточки Cadence в Mini App",
+      "source": "cadence-logo/kit/src/offgrid_cover.py",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "studio/telegram/offgrid-serverless/media/cadence-card.jpg"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 56032,
+      "sha256": "6384373c12c96bb4a435680766cbfa78dafeba1bb59f6a479404e733da73a40b",
+      "width": 764,
+      "height": 430
+    }
+  ]
+}
