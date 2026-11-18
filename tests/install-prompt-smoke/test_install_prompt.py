@@ -22,17 +22,17 @@ PINNED_RELEASE = {
     'installer_contract': 'cadence.install-prompt.v1',
     'product': 'Cadence',
     'channel': 'public',
-    'version': '2.0',
-    'release_id': 'cadence-2.0',
-    'archive_url': 'https://veeskelad.github.io/cadence/releases/2.0/cadence-2.0.zip',
-    'archive_filename': 'cadence-2.0.zip',
-    'sha256': 'dde23b07dee837a97a51b581bd0c4d6a93e3552c84e34ba81c8ac489904021c6',
-    'archive_size_bytes': 12587331,
+    'version': '2.0.1',
+    'release_id': 'cadence-2.0.1',
+    'archive_url': 'https://veeskelad.github.io/cadence/releases/2.0.1/cadence-2.0.1.zip',
+    'archive_filename': 'cadence-2.0.1.zip',
+    'sha256': 'df6a1a6150060a00ba0d96586a79cde5dde48a14e4f898db37955221728a6754',
+    'archive_size_bytes': 12595744,
     'max_expanded_bytes': 33554432,
     'verified_files': 1586,
-    'published_at': '2026-11-17',
+    'published_at': '2026-11-18',
     'fresh_install_tested': True,
-    'tested_update_from': ['cadence-1.4', 'cadence-1.5', 'cadence-1.6', 'cadence-1.6.1', 'cadence-1.7', 'cadence-1.8', 'cadence-1.9', 'cadence-1.9.1', 'cadence-1.9.2', 'cadence-1.10', 'cadence-1.10.1', 'cadence-1.10.2'],
+    'tested_update_from': ['cadence-1.4', 'cadence-1.5', 'cadence-1.6', 'cadence-1.6.1', 'cadence-1.7', 'cadence-1.8', 'cadence-1.9', 'cadence-1.9.1', 'cadence-1.9.2', 'cadence-1.10', 'cadence-1.10.1', 'cadence-1.10.2', 'cadence-2.0'],
 }
 
 
@@ -154,9 +154,9 @@ class InstallPromptTests(unittest.TestCase):
     def test_02_fresh_install_and_handoff(self):
         result = self.fresh()
         self.assertEqual(result['mode'], 'новая установка')
-        self.assertEqual(result['active_release'], 'releases/cadence-2.0')
+        self.assertEqual(result['active_release'], 'releases/cadence-2.0.1')
         self.assertEqual(result['verified_files'], PINNED_RELEASE['verified_files'])
-        self.assertEqual(result['expanded_bytes'], 25412660)
+        self.assertEqual(result['expanded_bytes'], 25419408)
         self.assertIn('отдельный проект', result['handoff'])
         for name in ('AGENTS.md', 'CLAUDE.md', 'INSTALL-PROMPT.txt'):
             self.assertTrue((self.release / name).is_file())
@@ -280,7 +280,7 @@ class InstallPromptTests(unittest.TestCase):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--archive', required=True, type=Path,
-                        help='Explicitly supplied official cadence-2.0.zip; never executed')
+                        help='Explicitly supplied official cadence-2.0.1.zip; never executed')
     parser.add_argument('--html', type=Path,
                         default=Path(__file__).resolve().parents[2] / 'index.html',
                         help='Defaults to repository-root index.html')

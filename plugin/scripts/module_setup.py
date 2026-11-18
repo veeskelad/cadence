@@ -176,7 +176,9 @@ def status(mid: str) -> dict:
             out["engine_status"] = "unknown"
     parts = [out.get("payload"), out.get("python"), out.get("node")]
     out["state"] = "ready" if not missing_sys and all(p in (None, "ready") for p in parts) else "needs-install"
-    if out["state"] != "ready":
+    if out["state"] != "ready" and not missing_sys and all(p in (None, "ready", "cached") for p in parts):
+        out["note"] = "уже скачано раньше (например, до обновления Cadence): install подключит без сети"
+    elif out["state"] != "ready":
         mb = round(m["install_mb"] + (out.get("payload_mb", 0) if out.get("payload") == "missing" else 0))
         out["note"] = (f"нужна установка: около {mb} МБ, сеть — только с согласия человека"
                        + (f"; поставить программы: {', '.join(missing_sys)}" if missing_sys else ""))
