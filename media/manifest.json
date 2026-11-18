@@ -558,6 +558,23 @@
       "sha256": "6384373c12c96bb4a435680766cbfa78dafeba1bb59f6a479404e733da73a40b",
       "width": 764,
       "height": 430
+    },
+    {
+      "file": "cadence-pro-card.jpg",
+      "title": "Обложка карточки Cadence Pro в Mini App",
+      "source": "studio-components/pro-card/pro_cover.py (вариант a), кадр живой Cadence Studio",
+      "used": [
+        {
+          "where": "offgrid",
+          "path": "media/cadence-pro-card.jpg",
+          "repo": "veeskelad/offgrid"
+        }
+      ],
+      "type": "image/jpeg",
+      "bytes": 46913,
+      "sha256": "4e696582c13d838e3b6ce2c0d99cfbdf9bb6d35507b9ca17395930d7833d3619",
+      "width": 764,
+      "height": 430
     }
   ]
 }
