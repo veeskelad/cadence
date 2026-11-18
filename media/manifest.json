@@ -14,7 +14,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-reel.mp4"
+          "path": "media/cadence-reel.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -34,7 +35,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-reel.jpg"
+          "path": "media/cadence-reel.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -55,7 +57,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-speed-ramp.mp4"
+          "path": "media/cadence-fx-speed-ramp.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -72,7 +75,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-speed-ramp.jpg"
+          "path": "media/cadence-fx-speed-ramp.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -93,7 +97,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-smear-pass.mp4"
+          "path": "media/cadence-fx-smear-pass.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -110,7 +115,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-smear-pass.jpg"
+          "path": "media/cadence-fx-smear-pass.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -131,7 +137,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-push-in.mp4"
+          "path": "media/cadence-fx-push-in.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -148,7 +155,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-push-in.jpg"
+          "path": "media/cadence-fx-push-in.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -169,7 +177,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-zoom-cut.mp4"
+          "path": "media/cadence-fx-zoom-cut.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -186,7 +195,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-zoom-cut.jpg"
+          "path": "media/cadence-fx-zoom-cut.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -207,7 +217,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-camera-shake.mp4"
+          "path": "media/cadence-fx-camera-shake.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -224,7 +235,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-camera-shake.jpg"
+          "path": "media/cadence-fx-camera-shake.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -245,7 +257,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-flash.mp4"
+          "path": "media/cadence-fx-flash.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -262,7 +275,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-flash.jpg"
+          "path": "media/cadence-fx-flash.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -283,7 +297,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-match-cut.mp4"
+          "path": "media/cadence-fx-match-cut.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -300,7 +315,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-match-cut.jpg"
+          "path": "media/cadence-fx-match-cut.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -321,7 +337,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-freeze.mp4"
+          "path": "media/cadence-fx-freeze.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -338,7 +355,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-fx-freeze.jpg"
+          "path": "media/cadence-fx-freeze.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -359,7 +377,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-breakdown.mp4"
+          "path": "media/cadence-breakdown.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -379,7 +398,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-breakdown.jpg"
+          "path": "media/cadence-breakdown.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -400,7 +420,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-words.mp4"
+          "path": "media/cadence-words.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -420,7 +441,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-words.jpg"
+          "path": "media/cadence-words.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -441,7 +463,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-design.mp4"
+          "path": "media/cadence-design.mp4",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "video/mp4",
@@ -461,7 +484,8 @@
         },
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-design.jpg"
+          "path": "media/cadence-design.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
@@ -525,7 +549,8 @@
       "used": [
         {
           "where": "offgrid",
-          "path": "studio/telegram/offgrid-serverless/media/cadence-card.jpg"
+          "path": "media/cadence-card.jpg",
+          "repo": "veeskelad/offgrid"
         }
       ],
       "type": "image/jpeg",
