@@ -114,7 +114,9 @@ export const totalDuration = (words) => timeline(words).reduce((m, s) => Math.ma
 export const HOOK_LEAD = 1.2;
 
 export const TRANSITIONS = ['pan-up', 'pan-left', 'push', 'tear', 'cut'];
-export function cameraAt(t, tl, {W = 1920, H = 1080, transition = 0.6, kinds = []} = {}) {
+// exit — уход последней сцены к концу ролика тем же движением (доска поверх записи не должна пропадать на склейке);
+// он кончается ровно на конце сцены, а не за ним, как переход между сценами.
+export function cameraAt(t, tl, {W = 1920, H = 1080, transition = 0.6, kinds = [], exit = null} = {}) {
   return tl.map((s, i) => {
     const next = tl[i + 1], prev = tl[i - 1];
     const kindIn = kinds[i] ?? 'pan-up', kindOut = next ? (kinds[i + 1] ?? 'pan-up') : 'cut';
@@ -137,6 +139,13 @@ export function cameraAt(t, tl, {W = 1920, H = 1080, transition = 0.6, kinds = [
       else if (kindOut === 'pan-left') st.x = -u * W;
       else if (kindOut === 'push') { st.scale = lerp(1, 1.7, u); st.blur = u * 18; st.o = 1 - invLerp(0.55, 1, u); }
       else if (kindOut === 'tear') st.visible = u < 0.5;
+    }
+    if (!next && exit && exit !== 'cut' && t > s.end - transition) {
+      const u = power2InOut(invLerp(s.end - transition, s.end, t));
+      if (exit === 'pan-up') st.y = -u * H;
+      else if (exit === 'pan-left') st.x = -u * W;
+      else if (exit === 'push') { st.scale = lerp(1, 1.7, u); st.blur = u * 18; st.o = 1 - invLerp(0.55, 1, u); }
+      else if (exit === 'fade') st.o = 1 - u;
     }
     return st;
   });
@@ -246,9 +255,13 @@ export function validateFilm(film = {}) {
     for (const x of w.with ?? []) { try { resolveWord(x.word); } catch (e) { errors.push(`сцена ${i + 1}, with: ${e.message}`); } }
     if ((w.with ?? []).length > 2) errors.push(`сцена ${i + 1}: в with не больше двух слов — иначе сцену не прочитать`);
     if (w.transition && !TRANSITIONS.includes(w.transition)) errors.push(`сцена ${i + 1}: переход ${w.transition}, есть ${TRANSITIONS.join(', ')}`);
+    if (w.safe !== undefined && !(Array.isArray(w.safe) && w.safe.length === 4 && w.safe.every((v) => v >= 0 && v <= 1) && w.safe[0] + w.safe[2] <= 1.001 && w.safe[1] + w.safe[3] <= 1.001)) errors.push(`сцена ${i + 1}: safe — [x, y, w, h] в долях кадра, внутри кадра`);
+    // поверх записи сцена держит целое предложение голоса: короче 2,5 с предметы не успевают встать и уже уходят
+    if (film.over) { const tl = timeline(film.words ?? []); if (tl[i] && tl[i + 1] && tl[i].dur < 2.5) errors.push(`сцена ${i + 1}: ${tl[i].dur.toFixed(2)} с — поверх записи сцена от 2,5 с, объедини фразы через with`); }
     if (w.dur !== undefined && !(w.dur > 0.8)) errors.push(`сцена ${i + 1}: dur меньше 0,8 с — сцену не успеют прочитать`);
   }
   if (film.material && !['paper', 'glass', 'flat'].includes(film.material)) errors.push(`material: ${film.material}, есть paper, glass, flat`);
+  if (film.exit && ![...TRANSITIONS, 'fade'].includes(film.exit)) errors.push(`exit: ${film.exit}, есть ${[...TRANSITIONS, 'fade'].join(', ')}`);
   if (film.motion && !MOTION[film.motion]) errors.push(`motion: ${film.motion}, есть ${Object.keys(MOTION).join(', ')}`);
   return errors;
 }
@@ -289,7 +302,8 @@ export async function mountBoard({box, film, W, H, readVar}) {
     const el = make('section', 'bd-scene', box);
     const rand = rng(1009 * (idx + 1) + (film.seed ?? 7));
     const items = [];
-    const ctx = makeCtx({el, w, items, rand, palette, U, W, H, portrait, safe, caps, material, motion, idx, dur: s.dur});
+    // своя рабочая зона у сцены (safe: [x, y, w, h] в долях кадра): доска поверх записи обходит лица, а они у каждого плана свои
+    const ctx = makeCtx({el, w, items, rand, palette, U, W, H, portrait, safe: w.safe ? safeRect(W, H, w.safe) : safe, caps, material, motion, idx, dur: s.dur});
     if (w.head) ctx.head(w.head);
     // Составная сцена: with — ещё 1–2 слова рядом. Рабочая зона делится на колонки (в вертикали — на ряды),
     // главное слово получает большую часть, остальные встают следом с задержкой.
@@ -303,7 +317,7 @@ export async function mountBoard({box, film, W, H, readVar}) {
       if (k > 0) for (const it of items.slice(before)) it.t0 += num(part.delay, 0.5 + 0.45 * k);
       if (k > 0 && part.label && !['icon', 'tag', 'pipeline'].includes(key)) sub.footLabel(part.label);
     });
-    if (w.stamp) ctx.stamp(w.stamp);
+    if (w.stamp && !w._stampInCard) ctx.stamp(w.stamp);
     if (w.label && !['icon', 'tag', 'pipeline'].includes(s.key)) ctx.footLabel(w.label);
     return {el, items, tl: s};
   });
@@ -312,8 +326,31 @@ export async function mountBoard({box, film, W, H, readVar}) {
   tear.style.clipPath = tornPolygon(3, 3, 6).replace('polygon(', 'polygon(');
   tear.style.background = palette[2] ?? palette[0];
 
+  // Раскладка видимой сцены для проверки наложений (штамп на тексте, надпись на надписи, графика на лице под доской):
+  // прямоугольники в пикселях кадра. Вызывать после hf-seek на момент, когда сцена собрана.
+  if (typeof window !== 'undefined') window.__boardLayout = () => {
+    const rootEl = box.closest('#root') ?? box;
+    const rr = rootEl.getBoundingClientRect(), k = W / (rr.width || W);
+    const rect = (n) => { const b = n.getBoundingClientRect(); return {x: (b.left - rr.left) * k, y: (b.top - rr.top) * k, w: b.width * k, h: b.height * k}; };
+    const out = [];
+    scenes.forEach((sc, si) => {
+      if (sc.el.style.display === 'none') return;
+      sc.items.forEach((it, ii) => {
+        const n = it.node;
+        if (Number(n.style.opacity || 1) < 0.5) return;
+        const kind = n.classList.contains('bd-stamp') ? 'stamp' : n.classList.contains('bd-label') ? 'label' : 'item';
+        out.push({scene: si, item: ii, kind, part: 'box', ...rect(n), text: n.textContent.trim().slice(0, 40)});
+        if (kind === 'item') {
+          n.querySelectorAll('.bd-text, .bd-docline').forEach((x) => { if (!x.closest('.bd-stamp')) out.push({scene: si, item: ii, kind, part: 'text', ...rect(x), text: x.textContent.trim().slice(0, 40)}); });
+          n.querySelectorAll('.bd-stamp').forEach((x) => { if (Number(x.style.opacity || 1) >= 0.5) out.push({scene: si, item: ii, kind: 'stamp', part: 'box', ...rect(x), text: x.textContent.trim().slice(0, 40)}); });
+        }
+      });
+    });
+    return out;
+  };
+
   return function render(t) {
-    const cams = cameraAt(t, tl, {W, H, transition: motion.transition, kinds});
+    const cams = cameraAt(t, tl, {W, H, transition: motion.transition, kinds, exit: film.exit});
     scenes.forEach((sc, i) => {
       const cam = cams[i];
       sc.el.style.display = cam.visible ? 'block' : 'none';
@@ -556,7 +593,19 @@ const BUILD = {
       });
       row.style.fontSize = `${(w.size ?? 40) * c.U}px`;
     });
-    c.item(outer, c.cx, c.cy, {rot: 1.5, enter: 'drop', tick: (u) => marks.forEach((m, i) => m.style.setProperty('--k', power3Out(invLerp(0.8 + i * 0.6, 1.3 + i * 0.6, u)).toFixed(3)))});
+    // штамп — часть листа: висит под нижним краем справа и едет вместе с листом, на строки не ложится при любом переносе
+    let st = null;
+    const spec = w.stamp && (typeof w.stamp === 'string' ? {text: w.stamp} : w.stamp);
+    if (spec && spec.x === undefined && spec.y === undefined) {
+      st = make('div', `bd-stamp bd-stamp-under ${spec.tone === 'good' ? 'bd-good' : ''}`, outer);
+      c.text(st, spec.text, {size: spec.size ?? 46});
+      w._stampInCard = true;
+    }
+    const st0 = spec?.at ?? 1.6;
+    c.item(outer, c.cx, c.cy, {rot: 1.5, enter: 'drop', tick: (u) => {
+      marks.forEach((m, i) => m.style.setProperty('--k', power3Out(invLerp(0.8 + i * 0.6, 1.3 + i * 0.6, u)).toFixed(3)));
+      if (st) { const a = appear(u - st0, 'stamp', c.motion); st.style.opacity = a.o; st.style.transform = `rotate(${(spec.rot ?? -6) + a.r}deg) scale(${a.s})`; }
+    }});
   },
   bubble(c, w) {
     const list = w.items ?? [w.text];
@@ -717,9 +766,12 @@ const BUILD = {
   },
   sizes(c, w) {
     const list = w.items ?? [];
-    const pos = c.spread(list.length, {span: c.portrait ? 0.62 : 0.6});
+    const szOf = (s, i) => (s.size ?? (i ? 1 : 0.45)) * (c.portrait ? 420 : 460) * c.U;
+    // в вертикали предметы стопкой: нижний вместе с подписью остаётся в рабочей зоне
+    const big = Math.max(0, ...list.map(szOf));
+    const pos = c.spread(list.length, {span: c.portrait ? Math.max(0.3, Math.min(0.62, (c.safe.h - big * 1.1 - 110 * c.U) / c.safe.h)) : 0.6});
     list.forEach((s, i) => {
-      const sz = (s.size ?? (i ? 1 : 0.45)) * (c.portrait ? 420 : 460) * c.U;
+      const sz = szOf(s, i);
       const n = c.icon(s.icon ?? 'piggy', sz, {a: c.color(i ? 2 : 0)});
       c.item(n, pos[i].x, pos[i].y, {t0: 0.2 + i * 0.7, enter: 'pop'});
       if (s.label) c.label(s.label, pos[i].x, pos[i].y + sz * 0.55 + 20 * c.U, {t0: 0.45 + i * 0.7});
@@ -945,8 +997,11 @@ const BUILD = {
   // НАБОР
   cards(c, w) {
     const list = w.items ?? [];
-    const pos = c.spread(list.length, {span: c.portrait ? 0.74 : (list.length > 2 ? 0.7 : 0.45)});
     const cw = (c.portrait ? 520 : 330) * c.U, ch = (c.portrait ? 220 : 330) * c.U;
+    // в вертикали карточки стопкой: крайние вместе со штампом под ними остаются в рабочей зоне
+    const below = 0;
+    const span = c.portrait ? Math.max(0.3, Math.min(0.74, (c.safe.h - ch - 2 * below) / c.safe.h)) : (list.length > 2 ? 0.7 : 0.45);
+    const pos = c.spread(list.length, {span});
     list.forEach((s, i) => {
       const {outer, inner} = c.card({w: cw, h: ch, fill: s.color ?? c.color(i), cls: 'bd-option'});
       if (s.icon) inner.appendChild(Object.assign(c.icon(s.icon, (c.portrait ? 110 : 130) * c.U, {a: 'var(--paper)', b: '#151413', c: c.color(i + 1)}), {className: 'bd-icon bd-inline'}));
@@ -955,7 +1010,9 @@ const BUILD = {
       if (s.verdict) {
         const n = make('div', `bd-item bd-stamp ${s.good ? 'bd-good' : ''}`, c.el);
         c.text(n, s.verdict, {size: c.portrait ? 44 : 34});
-        c.item(n, pos[i].x + (c.portrait ? cw * 0.42 : 0), pos[i].y + (c.portrait ? 0 : ch * 0.62), {rot: -5, t0: 0.7 + i * 0.6, enter: 'stamp'});
+        // в вертикали штамп в правом верхнем углу своей карточки: значок по центру, надпись снизу, угол свободен;
+        // под карточкой он ложится на соседнюю в стопке
+        c.item(n, pos[i].x + (c.portrait ? cw * 0.31 : 0), pos[i].y + (c.portrait ? -ch * 0.5 + 52 * c.U : ch * 0.62), {rot: -5, t0: 0.7 + i * 0.6, enter: 'stamp'});
       }
     });
   },
@@ -1031,8 +1088,9 @@ const BUILD = {
   },
   fan(c, w) {
     const n = num(w.count, 15);
-    const R = Math.min((c.portrait ? 470 : 560) * c.U, c.safe.h * 0.62);
     const spread = num(w.spread, 120);
+    // крайние карточки веера остаются в рабочей зоне по ширине: R·sin(угла/2) + полкарточки ≤ полширины зоны
+    const R = Math.min((c.portrait ? 470 : 560) * c.U, c.safe.h * 0.62, (c.safe.w / 2 - 125 * c.U) / Math.sin((Math.min(spread, 170) / 2) * Math.PI / 180));
     const pivot = {x: c.cx, y: c.cy + R * 0.9};
     for (let i = 0; i < n; i++) {
       const a = -spread / 2 + (spread * i) / (n - 1);
@@ -1106,7 +1164,16 @@ const BUILD = {
     pic.style.height = `${pw * 0.78}px`;
     c.picture(pic, w.src, {iconName: w.icon ?? 'camera'});
     if (w.caption) c.text(inner, w.caption, {size: 34, cls: 'bd-polacap'});
-    c.item(outer, c.cx, c.cy, {rot: w.rot ?? -3, enter: 'drop'});
+    // штамп — часть снимка: под его нижним краем справа, мимо подписи
+    const spec = w.stamp && (typeof w.stamp === 'string' ? {text: w.stamp} : w.stamp);
+    let st = null;
+    if (spec && spec.x === undefined && spec.y === undefined) {
+      st = make('div', `bd-stamp bd-stamp-under ${spec.tone === 'good' ? 'bd-good' : ''}`, outer);
+      c.text(st, spec.text, {size: spec.size ?? 46});
+      w._stampInCard = true;
+    }
+    const st0 = spec?.at ?? 1.6;
+    c.item(outer, c.cx, c.cy, {rot: w.rot ?? -3, enter: 'drop', tick: st ? (u) => { const a = appear(u - st0, 'stamp'); st.style.opacity = a.o; st.style.transform = `rotate(${(spec.rot ?? -6) + a.r}deg) scale(${a.s})`; } : undefined});
   },
   search(c, w) {
     const bar = make('div', 'bd-item bd-search', c.el);

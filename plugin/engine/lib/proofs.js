@@ -194,8 +194,12 @@ export function envelope(t, at, end, {exit = true} = {}) {
   return {on, k: on ? k : 0, out: on ? out : 0};
 }
 
-// Откуда влетает: pop — из 0,6 с докрутом, up — снизу, right — справа (доли кадра).
+// Откуда влетает: rise (по умолчанию) — всплывает снизу из размытия без докрута, pop — из 0,6 с докрутом,
+// up — снизу с поворотом, right — справа (доли кадра). Уходит вставка отлётом вверх с затуханием и размытием (FLY_OUT):
+// без перелёта и исчезновения в один кадр (проверено на шортсах канала: «вставки резкие, нужны прилёты и отлёты»).
+export const FLY_OUT = {dy: 130, blur: 8};
 const FROM = {
+  rise: {dx: 0, dy: 140 / 1920, s: 0.96, rot: 0, blur: 10},
   pop: {dx: 0, dy: 0, s: 0.6, rot: 10},
   up: {dx: 0, dy: 0.22, s: 1, rot: 14},
   right: {dx: 0.65, dy: 0, s: 1, rot: 10},
@@ -303,7 +307,7 @@ export function proofState(p0, t, frame = FRAME) {
   const rot = p.rot ?? 0;
   if (['logo', 'card', 'article', 'race'].includes(p.kind)) {
     // лупа растёт из своего прямоугольника в кадре: без сдвига и поворота, масштаб от 1/zoom
-    const f = p.zoom ? {dx: 0, dy: 0, s: 1 / p.zoom, rot: 0} : FROM[p.enter ?? 'pop'] ?? FROM.pop;
+    const f = p.zoom ? {dx: 0, dy: 0, s: 1 / p.zoom, rot: 0} : FROM[p.enter ?? 'rise'] ?? FROM.rise;
     // после посадки — плывёт и доворачивается до конца жизни, а не стоит. Кроме статьи: цитату читают, текст стоит,
     // движется только маркер
     const still = p.kind === 'article';
@@ -313,10 +317,13 @@ export function proofState(p0, t, frame = FRAME) {
     s.y = f.dy * (1 - k) * H - (p.kind === 'logo' ? DRIFT.logo : DRIFT.other) * life;
     s.scale = lerp(f.s, 1, k) * (1 - 0.04 * (1 - out));
     s.rot = rot + f.rot * (1 - k) + (rot >= 0 ? DRIFT.rot : -DRIFT.rot) * life;
+    // уход — отлёт вверх из кадра вставки с размытием; вход rise — проявление из размытия
+    s.y -= FLY_OUT.dy * (1 - out) * (H / 1920);
+    s.blur = (f.blur ?? 0) * (1 - k) + FLY_OUT.blur * (1 - out);
     if (p.zoom) {
       // лупа держится над своим местом кадра: не плывёт и не доворачивается, живут наезд внутри и дыхание уголков
       s.opacity = clamp(k * 3) * out;
-      s.y = 0; s.rot = 0;
+      s.y = 0; s.rot = 0; s.blur = 0;
       s.scale = lerp(f.s, 1, k) * (1 - 0.04 * (1 - out)) * (1 + 0.015 * Math.sin(2 * Math.PI * Math.max(0, t - p.at - ENTER) / 1.2));
     }
     if (p.kind === 'card') {
@@ -713,6 +720,7 @@ export async function mountProofs({box, list = [], W, H, duration, videos = [], 
       if (['logo', 'card', 'article', 'race'].includes(p.kind)) {
         const tr = `translate(${s.x.toFixed(1)}px, ${s.y.toFixed(1)}px) rotate(${s.rot.toFixed(2)}deg) scale(${s.scale.toFixed(4)})`;
         it.el.style.transform = tr;
+        it.el.style.filter = s.blur > 0.3 ? `blur(${s.blur.toFixed(1)}px)` : 'none';
         if (it.marks) it.marks.forEach((m, j) => m.style.setProperty('--m', s.marks[j].toFixed(3)));
         if (it.page) {
           it.page.style.transform = `translateY(${(-s.scroll).toFixed(1)}px)`;

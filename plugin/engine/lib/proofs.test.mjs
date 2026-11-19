@@ -36,6 +36,10 @@ assert.ok(envelope(1 + ENTER / 2, 1, 3).k > 0.9, 'power3.out: к середин�
 assert.equal(proofState(p, 2).opacity, 1, 'в середине вставка видна полностью');
 assert.ok(proofState(p, 3 - 1 / 30).opacity < 0.02, 'последний кадр почти прозрачный');
 assert.equal(proofState(p, 3).on, false, 'на конце вставки её нет');
+{ const a = proofState(p, 1.02, F), mid = proofState(p, 2, F), z = proofState(p, 3 - 2 / 30, F);
+  assert.ok(a.y > mid.y + 40 && a.blur > 5, 'по умолчанию rise: всплывает снизу из размытия');
+  assert.ok(mid.blur < 0.3, 'после посадки без размытия');
+  assert.ok(z.y < mid.y - 30 && z.blur > 3, 'уход — отлёт вверх с размытием'); }
 const s0 = proofState({...p, enter: 'right'}, 1, F);
 assert.ok(s0.x > 600 && s0.opacity === 0, 'вход справа начинается из-за кадра и прозрачным');
 
