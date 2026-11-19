@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Cadence — moves</title>
+    <!--
+      Ролик из приёмов: каждая сцена — одно слово словаря («эмбарго», «соты», «прожектор» …),
+      между сценами — переход («ленты», «колонки», «выключение»). Вид — пак (цвета, шрифты) и тон сцены.
+      Сценарий — #film (формат — examples/moves/film.json, словарь — knowledge/effects-bank/code-moves.md).
+    -->
+    <!-- cadence:fonts -->
+    <style>
+      :root {
+        /* cadence:tokens design/packs/cadence-ember/pack.json */
+        --canvas: #0e0c0b;
+        --surface: #1c1917;
+        --ink: #f0eee6;
+        --muted: #a39d94;
+        --signal: #d97757;
+        --signal-2: #f2a65a;
+        --line: #3a332e;
+        --positive: #ff8a4c;
+        --font-display: "Literata Variable", serif;
+        --font-body: Manrope, sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+        --w-display: 400;
+        /* /cadence:tokens */
+      }
+      html, body { margin: 0; background: var(--canvas); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--canvas); }
+      #stage { position: absolute; inset: 0; }
+
+      .mv-scene { position: absolute; inset: 0; overflow: hidden; transform-origin: 50% 50%; --bg: var(--canvas); --fg: var(--ink); --soft: var(--muted); --panel: var(--surface); background: var(--bg); color: var(--fg); }
+      .mv-scene[data-tone="light"] { --bg: var(--ink); --fg: var(--canvas); --soft: color-mix(in srgb, var(--canvas) 62%, var(--ink)); --panel: color-mix(in srgb, var(--ink) 88%, var(--canvas)); }
+      .mv-scene[data-tone="surface"] { --bg: var(--surface); --panel: var(--canvas); }
+      .mv-scene[data-tone="accent"] { --bg: var(--signal); --fg: #151413; --soft: rgba(21, 20, 19, .68); --panel: color-mix(in srgb, var(--signal) 80%, #000); }
+      .mv-safe { position: absolute; }
+      .mv-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: calc(18px * var(--u)); }
+      .mv-display { font-family: var(--font-display); font-weight: var(--w-display); letter-spacing: -0.01em; line-height: 1.04; }
+      .mv-body { font-family: var(--font-body); font-weight: 600; line-height: 1.25; }
+      .mv-mono { font-family: var(--font-mono); font-weight: 500; }
+      .mv-soft { color: var(--soft); }
+      .mv-nowrap { white-space: nowrap; }
+      .mv-num { font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+
+      /* эмбарго */
+      .mv-slug { position: relative; height: 1.3em; width: 100%; margin-bottom: calc(10px * var(--u)); }
+      .mv-slug span { position: absolute; left: 0; right: 0; top: 0; white-space: nowrap; }
+      .mv-redact { position: relative; display: inline-block; line-height: 1.22; }
+      .mv-redact i { position: absolute; inset: 0.07em -0.06em 0; background: var(--fg); transform-origin: 100% 50%; }
+
+      /* полосы */
+      .mv-st-text { position: absolute; text-align: left; }
+      .mv-st-mask { position: absolute; inset: 0; }
+      .mv-st-grad { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--signal) 72%, #000) 0%, var(--signal) 55%, color-mix(in srgb, var(--signal) 50%, #fff) 100%); }
+
+      /* разлом */
+      .mv-sp-half { position: absolute; }
+      .mv-sp-top { clip-path: inset(-20% -5% 48% -5%); }
+      .mv-sp-bottom { clip-path: inset(52% -5% -20% -5%); }
+      .mv-sp-band { position: absolute; left: 0; right: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--signal) 70%, #000) 9%, var(--signal) 36%, color-mix(in srgb, var(--signal) 78%, #fff) 50%, var(--signal) 64%, color-mix(in srgb, var(--signal) 70%, #000) 91%, transparent 100%); }
+      .mv-sp-inner { font-style: italic; }
+
+      /* перенос */
+      .mv-cr-row { gap: calc(26px * var(--u)); }
+      .mv-cr-wide { flex-direction: row; gap: calc(44px * var(--u)); }
+      .mv-cr-num { position: relative; display: flex; align-items: baseline; line-height: 1; }
+      .mv-cr-digit { display: inline-block; width: 0.6em; text-align: center; transform-origin: 50% 82%; }
+      .mv-cr-sep { display: inline-block; width: 0.2em; text-align: center; }
+      .mv-cr-disc { position: absolute; left: 0; top: 0; width: 1.5em; height: 1.5em; border-radius: 50%; background: var(--signal-2); color: #151413; display: flex; align-items: center; justify-content: center; font-style: normal; font-weight: 700; opacity: 0; }
+      .mv-cr-cap { text-align: left; }
+      .mv-cr-row:not(.mv-cr-wide) .mv-cr-cap { text-align: center; }
+
+      /* соты */
+      .mv-hx-row { gap: calc(30px * var(--u)); }
+      .mv-hx-wide { flex-direction: row; gap: calc(90px * var(--u)); }
+      .mv-hx-grid { flex: none; overflow: visible; }
+      .mv-hx-base { fill: var(--fg); }
+      .mv-hx-hot { opacity: 0; }
+      .mv-hx-side { display: flex; flex-direction: column; gap: calc(10px * var(--u)); text-align: left; }
+      .mv-hx-row:not(.mv-hx-wide) .mv-hx-side { align-items: center; text-align: center; }
+      .mv-hx-read { line-height: 1; }
+      .mv-hx-unit { font-size: 0.5em; margin-left: 0.06em; }
+
+      /* крат */
+      .mv-tm-panel { position: absolute; left: 0; top: 0; background: var(--signal); }
+      .mv-tm-sign { position: absolute; left: 50%; top: 50%; }
+      .mv-tm-sign i { position: absolute; left: 0; right: 0; top: 41%; height: 18%; background: #151413; }
+      .mv-tm-sign i + i { transform: rotate(90deg); }
+      .mv-tm-fig { position: absolute; line-height: 1; transform-origin: 0 50%; white-space: nowrap; }
+      .mv-tm-unit { display: inline-block; font-size: 0.5em; margin-left: 0.04em; }
+      .mv-tm-label { position: absolute; text-align: left; }
+      .mv-tm-word { display: inline-block; white-space: pre; }
+
+      /* разбор */
+      .mv-bd-head { position: absolute; left: 50%; top: 0; line-height: 1; white-space: nowrap; }
+      .mv-bd-label { position: absolute; left: 100%; bottom: 0.18em; margin-left: 0.5em; font-style: italic; }
+      .mv-bd-bar { position: absolute; }
+      .mv-bd-count { position: absolute; text-align: center; white-space: nowrap; line-height: 1.15; }
+
+      /* прожектор */
+      .mv-scene[data-move="spotlight"] { --bg: #0c0c0c; }
+      .mv-sl-house { position: absolute; inset: 0; background: radial-gradient(60% 55% at 50% 48%, rgba(255, 255, 255, .2), transparent 100%); opacity: 0; }
+      .mv-sl-soft { position: absolute; inset: 0; }
+      .mv-sl-beam { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .4) 70%, rgba(255, 255, 255, .2)); opacity: 0; }
+      .mv-sl-pool { position: absolute; left: 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .9), transparent); opacity: 0; }
+      .mv-sl-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+      .mv-lockup { display: flex; align-items: center; gap: 0.3em; white-space: nowrap; line-height: 1; }
+      .mv-lockup img { height: 1.2em; display: block; }
+
+      /* гармошка */
+      .mv-ac-stage { position: absolute; inset: 0; }
+      .mv-ac-card { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; --paper: var(--fg); color: var(--bg); }
+      .mv-ac-flat { position: absolute; inset: 0; background: var(--paper); display: none; align-items: center; justify-content: center; }
+      .mv-ac-panel { position: absolute; left: 50%; top: 0; height: 100%; overflow: hidden; background: var(--paper); backface-visibility: visible; }
+      .mv-ac-inner { position: absolute; top: 0; height: 100%; display: flex; align-items: center; justify-content: center; }
+      .mv-ac-shade { position: absolute; inset: 0; opacity: 0; }
+
+      /* клавиши */
+      .mv-ky-group { position: absolute; left: 50%; }
+      .mv-ky-row { display: flex; align-items: center; justify-content: center; }
+      .mv-ky-label { position: absolute; left: 50%; transform: translateX(-50%); }
+      .mv-ky-cap { position: relative; flex: none; background: color-mix(in srgb, var(--fg) 58%, var(--bg)); box-shadow: 0 calc(14px * var(--u)) calc(26px * var(--u)) rgba(0, 0, 0, .35); display: flex; }
+      .mv-ky-top { position: relative; flex: 1; top: 0; display: flex; align-items: center; justify-content: center; background: var(--fg); color: var(--bg); font-weight: 700; white-space: nowrap; }
+      .mv-ky-then { margin: 0 0.3em; }
+
+      /* запрос */
+      .mv-pr-card { position: absolute; overflow: hidden; background: var(--panel); box-shadow: 0 calc(30px * var(--u)) calc(80px * var(--u)) rgba(0, 0, 0, .45); }
+      .mv-pr-ask { position: absolute; inset: 0; padding: calc(44px * var(--u)) calc(52px * var(--u)); text-align: left; }
+      .mv-pr-line { line-height: 1.3; }
+      .mv-pr-caret { display: inline-block; width: 0.09em; height: 1.05em; margin-left: 0.06em; vertical-align: -0.16em; background: var(--signal); }
+      .mv-pr-send { position: absolute; right: calc(40px * var(--u)); bottom: calc(36px * var(--u)); width: calc(72px * var(--u)); height: calc(72px * var(--u)); border-radius: 50%; background: color-mix(in srgb, var(--fg) 22%, var(--panel)); display: flex; align-items: center; justify-content: center; }
+      .mv-pr-send i { width: 34%; height: 40%; background: var(--bg); clip-path: polygon(50% 0, 100% 62%, 66% 62%, 66% 100%, 34% 100%, 34% 62%, 0 62%); }
+      .mv-pr-win { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; text-align: left; }
+      .mv-pr-bar { flex: none; display: flex; align-items: center; gap: calc(12px * var(--u)); padding: calc(20px * var(--u)) calc(26px * var(--u)); background: color-mix(in srgb, var(--fg) 7%, var(--panel)); }
+      .mv-pr-dot { width: calc(18px * var(--u)); height: calc(18px * var(--u)); border-radius: 50%; background: color-mix(in srgb, var(--fg) 26%, var(--panel)); }
+      .mv-pr-url { margin: 0 auto; padding: calc(8px * var(--u)) calc(26px * var(--u)); border-radius: 99px; background: color-mix(in srgb, var(--fg) 10%, var(--panel)); color: var(--soft); }
+      .mv-pr-publish { padding: calc(8px * var(--u)) calc(22px * var(--u)); border-radius: calc(12px * var(--u)); background: var(--signal); color: #151413; font-weight: 700; }
+      .mv-pr-body { flex: 1; min-height: 0; display: flex; gap: calc(26px * var(--u)); padding: calc(26px * var(--u)); }
+      .mv-pr-tall { flex-direction: column; }
+      .mv-pr-side { flex: none; width: 34%; display: flex; flex-direction: column; gap: calc(18px * var(--u)); }
+      .mv-pr-tall .mv-pr-side { width: auto; }
+      .mv-pr-bubble { padding: calc(16px * var(--u)) calc(20px * var(--u)); border-radius: calc(16px * var(--u)); background: color-mix(in srgb, var(--fg) 9%, var(--panel)); color: var(--soft); line-height: 1.3; }
+      .mv-pr-step { display: flex; align-items: center; gap: 0.6em; }
+      .mv-pr-tick { flex: none; width: 1em; height: 1em; border-radius: 50%; background: var(--positive); clip-path: none; position: relative; }
+      .mv-pr-tick::after { content: ""; position: absolute; inset: 24%; background: #151413; clip-path: polygon(0 55%, 18% 38%, 40% 60%, 82% 14%, 100% 32%, 40% 96%); }
+      .mv-pr-page { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: calc(20px * var(--u)); padding: calc(30px * var(--u)); border-radius: calc(18px * var(--u)); background: var(--bg); overflow: hidden; }
+      .mv-pr-block { opacity: 0; }
+      .mv-pr-block:first-child { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+      .mv-pr-h1 { line-height: 1.05; }
+      .mv-pr-hero { flex: 1; min-height: calc(110px * var(--u)); margin-top: calc(18px * var(--u)); border-radius: calc(16px * var(--u)); background: linear-gradient(120deg, var(--signal), var(--signal-2) 60%, color-mix(in srgb, var(--signal-2) 60%, var(--fg))); }
+      .mv-pr-tiers { display: flex; gap: calc(16px * var(--u)); }
+      .mv-pr-tier { flex: 1; padding: calc(18px * var(--u)) calc(20px * var(--u)); border-radius: calc(16px * var(--u)); background: color-mix(in srgb, var(--fg) 8%, var(--bg)); line-height: 1.2; }
+      .mv-pr-tier:nth-child(2) { background: color-mix(in srgb, var(--signal) 24%, var(--bg)); }
+      .mv-pr-wait { display: flex; gap: calc(14px * var(--u)); align-items: stretch; }
+      .mv-pr-field { flex: 1; border-radius: calc(12px * var(--u)); background: color-mix(in srgb, var(--fg) 10%, var(--bg)); }
+      .mv-pr-cta { padding: calc(14px * var(--u)) calc(26px * var(--u)); border-radius: calc(12px * var(--u)); background: var(--signal); color: #151413; font-weight: 700; white-space: nowrap; }
+      .mv-pr-toast { flex: none; align-self: center; text-align: center; padding: calc(12px * var(--u)) calc(40px * var(--u)); border-radius: 99px; background: var(--positive); color: #151413; font-weight: 700; opacity: 0; }
+
+      /* переходы */
+      .mv-fx { position: absolute; inset: 0; display: none; z-index: 20; }
+      .mv-slice { position: absolute; overflow: hidden; }
+      .mv-slice-in { position: absolute; left: 0; top: 0; }
+      .mv-slice-block { position: absolute; }
+      .mv-black { position: absolute; inset: 0; background: #000; display: none; }
+      .mv-tube { position: absolute; inset: 0; display: none; z-index: 30; pointer-events: none; }
+      .mv-tube-line { position: absolute; left: 0; right: 0; top: 50%; height: calc(6px * var(--u)); margin-top: calc(-3px * var(--u)); background: #f4f9ff; box-shadow: 0 0 calc(24px * var(--u)) calc(6px * var(--u)) rgba(216, 236, 255, .7), 0 0 calc(90px * var(--u)) calc(20px * var(--u)) rgba(216, 236, 255, .28); }
+      .mv-tube-dot { position: absolute; left: 50%; top: 50%; width: calc(620px * var(--u)); height: calc(620px * var(--u)); border-radius: 50%; background: radial-gradient(closest-side, #fff 0, rgba(216, 236, 255, .85) 5%, rgba(216, 236, 255, .42) 28%, rgba(216, 236, 255, .12) 62%, transparent 100%); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="moves" data-start="0" data-width="1920" data-height="1080" data-duration="8.5" data-no-timeline>
+      <section id="scene" class="clip" data-start="0" data-duration="8.5" data-track-index="1">
+        <div id="stage"></div>
+      </section>
+      <!-- cadence:audio -->
+    </div>
+    <script type="application/json" id="film">
+{"moves":[{"move":"эмбарго","lines":["Ролик [готов],","[без съёмки]","и [уже сегодня]."],"slug":"Под эмбарго до 9:00","lifted":"Эмбарго снято, 9:00"},{"move":"титр","text":"Собрано кодом","via":"ленты","tone":"light","dur":3.3}]}
+    </script>
+    <script type="module">
+      import {stage, bindSeek, token} from './lib/motion.js';
+      import {mountMoves} from './lib/moves.js';
+
+      const {root, width: W, height: H} = stage();
+      const film = JSON.parse(document.getElementById('film').textContent);
+      if (film.font?.display) { root.style.setProperty('--font-display', `${film.font.display}, Onest, sans-serif`); root.style.setProperty('--w-display', film.font.weight ?? 700); }
+      await document.fonts.ready;
+      // Размер строк считается один раз при сборке сцен, поэтому каждый шрифт и вес из сценария грузится заранее.
+      const css = getComputedStyle(root);
+      const display = css.getPropertyValue('--font-display').trim(), weight = css.getPropertyValue('--w-display').trim() || '400';
+      const faces = new Set([`${weight} 80px ${display}`, `italic ${weight} 80px ${display}`]);
+      for (const m of film.moves ?? []) if (m.font || m.weight) faces.add(`${m.weight ?? weight} 80px ${m.font ? `"${m.font}"` : display}`).add(`italic ${m.weight ?? weight} 80px ${m.font ? `"${m.font}"` : display}`);
+      for (const w of [600, 700]) faces.add(`${w} 40px ${css.getPropertyValue('--font-body').trim()}`);
+      faces.add(`500 40px ${css.getPropertyValue('--font-mono').trim()}`);
+      await Promise.all([...faces].map((f) => document.fonts.load(f, 'АБВГабвгABCabc0123%×₽').catch(() => [])));
+      const render = await mountMoves({box: document.getElementById('stage'), film, W, H, readVar: (n) => token(n)});
+      bindSeek(render);
+    </script>
+  </body>
+</html>

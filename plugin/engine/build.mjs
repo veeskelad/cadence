@@ -161,6 +161,12 @@ if (filmPath) {
     const errors = validateFilm(film);
     if (errors.length) throw new Error(`Сценарий ${filmPath}: ${errors.join('; ')}`);
     seconds = totalDuration(film.words);
+  } else if (Array.isArray(film.moves)) {
+    // Ролик из приёмов (moves): длина — конец последней сцены.
+    const {validateMoves, totalDuration} = await import('./lib/moves.js');
+    const errors = validateMoves(film);
+    if (errors.length) throw new Error(`Сценарий ${filmPath}: ${errors.join('; ')}`);
+    seconds = totalDuration(film.moves);
   }
   html = html.replace(/(<script type="application\/json" id="film">)[\s\S]*?(<\/script>)/, (_, open, close) =>
     `${open}\n${JSON.stringify(film).replaceAll('<', '\\u003c')}\n    ${close}`);
