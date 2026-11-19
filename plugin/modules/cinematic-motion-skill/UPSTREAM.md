@@ -1,3 +1,26 @@
+# Первоисточник модуля `cinematic-motion-skill`
+
+Модуль сделан на основе проекта **motion-film-skill**. Автор: tonyprots.
+
+| | |
+|---|---|
+| Проект | [tonyprots/motion-film-skill](https://github.com/tonyprots/motion-film-skill) |
+| Автор | tonyprots |
+| Лицензия | MIT и лицензии вложенных частей (см. NOTICE.md) |
+| Как взято | копия |
+| Тексты лицензий | `licenses/LICENSE-motion-film-skill`, `licenses/LICENSE-motion-film-skill-anidoodle`, `licenses/LICENSE-motion-film-skill-huashu-art-motion`, `licenses/LICENSE-motion-film-skill-hyperframes`, `licenses/LICENSE-motion-film-skill-motion-kit`, `licenses/LICENSE-motion-film-skill-onda`, `licenses/LICENSE-motion-film-skill-remotion-ui`, `licenses/LICENSE-motion-film-skill-rendercomp`, `licenses/LICENSE-motion-film-skill-voice-film`, `licenses/NOTICE-anidoodle-motion-film-skill`, `licenses/NOTICE-hershey-motion-film-skill`, `licenses/NOTICE-motion-film-skill.md` |
+
+Изменения Cadence: переименование, перевод инструкций, привязка к движку и навыкам Cadence,
+вырезаны облачные вызовы и демо-медиа. Права автора на его часть сохраняются по его лицензии;
+код и тексты, добавленные Cadence, распространяются по лицензии Cadence (`LICENSE.txt` в корне).
+
+Связь проверена 18.11.2026: побайтовое совпадение файлов модуля с репозиторием автора
+(git hash-object против дерева репозитория), лицензия — по файлу LICENSE автора.
+
+Подробный перечень вложенных частей и их лицензий — `NOTICE.md`; история переноса — раздел ниже.
+
+---
+
 # Upstream and licences
 
 motion-film is built on two main sources plus our own code, first assembled on 2026-10-04 after a first real film on
@@ -24,7 +47,7 @@ Dropped: Fish Audio voiceover (replaced by providers), `install.sh` (global inst
 - `reference/STORY.md` (based on `references/story.md`; arcs, source and ending rules added), `scripts/extract_lines.py`, `scripts/script_lint.py` (STORY field checks extended).
 - Provider code is a rewrite of its `tts.py` / `_or.py` / `_vc.py` / `music.py` ideas.
 
-## 2b. huashu-art-motion — MIT (ContentFactory/huashu-art-motion, commit 64cb272) — `LICENSE-huashu-art-motion`
+## 2b. huashu-art-motion — MIT (alchaincyf/huashu-art-motion, commit 64cb272) — `LICENSE-huashu-art-motion`
 - `reference/EXPLAINERS.md`: the explainer grammars (`references/09-视频动画语法.md`, `动画语法/*.md`) and the per-genre base
   camera (`references/镜头语言.md`), translated and rewritten for our engine. Their code (canvas2D, `clips/*.js`) is not used.
 
@@ -54,7 +77,7 @@ coordinates rounded to 0.01 units (shapes and colours unchanged). Pins and SHA-2
 repainting into film skins (`ILLUSTRATIONS.extra`) is our code.
 
 ## 3. Our own (workspace)
-`engine/lib/morph.js` is a separate adaptation of `ContentFactory/anidoodle` `canvas-core/morph.ts`, Copyright 2026
+`engine/lib/morph.js` is a separate adaptation of `alexgreensh/anidoodle` `canvas-core/morph.ts`, Copyright 2026
 Alex Greenshpun, Apache-2.0 (`LICENSE-anidoodle`, `NOTICE-anidoodle`); pin in `library/ports-manifest.json`.
 Changes: JavaScript, seconds-based time/velocity, validated inputs, copied endpoints and SVG adapter.
 `engine/lib/actor-hands.js` contains baked SVG open/point/relaxed hands derived from `character/human/hands.ts`, same author

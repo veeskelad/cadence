@@ -42,7 +42,7 @@ This skill cuts, joins, measures, syncs, exports and checks files — it execute
 - **What makes a highlight interesting** — `scenes.py --highlights` ranks by a measured proxy (audio energy, duration): candidates, not a verdict.
 - **Thumbnail or cover composition** — a design decision, not measurement.
 - **Understanding what a video is *about*** — there is no vision here beyond `look.py`'s contact sheets, for the calling agent's eyes, not for this skill to interpret.
-- **Judging what looks good** — "apply this LUT", "correct exposure by +0.3 stops" (`color.py`) is mechanical; "grade this scene to look cinematic" belongs to a colour-grading skill ([`color-grading-skill`](#local-color-grading-skill)) that decides the parameters, then calls `color.py`.
+- **Judging what looks good** — "apply this LUT", "correct exposure by +0.3 stops" (`color.py`) is mechanical; "grade this scene to look cinematic" belongs to a colour-grading skill ([`color-grading-skill`](https://github.com/kajisho5/color-grading-skill)) that decides the parameters, then calls `color.py`.
 - **The words in a caption** — cue text is burned as written. Too long for the frame means a smaller size, `--max-lines`, or the user's own edit; never rewrite, shorten or paraphrase it, even when asked to "make it fit" — say so, offer `--max-lines 1` at a smaller size.
 - **Picking a subject or region you were not given** — "crop to x=200,y=0" is mechanical once the box is known; "crop to keep the speaker in frame" needs deciding *what* the speaker is, a judgement for the calling agent (from a `look.py` sheet).
 

@@ -1,6 +1,6 @@
 # Шаблон рецепта
 
-Один приём — один файл. Имя файла латиницей через дефис: `paper-cut-transition.md`. Образец заполненного рецепта, проверенного рендером, — `knowledge/effects-bank/depth-map-glow.md`; образец рецепта из гайда — `knowledge/effects-bank/bar-reveal.md`.
+Один приём — один файл. Имя файла латиницей через дефис: `paper-cut-transition.md`. Образец заполненного рецепта, проверенного рендером, — `knowledge/effects-bank/look-prism-material.md`; образец рецепта из гайда — `knowledge/effects-bank/geo-location-placement.md`. Приём, который исполняет DaVinci Resolve (`cadence-resolve`), — Cadence Pro: в бесплатном банке остаётся только строка в `INDEX.md`, сам рецепт уходит на сервер Cadence Pro.
 
 Правила заполнения:
 - Шапка — ровно шесть полей в этом порядке. По ним другой агент решает, кому отдать задачу, не читая тело.

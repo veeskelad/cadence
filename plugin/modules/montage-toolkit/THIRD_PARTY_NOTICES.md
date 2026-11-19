@@ -1,7 +1,7 @@
 # Third-party notices
 
-The workflows, style library, card templates and scripts of this module are part of Cadence
-and are covered by the Cadence license (`LICENSE.txt` at the Cadence root), except:
+This module is based on herk-edit-kit by Nate Herk (MIT, `licenses/LICENSE-herk-edit-kit`; see `UPSTREAM.md`).
+Changes made by Cadence are covered by the Cadence license (`LICENSE.txt` at the Cadence root). Also:
 
 - HyperFrames skill documentation in `workflows/hyperframes`, `workflows/hyperframes-cli` and
   `workflows/cadence-tween` (rewritten for Cadence Tween): https://github.com/heygen-com/hyperframes, Apache-2.0, see

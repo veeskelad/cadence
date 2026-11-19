@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <!-- Плейсхолдер обложки для примера: нарисован кодом, без чужих обложек и названий. -->
+  <rect width="600" height="800" fill="#1c1917"/>
+  <g fill="#3a332e">
+    <rect x="0" y="560" width="600" height="240"/>
+    <circle cx="420" cy="330" r="190"/>
+  </g>
+  <circle cx="420" cy="330" r="120" fill="#d97757"/>
+  <path d="M0 620 L180 470 L300 560 L430 430 L600 590 L600 800 L0 800 Z" fill="#0e0c0b"/>
+  <rect x="44" y="44" width="300" height="64" rx="10" fill="#f0eee6"/>
+  <rect x="44" y="130" width="210" height="22" rx="6" fill="#a39d94"/>
+  <rect x="44" y="166" width="170" height="22" rx="6" fill="#a39d94"/>
+  <rect x="44" y="690" width="120" height="70" rx="10" fill="#f2a65a"/>
+</svg>

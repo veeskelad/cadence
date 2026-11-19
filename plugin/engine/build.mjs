@@ -91,18 +91,28 @@ if (format) {
     .replace(/#root \{([^}]*?)width: \d+px; height: \d+px;/, `#root {$1width: ${w}px; height: ${h}px;`);
 }
 
-// Сценарий: JSON в #film. Локальные файлы (ключи src, bg, darkBg) копируются в assets/.
+// Сценарий: JSON в #film. Локальные файлы (ключи src, bg, darkBg, shot, shotHead) копируются в assets/.
 const filmPath = option('--film');
 const filmAssets = [];
 let audioHtml = '';
 if (filmPath) {
   if (!html.includes('id="film"')) throw new Error(`У шаблона ${id} нет сценария #film`);
   const film = JSON.parse(await readFile(filmPath, 'utf8'));
+  // Снимок страницы для доказательства article (scripts/news_shot.py): рядом лежит <имя>.json со строками цитаты
+  // и, если снята, шапка статьи. Описание встраивается в сценарий, шапка копируется как файл.
+  for (const p of film.proofs ?? []) {
+    if (p.kind !== 'article' || typeof p.shot !== 'string' || /^(https?:|data:|assets\/)/.test(p.shot)) continue;
+    const metaPath = path.resolve(path.dirname(filmPath), p.shotJson ?? p.shot.replace(/\.\w+$/, '.json'));
+    if (!existsSync(metaPath)) throw new Error(`Нет описания снимка ${path.relative(process.cwd(), metaPath)}: его пишет scripts/news_shot.py`);
+    p.shotMeta = JSON.parse(await readFile(metaPath, 'utf8'));
+    if (p.shotMeta.head?.file) p.shotHead = path.join(path.dirname(p.shot), p.shotMeta.head.file);
+    delete p.shotJson;
+  }
   const localFile = (v) => typeof v === 'string' && !/^(https?:|data:|assets\/)/.test(v);
   const origin = new Map();
   const collect = (node) => {
     for (const [key, value] of Object.entries(node)) {
-      if (['src', 'bg', 'darkBg'].includes(key) && localFile(value)) {
+      if (['src', 'bg', 'darkBg', 'shot', 'shotHead'].includes(key) && localFile(value)) {
         const from = path.resolve(path.dirname(filmPath), value);
         if (!existsSync(from)) throw new Error(`В сценарии нет файла: ${value}`);
         const name = `film-${filmAssets.length}${path.extname(from)}`;
@@ -145,6 +155,12 @@ if (filmPath) {
     console.log(`трек: ${map.bpm} BPM, дроп на ${(map.firstBeat + dropBeat * beat).toFixed(2)} с → ролик ${seconds.toFixed(1)} с (хук ${hook}, кадры ${cuts}, знак ${mark} долей)`);
   } else if (film.scenes) {
     seconds = film.scenes.reduce((sum, s) => sum + s.beats, 0) * (60 / film.bpm);
+  } else if (Array.isArray(film.words)) {
+    // Ролик по словам (board-explainer): длина — конец последней сцены.
+    const {validateFilm, totalDuration} = await import('./lib/board.js');
+    const errors = validateFilm(film);
+    if (errors.length) throw new Error(`Сценарий ${filmPath}: ${errors.join('; ')}`);
+    seconds = totalDuration(film.words);
   }
   html = html.replace(/(<script type="application\/json" id="film">)[\s\S]*?(<\/script>)/, (_, open, close) =>
     `${open}\n${JSON.stringify(film).replaceAll('<', '\\u003c')}\n    ${close}`);
@@ -203,6 +219,11 @@ if (filmPath) {
     }
     audioHtml = clips.map((c, i) => `<audio id="a${i}" class="clip" src="${c.src}" data-start="${c.start.toFixed(3)}" data-duration="${c.duration.toFixed(3)}" data-media-start="${c.mediaStart.toFixed(3)}" data-volume="${c.volume}" data-track-index="${10 + i}"></audio>`).join('\n      ');
   }
+  // Голос за кадром (board-explainer): одна дорожка на весь ролик, сцены ставятся на слова через scripts/word_anchors.py.
+  if (film.voice?.src && !audioHtml && seconds) {
+    const voiceLen = origin.has(film.voice.src) ? probe(origin.get(film.voice.src)) - (film.voice.start ?? 0) : seconds;
+    audioHtml = `<audio id="voice" class="clip" src="${film.voice.src}" data-start="0" data-duration="${Math.min(seconds, voiceLen).toFixed(3)}" data-media-start="${(film.voice.start ?? 0).toFixed(3)}" data-volume="${film.voice.volume ?? 1}" data-track-index="10"></audio>`;
+  }
 }
 // Выражения событий из cues.json: числа или строки вида "hook", "hook + cuts", "range(hook, hook + cuts, 4)".
 function eval_(expr, v) {
@@ -233,6 +254,13 @@ if (packId) {
   const pack = JSON.parse(await readFile(packFile(packId), 'utf8'));
   const c = pack.colors;
   const vars = {'--canvas': c.canvas, '--surface': c.surface, '--ink': c.ink, '--muted': c.muted, '--signal': c.signal, '--signal-2': c.signalSecondary ?? c.signal, '--line': c.line ?? c.muted};
+  // Шрифты и третий акцент пака — только шаблонам, у которых они есть в блоке tokens (board-explainer).
+  if (/--font-display:/.test(html)) {
+    const ty = pack.typography ?? {};
+    Object.assign(vars, {'--positive': c.positive ?? c.signalSecondary ?? c.signal,
+      '--font-display': ty.display?.family ?? 'sans-serif', '--font-body': ty.body?.family ?? ty.display?.family ?? 'sans-serif',
+      '--font-mono': ty.mono?.family ?? 'monospace', '--w-display': ty.display?.weight ?? 700});
+  }
   const block = Object.entries(vars).map(([k, v]) => `        ${k}: ${v};`).join('\n');
   html = html.replace(/\/\* cadence:tokens[^*]*\*\/[\s\S]*?\/\* \/cadence:tokens \*\//, `/* cadence:tokens pack ${packId} */\n${block}\n        /* /cadence:tokens */`);
 }
