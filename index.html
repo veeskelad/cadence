@@ -310,6 +310,16 @@ canvas.bgs{position:fixed;left:0;top:0;width:100vw;height:100lvh;z-index:-2;disp
 .diagram .pulse{fill:var(--acc)}
 .diagram circle[fill="#FFFFFF"]{fill:var(--acc)}
 .diagram path[stroke="#071A32"]{stroke:#fff}
+.arrow.out::after{content:"↗"}
+.viz.demo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.pro .card .txt .lbl{margin-bottom:8px}
+.pro .card h3{margin:0 0 10px}
+.price{margin-top:18px;display:flex;flex-direction:column;gap:18px}
+.price .pr{font-size:17px;color:var(--dim);display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+.price .pr b{font-size:clamp(30px,4vw,42px);font-weight:400;color:var(--ink);letter-spacing:-.02em}
+.price .pr span{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase}
+.price .cap{max-width:460px}
+@media (min-width:880px){.price{flex-direction:row;align-items:center;justify-content:space-between;padding:32px 36px}.price .pa{display:flex;flex-direction:column;align-items:flex-end;text-align:right}}
 </style></head><body>
 <canvas class="bgs" aria-hidden="true"></canvas>
 <script>document.documentElement.className="js";
@@ -322,7 +332,7 @@ function old(){var a=document.createElement("textarea"),copied=false;a.value=s;a
 if(navigator.clipboard&&window.isSecureContext){try{navigator.clipboard.writeText(s).then(ok,old)}catch(x){old()}}else{old()}});setTimeout(function(){var e=document.getElementsByClassName("rise");for(var i=e.length;i--;)e[i].className+=" on"},4500)</script>
 
 <header class="nav wm-on"><a class="logo" href="#top" aria-label="Cadence, в начало страницы"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="28" height="28" aria-hidden="true" focusable="false"><g fill="#FFFFFF"><circle cx="208.00" cy="80.00" r="10.02"/><circle cx="240.00" cy="80.00" r="12.66"/><circle cx="272.00" cy="80.00" r="12.66"/><circle cx="304.00" cy="80.00" r="10.02"/><circle cx="144.00" cy="112.00" r="9.92"/><circle cx="176.00" cy="112.00" r="17.46"/><circle cx="208.00" cy="112.00" r="19.84"/><circle cx="240.00" cy="112.00" r="19.84"/><circle cx="272.00" cy="112.00" r="19.84"/><circle cx="304.00" cy="112.00" r="19.84"/><circle cx="336.00" cy="112.00" r="17.46"/><circle cx="368.00" cy="112.00" r="9.82"/><circle cx="112.00" cy="144.00" r="9.92"/><circle cx="144.00" cy="144.00" r="19.40"/><circle cx="176.00" cy="144.00" r="19.84"/><circle cx="208.00" cy="144.00" r="19.84"/><circle cx="240.00" cy="144.00" r="18.16"/><circle cx="272.00" cy="144.00" r="18.16"/><circle cx="304.00" cy="144.00" r="19.84"/><circle cx="336.00" cy="144.00" r="19.84"/><circle cx="368.00" cy="144.00" r="16.14"/><circle cx="112.00" cy="176.00" r="17.46"/><circle cx="144.00" cy="176.00" r="19.84"/><circle cx="176.00" cy="176.00" r="18.22"/><circle cx="208.00" cy="176.00" r="10.02"/><circle cx="304.00" cy="176.00" r="9.92"/><circle cx="336.00" cy="176.00" r="14.63"/><circle cx="80.00" cy="208.00" r="9.83"/><circle cx="112.00" cy="208.00" r="19.58"/><circle cx="144.00" cy="208.00" r="19.73"/><circle cx="176.00" cy="208.00" r="10.02"/><circle cx="80.00" cy="240.00" r="12.16"/><circle cx="112.00" cy="240.00" r="19.11"/><circle cx="144.00" cy="240.00" r="17.56"/><circle cx="80.00" cy="272.00" r="11.86"/><circle cx="112.00" cy="272.00" r="18.54"/><circle cx="144.00" cy="272.00" r="16.89"/><circle cx="80.00" cy="304.00" r="9.14"/><circle cx="112.00" cy="304.00" r="17.93"/><circle cx="144.00" cy="304.00" r="17.68"/><circle cx="176.00" cy="304.00" r="8.71"/><circle cx="112.00" cy="336.00" r="15.28"/><circle cx="144.00" cy="336.00" r="16.98"/><circle cx="176.00" cy="336.00" r="15.07"/><circle cx="208.00" cy="336.00" r="7.82"/><circle cx="336.00" cy="336.00" r="6.03"/><circle cx="112.00" cy="368.00" r="8.42"/><circle cx="144.00" cy="368.00" r="16.04"/><circle cx="176.00" cy="368.00" r="15.80"/><circle cx="208.00" cy="368.00" r="14.94"/><circle cx="240.00" cy="368.00" r="12.62"/><circle cx="272.00" cy="368.00" r="11.33"/><circle cx="304.00" cy="368.00" r="10.87"/><circle cx="336.00" cy="368.00" r="9.44"/><circle cx="368.00" cy="368.00" r="6.62"/><circle cx="144.00" cy="400.00" r="7.98"/><circle cx="176.00" cy="400.00" r="13.51"/><circle cx="208.00" cy="400.00" r="14.59"/><circle cx="240.00" cy="400.00" r="13.64"/><circle cx="272.00" cy="400.00" r="12.54"/><circle cx="304.00" cy="400.00" r="11.37"/><circle cx="336.00" cy="400.00" r="8.99"/><circle cx="208.00" cy="432.00" r="7.24"/><circle cx="240.00" cy="432.00" r="8.64"/><circle cx="272.00" cy="432.00" r="8.07"/><circle cx="304.00" cy="432.00" r="5.90"/></g></svg></a>
-  <nav aria-label="Разделы"><a href="#what">Что это</a><a href="#features">Возможности</a><a href="#get">Установка</a><a href="#faq">Вопросы</a></nav>
+  <nav aria-label="Разделы"><a href="#what">Что это</a><a href="#features">Возможности</a><a href="#get">Установка</a><a href="#pro">Pro</a><a href="#faq">Вопросы</a></nav>
   <a class="btn" href="#get">Установить</a></header>
 
 <main id="top">
@@ -635,16 +645,43 @@ create-only в `./releases/RELEASE_ID`. Существующие выпуски 
   </div>
 </div></section>
 
+<section class="sec pro" id="pro"><div class="wrap">
+  <span class="lbl rise">Cadence Pro · скоро</span>
+  <h2 class="rise">Монтаж в Resolve и своя студия <span class="hot">в Cadence Pro</span></h2>
+  <p class="lead rise">Бесплатный Cadence доводит ролик до готового файла. <b>Pro нужен, если ты монтируешь в DaVinci Resolve или хочешь собирать ролик в окне, а не в чате.</b></p>
+  <div class="cards">
+
+    <article class="card wide rise" id="p-studio">
+      <div class="viz demo"><img src="media/cadence-pro-card.jpg?v=2411c493" alt="Cadence Studio: слева сцены, в центре плеер с лентой кадров, справа библиотека" loading="lazy" width="764" height="430"></div>
+      <div class="txt"><span class="lbl">Студия</span><h3>Cadence Studio</h3><p><b>Ролик собирается в окне вместе с агентом.</b> Слева сцены, в центре плеер с лентой кадров, справа эффекты и звуки. Каждая версия сохраняется, к любой можно вернуться.</p></div>
+    </article>
+
+    <article class="card rise" id="p-resolve">
+      <div class="txt"><span class="lbl">DaVinci Resolve</span><h3>Монтаж прямо в Resolve</h3><p><b>Агент сам собирает монтаж в твоём проекте:</b> склейки, эффекты, переходы. Перед каждой правкой говорит, что собирается сделать.</p></div>
+    </article>
+
+    <article class="card rise" id="p-fresh">
+      <div class="txt"><span class="lbl">Обновления</span><h3>Новое, пока идёт подписка</h3><p><b>Рецепты монтажа приходят с нашего сервера и пополняются.</b> Пока подписка идёт, у тебя всегда свежая версия.</p></div>
+    </article>
+
+  </div>
+  <div class="box price rise">
+    <div class="pr"><b>1 990 ₽</b> в месяц<span>4 990 ₽ за три месяца</span><span>15 900 ₽ за год</span></div>
+    <div class="pa"><a class="btn arrow out" href="https://t.me/offgridai_bot?startapp=cadence-pro" target="_blank" rel="noopener">Узнать первым</a>
+    <p class="cap">Подписка скоро откроется. В боте нажми «Сообщить о запуске», и ты будешь в списке первых.</p></div>
+  </div>
+</div></section>
+
 <section class="sec faq" id="faq"><div class="wrap" style="max-width:860px">
   <span class="lbl rise">Вопросы</span>
   <h2 class="rise">Коротко о главном</h2>
   <div class="rise">
   <details><summary>Я никогда не монтировал. Получится?</summary><p>Да. Ты пишешь агенту, что хочешь, как обычному человеку. Он всё делает сам и перед каждым шагом говорит, что собирается сделать.</p></details>
   <details><summary>Мои видео куда-то загружаются?</summary><p>Нет. Всё обрабатывается на твоём компьютере. Интернет нужен, чтобы установить набор и, если разрешишь, проверять новые версии.</p></details>
-  <details><summary>Сколько это стоит?</summary><p>Нисколько, и обновления тоже бесплатные. Платить придётся, только если захочешь сгенерировать сцену в нейросети: это делается в твоём сервисе и по его ценам.</p></details>
+  <details><summary>Сколько это стоит?</summary><p>Cadence бесплатный, обновления тоже. Платным будет только <a href="#pro">Cadence Pro</a>: монтаж прямо в DaVinci Resolve и студия, от 1 990 ₽ в месяц. Отдельно платишь, только если генерируешь сцену в нейросети: в своём сервисе и по его ценам.</p></details>
   <details><summary>Это работает только в Claude Code?</summary><p>Нет. В Claude Code удобнее всего плагином, в Codex и других агентах с доступом к папке Cadence ставится промптом с этой страницы.</p></details>
   <details><summary>Нужно брать всё сразу?</summary><p>Нет. Можно только порезать паузы или только сделать заставку. Остальное подождёт.</p></details>
-  <details><summary>Я уже монтирую в DaVinci Resolve. Зачем мне это?</summary><p>Чтобы не тратить время на рутину. Агент вырежет паузы, сделает субтитры и графику, а финальный монтаж ты продолжишь в DaVinci Resolve, как привык.</p></details>
+  <details><summary>Я уже монтирую в DaVinci Resolve. Зачем мне это?</summary><p>Чтобы не тратить время на рутину. Агент вырежет паузы, сделает субтитры и графику, а финальный монтаж ты продолжишь в DaVinci Resolve, как привык. А если хочешь, чтобы агент монтировал прямо в Resolve, это <a href="#pro">Cadence Pro</a>.</p></details>
   <details><summary>Можно брать любую музыку?</summary><p>Звуки из набора можно использовать где угодно. За трек, который добавляешь сам, отвечаешь ты: для публикации лучше брать свой или из библиотеки площадки.</p></details>
   </div>
 </div></section>
