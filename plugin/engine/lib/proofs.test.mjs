@@ -2,7 +2,7 @@
 // вставки живут после посадки, дорожки, замер «было → стало», снимок статьи, дорога, полоса света, ошибки сценария
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {ALERT, CLICK, FLASH, PRESETS, WORDS, cornerSize, flashState, resolveProof, zoomGeom} from './proofs.js';
+import {ALERT, CLICK, FLASH, PRESETS, WORDS, clickDuplicates, cornerSize, flashState, resolveProof, zoomGeom} from './proofs.js';
 import {proofEnd, DRIFT, ENTER, EXIT, KINDS, LIGHTBAR, MIN_ON, PUSH, envelope, lightbarState, markAt, markSpan, proofState, overlapsCaptions, raceTimes, rectAt, roadBuildings,
   shotGeom, validateProofs} from './proofs.js';
 
@@ -197,6 +197,13 @@ err([{kind: 'logo', src: 'a.svg', at: 27.5, to: 29}], /ролик 28/);
   assert.ok(cur.x < 0.15 * F.W && cur.y < 0.03 * F.H && cur.opacity === 1, 'курсор на кнопке в момент клика');
   assert.ok(proofState(ck, ck.clickAt + CLICK.press / 2, F).press < 0.95, 'кнопка проседает при нажатии');
   assert.equal(proofState(ck, ck.clickAt + 1, F).cur.opacity, 0, 'курсор ушёл');
+
+  // клик не дублирует подпись: «Подпишись» под кнопкой «Подписаться» — дубль; в примере подпись без слова кнопки
+  const capsHud = hud.captions.map((c) => ({from: c.from, to: c.to, text: c.items.map((w) => w.w).join(' ')}));
+  assert.deepEqual(clickDuplicates(L, capsHud), [], 'в примере клик не повторяет подпись');
+  assert.equal(clickDuplicates([{word: 'клик', at: 12, to: 15}], [{from: 12, to: 15, text: 'Подпишись, чтобы не пропустить'}]).length, 1, 'Подпишись = Подписаться');
+  assert.equal(clickDuplicates([{word: 'клик', at: 12, to: 15, label: 'Subscribe', done: 'Subscribed'}], [{from: 13, to: 15, text: 'Subscribe for more'}]).length, 1, 'Subscribe = Subscribed');
+  assert.equal(clickDuplicates([{word: 'клик', at: 12, to: 15}], [{from: 9, to: 12, text: 'Подпишись'}]).length, 0, 'подпись до клика — не дубль');
 
   // вспышка: пик на склейке, вне окна ноль
   assert.equal(flashState(2.8, 3), 0); assert.equal(flashState(3, 3), FLASH.peak); assert.equal(flashState(3 + FLASH.post, 3), 0);
