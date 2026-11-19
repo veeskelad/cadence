@@ -44,6 +44,12 @@ export const PRESETS = {
   'уголки': {kind: 'box', look: 'corners'},
   'лупа': {kind: 'card', zoom: 1.3},
 };
+// Синонимы слов (колонка «Ещё называют» в code-proofs.md): тот же приём под другим именем
+export const SYNONYMS = {
+  'логотип': 'знак', 'лого': 'знак', 'карточка': 'врезка', 'цитата': 'статья', 'обводка': 'кольцо', 'выделение': 'рамка',
+  'прицел': 'уголки', 'скобки': 'уголки', 'зум': 'лупа', 'увеличение': 'лупа', 'приближение': 'лупа', 'линейка': 'замер',
+  'надпись': 'титр', 'предупреждение': 'тревога', 'внимание': 'тревога', 'опасность': 'тревога', 'кнопка': 'клик', 'подписка': 'клик',
+};
 export const LOOKS = ['frame', 'corners'];
 export const ZOOM = {min: 1.1, max: 2.2};
 export const ALERT = {pulse: 1.1, icon: 0.5};   // период пульса значка и полосы, с; значок встаёт через 0,5 с после края
@@ -51,10 +57,10 @@ export const CLICK = {press: 0.18, ring: 0.55}; // нажатие и кольц�
 // Слово → вставка с видом: {word: 'лупа', ...} → {kind: 'card', zoom: 1.3, ...}. Неизвестное слово — ошибка с подсказкой.
 export function resolveProof(p) {
   if (!p || p.kind || p.word === undefined) return p;
-  const w = String(p.word).trim().toLowerCase();
+  const w0 = String(p.word).trim().toLowerCase(), w = SYNONYMS[w0] ?? w0;
   if (PRESETS[w]) return {...PRESETS[w], ...p, kind: PRESETS[w].kind};
   if (WORDS[w]) return {...p, kind: WORDS[w]};
-  throw new Error(`Слой доказательств: неизвестное слово «${p.word}», есть ${[...Object.keys(WORDS), ...Object.keys(PRESETS)].join(', ')}`);
+  throw new Error(`Слой доказательств: неизвестное слово «${p.word}», есть ${[...Object.keys(WORDS), ...Object.keys(PRESETS)].join(', ')} (и синонимы: ${Object.keys(SYNONYMS).join(', ')})`);
 }
 // Лупа: кусок кадра crop растёт в zoom раз вокруг своего центра. Видео лупы — вторая запись файла фона с тем же
 // mediaStart, кадр фона во весь кадр композиции. Доли кадра: x, y — центр; w, h — размер после увеличения.
