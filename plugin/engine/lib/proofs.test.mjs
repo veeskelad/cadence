@@ -2,7 +2,7 @@
 // вставки живут после посадки, дорожки, замер «было → стало», снимок статьи, дорога, полоса света, ошибки сценария
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {ALERT, CLICK, FLASH, PRESETS, WORDS, clickDuplicates, cornerSize, flashState, resolveProof, zoomGeom} from './proofs.js';
+import {ALERT, CLICK, FLASH, PRESETS, SYNONYMS, WORDS, clickDuplicates, cornerSize, flashState, resolveProof, zoomGeom} from './proofs.js';
 import {proofEnd, DRIFT, ENTER, EXIT, KINDS, LIGHTBAR, MIN_ON, PUSH, envelope, lightbarState, markAt, markSpan, proofState, overlapsCaptions, raceTimes, rectAt, roadBuildings,
   shotGeom, validateProofs} from './proofs.js';
 
@@ -157,6 +157,8 @@ err([{kind: 'logo', src: 'a.svg', at: 27.5, to: 29}], /ролик 28/);
   assert.equal(resolveProof({word: 'уголки', at: 0}).look, 'corners');
   assert.ok(Object.keys(PRESETS).every((w) => !WORDS[w]), 'слова-варианты не совпадают со словами видов');
   assert.throws(() => resolveProof({word: 'пузырь', at: 0}), /неизвестное слово «пузырь».*рамка/);
+  for (const [syn, word] of Object.entries(SYNONYMS)) assert.equal(resolveProof({word: syn, at: 0}).kind, resolveProof({word, at: 0}).kind, `синоним ${syn} → ${word}`);
+  assert.equal(resolveProof({word: 'Зум', at: 0}).zoom, 1.3, 'зум = лупа');
   // детерминизм
   const tt = Array.from({length: 16 * 30}, (_, i) => i / 30);
   const fw = tt.map((t) => JSON.stringify(L.map((q) => proofState(q, t, F))));
