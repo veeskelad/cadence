@@ -809,8 +809,27 @@ export function overlapsCaptions(proofs, caps, captionTop = null) {
   return bad;
 }
 
+// Клик не дублирует подпись: пока кнопка на экране, подпись не повторяет её слово (проба 19.11: «subscribed 2 раза»).
+// Слова сравниваются по первым пяти буквам: «Подпишись» и «Подписаться», «Subscribe» и «Subscribed» — одно слово.
+const stem5 = (w) => String(w).toLowerCase().replace(/[^\p{L}\d]/gu, '').slice(0, 5);
+export function clickDuplicates(list, caps) {
+  const bad = [];
+  list.forEach((p0, i) => {
+    const p = resolveProof(p0);
+    if (p?.kind !== 'click') return;
+    const label = p.label ?? 'Подписаться', done = p.done ?? 'Вы подписаны';
+    const keys = new Set(`${label} ${done}`.split(/\s+/).map(stem5).filter((w) => w.length >= 4));
+    const end = proofEnd(p);
+    const c = caps.find((x) => x.from < end && x.to > p.at && String(x.text).split(/\s+/).some((w) => keys.has(stem5(w))));
+    if (c) bad.push(`proofs[${i}] (клик «${label}»): подпись «${c.text}» (${c.from}–${c.to} с) повторяет слово кнопки — убрать слово из фразы или клик`);
+  });
+  return bad;
+}
+
 function checkCaptionZone(items, {W, H, captions, captionTop}) {
   if (!captions.length && captionTop === null) return;
+  const dup = clickDuplicates(items.map((it) => it.p), captions);
+  if (dup.length) throw new Error('Клик и подпись говорят одно и то же:\n  ' + dup.join('\n  '));
   const proofs = [];
   for (const [i, it] of items.entries()) {
     const {p, el} = it;
