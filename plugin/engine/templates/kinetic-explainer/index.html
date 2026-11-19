@@ -11,8 +11,15 @@
       фото-карточки, которые улетают вверх со смазом. Регистр «окно на бумаге»: видео в окне вырастает
       пружиной, столбик слов, стикеры выскакивают вокруг, крупная фраза проезжает со смазом.
       Всё — функция времени t (bindSeek).
-      Сценарий — #film: paper, videos (window), punch, whip, tiles, cards, stickers, sweeps, captions
-      (формат — examples/kinetic-explainer/film.json).
+      Слой доказательств (engine/lib/proofs.js): на каждое имя, цитату и сравнение своя вставка поверх кадра —
+      знак, карточка с картинкой или видео, статья с маркером (из текста или снимок страницы в окне), дорожки race,
+      кольцо, рамка по ключам (look: corners — уголки), лупа (card.zoom), замер со stretch, схема дороги road во весь кадр,
+      титр title, тревога alert, клик click; переход «полоса света» или вспышка — lightbars. Вставку можно задать словом (word).
+      Важные слова подписи (item.hl или film.highlight) — плашкой цвета акцента пака; точка в конце фразы снимается
+      (film.keepPeriods: true — оставить). Вставки не заходят на подписи
+      и ниже film.captionTop (доля высоты): иначе ошибка страницы.
+      Сценарий — #film: paper, videos (window), punch, whip, tiles, cards, stickers, sweeps, proofs, lightbars, highlight, captions
+      (формат — examples/kinetic-explainer/film.json, доказательства — examples/proofs/film.json).
     -->
     <!-- cadence:fonts -->
     <style>
@@ -54,6 +61,8 @@
         background: rgba(20, 18, 16, 0.42); backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 18px 48px rgba(0, 0, 0, 0.22); }
       .cap.scrim .w { text-shadow: none; letter-spacing: 0.005em; }
+      /* Важное слово подписи — плашка цвета акцента пака: цветной текст по белому на видео не читается. */
+      .w.hl .glyph { padding: 0.04em 0.14em 0.1em; border-radius: 0.14em; background: var(--signal); color: var(--canvas); text-shadow: none; }
       .cap.scrim .key, .cap.scrim .hero { letter-spacing: -0.01em; }
       .cap.soft .w { color: #1c1917; text-shadow: none; }
       /* Фраза на бумаге: слова копятся строкой и переносятся по ширине, не по одному на строку. */
@@ -77,7 +86,7 @@
       <filter id="smearS" x="-20%" y="-10%" width="140%" height="120%"><feGaussianBlur id="smearSd" stdDeviation="0 0" /></filter>
     </svg>
     <div id="root" data-composition-id="kinetic-explainer" data-start="0" data-width="1080" data-height="1920" data-duration="12" data-no-timeline
-      data-paper="#e8e6e1" data-hero="#ffd34d" data-seed="11">
+      data-paper="#e8e6e1" data-hero="#ffd34d" data-bad="#e5484d" data-seed="11">
       <div id="paper"></div>
       <!-- cadence:videos -->
       <section id="scene" class="clip" data-start="0" data-duration="12" data-track-index="1">
@@ -85,6 +94,8 @@
         <div id="cards"></div>
         <canvas id="tiles"></canvas>
         <div id="stickers"></div>
+        <div id="proofs" data-layout-allow-overflow></div>
+        <div id="lightbars"></div>
         <div id="caps"></div>
         <div id="sweeps"></div>
       </section>
@@ -94,14 +105,17 @@
     </script>
     <script type="module">
       import {bindSeek, stage, spring, springTrack, smoothstep, expoOut, expoIn, invLerp, lerp, clamp, rng} from './lib/motion.js';
+      import {mountProofs, mountLightbars} from './lib/proofs.js';
 
       const {root, width: W, height: H} = stage();
       const film = JSON.parse(document.getElementById('film').textContent);
       const cfg = root.dataset;
       const FPS = 30, F = 1 / FPS;
       root.style.setProperty('--hero', cfg.hero);
+      root.style.setProperty('--bad', cfg.bad);
       await document.fonts.load('700 150px Oswald', 'АБВГДЕЁЖЗабвгд0123КОД');
       await document.fonts.load('600 54px "Golos Text"', 'АБВГДЕЁЖЗабвгд0123');
+      if (film.proofs?.length) await document.fonts.load('400 36px "Literata Variable"', 'АБВГДЕЁЖЗабвгд0123');
 
       // Бумага регистров «окно» и «карточки»: свой тон сцены + редкий точечный узор (статичный).
       const paper = document.getElementById('paper');
@@ -128,6 +142,8 @@
       });
       const smearX = document.getElementById('smearXd');
       const smearY = document.getElementById('smearYd');
+      // Видео карточек-доказательств двигает слой доказательств, общий цикл видео их не трогает.
+      const proofVideos = new Set((film.proofs ?? []).flatMap((p) => [p.video, p.blurBg]).filter(Boolean));
 
       // --- Подписи: раскладка считается один раз со всеми словами, потом только видимость (без reflow).
       const caps = document.getElementById('caps');
@@ -141,13 +157,17 @@
         box.style.width = `${maxW}px`;
         box.style.left = `${(c.align === 'center' ? c.x * W - maxW / 2 : c.x * W)}px`;
         box.style.top = `${c.y * H}px`;
+        // highlight — важные слова для плашки: список слов или фраз из одного слова, без учёта регистра и знаков по краям.
+        const bare = (w) => String(w).toLowerCase().replace(/ё/g, 'е').replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+        const marked = new Set((film.highlight ?? []).map(bare));
         const items = c.items.map((it) => {
           const kind = it.kind ?? 'word';
           const el = document.createElement('span');
-          el.className = `w ${kind === 'key' ? 'key' : ''} ${kind === 'count' || kind === 'hero' ? 'hero' : ''}`;
+          el.className = `w ${kind === 'key' ? 'key' : ''} ${kind === 'count' || kind === 'hero' ? 'hero' : ''} ${kind === 'word' && (it.hl || marked.has(bare(it.w))) ? 'hl' : ''}`;
           const glyph = document.createElement('span');
           glyph.className = 'glyph';
-          glyph.textContent = kind === 'count' ? thousands(it.to) + (it.suffix ?? '') : it.w;
+          // точка в конце фразы во вшитой подписи снимается (? и ! остаются, «3.5» не трогается); film.keepPeriods — оставить
+          glyph.textContent = kind === 'count' ? thousands(it.to) + (it.suffix ?? '') : film.keepPeriods ? it.w : String(it.w).replace(/(\p{L}|\d|[»")])\.(?=\s|$)/gu, '$1');
           el.append(glyph);
           if (kind === 'key' || kind === 'count' || kind === 'hero') {
             const block = document.createElement('span');
@@ -199,6 +219,14 @@
         return {...c, el, w, rot: c.rot ?? [-3, 2.5, -2][i % 3]};
       });
       await Promise.all([...cardsBox.querySelectorAll('img')].map((img) => img.decode().catch(() => {})));
+
+      // --- Доказательства: вставка на каждое имя, цитату и сравнение (engine/lib/proofs.js).
+      const renderProofs = await mountProofs({box: document.getElementById('proofs'), list: film.proofs ?? [], W, H,
+        duration: Number(cfg.duration), videos,
+        // вставки не заходят на подписи: блоки подписей на экране в то же время и, если задан, верх зоны подписей film.captionTop
+        captions: blocks.map((c) => ({from: c.from, to: c.to, el: c.box, text: c.items.map((it) => it.w ?? '').join(' ')})),
+        captionTop: film.captionTop != null ? film.captionTop * H : null});
+      const renderLightbars = mountLightbars({box: document.getElementById('lightbars'), list: film.lightbars ?? [], W, H});
 
       // --- Стикеры: белые плашки с картинкой или знаком, выскакивают пружиной с поворотом.
       const stickersBox = document.getElementById('stickers');
@@ -264,6 +292,7 @@
         const mid = wp ? wp.at + wp.dur * 0.55 : Infinity;
         let blurX = 0;
         videos.forEach((v) => {
+          if (proofVideos.has(v.id)) return;
           const inRange = t >= v.start && t < v.start + v.duration;
           const isFrom = wp && v.id === wp.from, isTo = wp && v.id === wp.to;
           const live = inRange && (isFrom ? t < mid : isTo ? t >= mid : true);
@@ -357,6 +386,10 @@
           if (vis) blurY = Math.max(blurY, blur);
         });
         smearY.setAttribute('stdDeviation', `0 ${blurY.toFixed(1)}`);
+
+        // Доказательства: вход 0,45 с с торможением, уход 0,4 с, состояние — чистая функция t.
+        renderProofs(t);
+        renderLightbars(t);
 
         // 4. Подписи: слово проявляется со своего события — подъём, проявление и размытие одной пружиной
         //    без перелёта; подложка растёт за текстом; блок гаснет к концу. flash:true — штамп оригинала.

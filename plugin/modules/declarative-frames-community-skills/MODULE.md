@@ -23,7 +23,6 @@
 | `p5-paint-animation` | рукописный текст, фото как картина, клип как живая картина | фраза, фото или клип до ~10 с | [guides/p5-paint-animation.md](guides/p5-paint-animation.md) |
 | `camera-3d-captions` | слова в 3D вокруг говорящего, прячутся за ним | ролик с говорящим, статичная камера, 5–20 с | [guides/camera-3d-captions.md](guides/camera-3d-captions.md) |
 | `vox-explainer` | объяснялка-коллаж на 60–90 с | тема или документы | [guides/vox-explainer.md](guides/vox-explainer.md) |
-| `session-story` | фильм о типичной сессии человека с агентом | локальная история сессий | [guides/session-story.md](guides/session-story.md) |
 | `day-in-my-life` | рисованный фильм «день моего агента» | локальная история сессий (от 10 сессий за 5 дней) | [guides/day-in-my-life.md](guides/day-in-my-life.md) |
 | `prod-by-claude` | видео трека, написанного кодом Strudel | трек `.strudel.js` или бриф | [guides/prod-by-claude.md](guides/prod-by-claude.md) |
 
@@ -31,14 +30,14 @@
 
 1. Выбрать набор по таблице и прочитать его справку из `guides/`.
 2. Один раз поставить зависимости набора с согласия человека: `sh kits/<набор>/scripts/setup.sh`
-   (у `p5-paint-animation`, `day-in-my-life`, `session-story`; ставит puppeteer и Chrome, около 500 МБ).
+   (у `p5-paint-animation`, `day-in-my-life`; ставит puppeteer и Chrome, около 500 МБ).
 3. Согласовать с человеком материал, который пойдёт на экран (особенно для фильмов о сессии: каждую реплику
    человек утверждает до рендера).
 4. Собрать и отрендерить по справке набора. Рендер только локальный.
 
 ## Ограничения
 
-- Наборы `session-story` и `day-in-my-life` читают локальные журналы сессий в `~/.claude/projects`
+- Набор `day-in-my-life` читает локальные журналы сессий в `~/.claude/projects`
   только после согласия человека, ничего не отправляют; чужие истории не использовать.
 - Справки ссылаются на `npx hyperframes@<версия>`. В Cadence движок стоит в `engine/`; команды из справок
   выполнять через него, а `npx` с загрузкой из сети запускать только с согласия человека.

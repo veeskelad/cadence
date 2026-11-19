@@ -314,8 +314,16 @@ def to_srt(cues: list[dict]) -> str:
 
 # ---------------------------------------------------------------- вшивание
 
+# Точка в конце фразы во вшитых субтитрах не нужна: строка и так кончается. ? и ! остаются, дробные числа («3.5») не трогаются.
+END_DOT = re.compile(r'(\w|[»")])\.(?=\s|$)')
+
+
+def drop_end_dots(srt_text: str) -> str:
+    return '\n'.join(END_DOT.sub(r'\1', line) if not re.match(r'^\d+$|^\d\d:\d\d:', line) else line for line in srt_text.split('\n'))
+
+
 def burn(src: Path, srt: Path, out: Path, font: str, font_px: float | None, fonts_dir: Path | None,
-         max_chars: int, crf: int) -> None:
+         max_chars: int, crf: int, keep_periods: bool = False) -> None:
     filters = run(ffmpeg_cmd("-filters")).stdout or ""
     if not re.search(r"\ssubtitles\s", filters):
         raise CadenceError("В этой сборке ffmpeg нет фильтра subtitles (нужна libass). "
@@ -343,7 +351,8 @@ def burn(src: Path, srt: Path, out: Path, font: str, font_px: float | None, font
     ])
     with tempfile.TemporaryDirectory(prefix="cadence-subs-") as tmpdir:
         tmp = Path(tmpdir)
-        shutil.copyfile(srt, tmp / "captions.srt")
+        text = srt.read_text(encoding="utf-8")
+        (tmp / "captions.srt").write_text(text if keep_periods else drop_end_dots(text), encoding="utf-8")
         vf = f"subtitles=filename=captions.srt:charenc=UTF-8:force_style='{style}'"
         if fonts_dir:
             (tmp / "fonts").symlink_to(fonts_dir.resolve(), target_is_directory=True)
@@ -391,6 +400,8 @@ def main() -> int:
     ap.add_argument("--max-cps", type=float, default=17.0,
                     help="скорость чтения, знаков в секунду (по умолчанию 17; 0 — не следить)")
     ap.add_argument("--crf", type=int, default=18, help="качество x264 для --burn")
+    ap.add_argument("--keep-periods", action="store_true",
+                    help="--burn: оставить точки в конце фраз (по умолчанию во вшитых снимаются; SRT-файл не меняется)")
     ap.add_argument("--dry-run", action="store_true", help="показать план, ничего не делать")
     ap.add_argument("--overwrite", action="store_true", help="разрешить заменить прежний результат")
     args = ap.parse_args()
@@ -502,7 +513,7 @@ def main() -> int:
     if args.burn:
         check_output(burn_out, [src, srt_path], args.overwrite)
         print("Вшиваю субтитры (перекодирование видео)…")
-        burn(src, srt_path, burn_out, args.font, args.font_size, fonts_dir, args.max_chars, args.crf)
+        burn(src, srt_path, burn_out, args.font, args.font_size, fonts_dir, args.max_chars, args.crf, args.keep_periods)
         print(f"Готово: {burn_out}")
     return 0
 

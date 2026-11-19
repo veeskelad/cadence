@@ -1,6 +1,6 @@
 # Third-party notices
 
-This module is part of Cadence, under the Cadence license (`LICENSE.txt` at the Cadence root). It includes or builds on:
+This module is based on claude-reelsmith by lalimi (MIT, `licenses/LICENSE-claude-reelsmith`) and claude-reel-editor by Nicola Pocock (MIT); see `UPSTREAM.md`. Changes made by Cadence are under the Cadence license (`LICENSE.txt` at the Cadence root). It includes or builds on:
 
 | Part | Where | Origin | License |
 |---|---|---|---|

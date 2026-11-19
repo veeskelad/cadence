@@ -21,8 +21,8 @@ If you are the author and would like anything here changed or credited different
 [github.com/artkruglov/voice-film](https://github.com/artkruglov/voice-film), MIT, see `LICENSE-voice-film`:
 `reference/STORY.md`, `scripts/extract_lines.py`, `scripts/script_lint.py`.
 
-## huashu-art-motion — ContentFactory (MIT)
-[github.com/ContentFactory/huashu-art-motion](#local-huashu-art-motion), MIT, see
+## huashu-art-motion — alchaincyf (MIT)
+[github.com/alchaincyf/huashu-art-motion](https://github.com/alchaincyf/huashu-art-motion), MIT, see
 `LICENSE-huashu-art-motion`: `reference/EXPLAINERS.md` is a translated and rewritten derivative of its explainer grammars.
 
 ## motion-kit — Hugh Phan (MIT)
@@ -69,7 +69,7 @@ External registry and source indexes contain metadata and links only; their entr
 
 ## anidoodle morphology
 
-`engine/lib/morph.js` adapts `canvas-core/morph.ts` from [ContentFactory/anidoodle](#local-anidoodle),
+`engine/lib/morph.js` adapts `canvas-core/morph.ts` from [alexgreensh/anidoodle](https://github.com/alexgreensh/anidoodle),
 Copyright 2026 Alex Greenshpun, Apache-2.0. Full grant and upstream notice: `LICENSE-anidoodle`, `NOTICE-anidoodle`.
 Changes: plain JavaScript, seconds-based time/velocity, input validation, copied endpoints and SVG rendering.
 `engine/lib/actor-hands.js` additionally contains SVG hand silhouettes derived from `character/human/hands.ts` and

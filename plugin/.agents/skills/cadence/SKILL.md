@@ -147,7 +147,7 @@ description: Начинай работу с Cadence, когда человек �
 | не знаю, какой стиль; покажи варианты | `cadence-style` → `references/choose-style.md` |
 | порезать своё видео: паузы, субтитры, свести звук | `cadence-cut` |
 | кино-эффект на своём видео: speed ramp, whip pan, crash zoom, zoom-переход, тряска, вспышка, match cut, стоп-кадр | `python3 scripts/video_fx.py <эффект> … --dry-run`, потом без `--dry-run`; описание — в шапке скрипта |
-| монтаж и эффекты на живой съёмке в DaVinci Resolve | `cadence-resolve` |
+| монтаж и эффекты на живой съёмке в DaVinci Resolve (ручная передача — бесплатно, работа в проекте — Cadence Pro) | `cadence-resolve` |
 | готовый анимированный компонент для сайта или презентации (кнопка, карточка, AI-элемент) | `cadence-platform-engineering` → `references/component-sources.md` |
 | нужной сцены нет: сгенерировать кадр или клип в своём сервисе | `cadence-generate` |
 | «как сделан этот ролик?» — разбор референса | `cadence-breakdown` |

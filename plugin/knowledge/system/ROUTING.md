@@ -58,13 +58,13 @@
 | кино-эффекты на живом видео | `cadence-cut` | `script:scripts/video_fx.py` | — |
 | голос и музыка вместе | `cadence-sound` | `script:scripts/voice_music_mix.py` | — |
 | проверка ролика перед публикацией | `cadence-cut` | `script:scripts/check_reel.py` | — |
-| передать монтаж в DaVinci Resolve | `cadence-resolve` | `skill:cadence-resolve` | — |
+| передать монтаж в DaVinci Resolve (ручная передача — бесплатно; работа агента в проекте — Cadence Pro) | `cadence-resolve` | `skill:cadence-resolve` | — |
 | нарезка таймлайном для Resolve, Premiere, Final Cut, Kdenlive | `cadence-cut` | `module:smart-cutter` | — |
 | оформленный ролик из разговорной записи в выбранном стиле | `cadence-cut` | `module:phantom-editor` | `module:effortless-cuts`, `module:video-copilot-skills` |
 | пакет к публикации: мастер, обложка, варианты заголовка | `cadence-cut` | `module:effortless-cuts` | — |
 | любая операция ffmpeg: кроп, вертикаль, громкость, склейка, конверт | `cadence-cut` | `module:ffmpeg-toolkit` | — |
-| вертикальный кадр и сборка таймлайна в Resolve по анализу кадров | `cadence-resolve` | `module:frame-inspector-plugin` | — |
-| разбор своих исходников: что в клипах, лучшие моменты, поиск | `cadence-resolve` | `module:resolve-frame-pipeline` | — |
+| вертикальный кадр и сборка таймлайна в Resolve по анализу кадров (Cadence Pro) | `cadence-resolve` | `skill:cadence-resolve` | — |
+| разбор своих исходников для Resolve: что в клипах, лучшие моменты, поиск (Cadence Pro) | `cadence-resolve` | `skill:cadence-resolve` | — |
 | расшифровка речи с таймингами слов | `cadence-cut` | `module:speech-transcriber` | `script:scripts/captions_whisper.py` |
 | закадровый голос из текста локальной моделью | `cadence-sound` | `module:mlx-audio-engine` | `module:voice-synthesis-toolkit`, `module:neural-tts-engine` |
 | озвучка голосом по образцу записи (с согласия владельца голоса) | `cadence-sound` | `module:expressive-voice-synth` | `module:mlx-audio-engine` |
@@ -78,7 +78,7 @@
 | рисованная история из текста или страниц | `cadence-structures` | `module:story-to-sketch-animation` | — |
 | анимация в стиле художников и эпох | `cadence-motion` | `module:calligraphy-art-motion` | — |
 | дудл: картинка рисуется на глазах | `cadence-motion` | `module:doodle-animator` | — |
-| рисованный герой: позы и эмоции | `cadence-motion` | `module:animation-scaffold` | — |
+| рисованный герой: позы и эмоции | `cadence-motion` | `module:doodle-animator` | — |
 | 10 секунд моушна в готовом визуальном стиле | `cadence-motion` | `module:motion-graphics-presets` | `module:code-to-film-engine` |
 | мини-фильм кодом в стиле-образце (чертёж, доска, микроскоп…) | `cadence-motion` | `module:code-to-film-engine` | — |
 | промо-ролик продукта из настоящих экранов и текст поста | `cadence-structures` | `module:promo-showcase` | — |
@@ -94,10 +94,6 @@
 
 | Просьба человека | Навык | Модуль |
 |---|---|---|
-| «нарисуй мультик про моего героя, чтобы он выглядел нарисованным от руки» | `cadence-motion` | [`animation-scaffold`](../../modules/animation-scaffold/MODULE.md) |
-| «сделай короткую анимацию с персонажем, который переживает: удивляется, грустит, радуется» | `cadence-motion` | [`animation-scaffold`](../../modules/animation-scaffold/MODULE.md) |
-| «мне нужен милый ролик с талисманом без текста в кадре, только действие и эмоции» | `cadence-motion` | [`animation-scaffold`](../../modules/animation-scaffold/MODULE.md) |
-| «посмотри, как герой поворачивается и идёт, и покажи раскадровку листом» | `cadence-motion` | [`animation-scaffold`](../../modules/animation-scaffold/MODULE.md) |
 | «добавь перебивки к видео, где я говорю в камеру» | `cadence-cut` | [`b-roll-toolkit`](../../modules/b-roll-toolkit/MODULE.md) |
 | «оживи ролик с говорящей головой графикой и цифрами» | `cadence-cut` | [`b-roll-toolkit`](../../modules/b-roll-toolkit/MODULE.md) |
 | «сделай b-roll под мою речь» | `cadence-cut` | [`b-roll-toolkit`](../../modules/b-roll-toolkit/MODULE.md) |
@@ -136,6 +132,8 @@
 | «анимированный логотип или зацикленный стикер» | `cadence-motion` | [`doodle-animator`](../../modules/doodle-animator/MODULE.md) |
 | «объясни тему рисованной инфографикой» | `cadence-motion` | [`doodle-animator`](../../modules/doodle-animator/MODULE.md) |
 | «научи рисовать вот это пошагово» | `cadence-motion` | [`doodle-animator`](../../modules/doodle-animator/MODULE.md) |
+| «нарисуй мультик про моего героя, чтобы он радовался и удивлялся» | `cadence-motion` | [`doodle-animator`](../../modules/doodle-animator/MODULE.md) |
+| «короткая анимация с талисманом без текста в кадре» | `cadence-motion` | [`doodle-animator`](../../modules/doodle-animator/MODULE.md) |
 | «собери из моих дублей готовый ролик целиком» | `cadence-cut` | [`effortless-cuts`](../../modules/effortless-cuts/MODULE.md) |
 | «смонтируй говорящую голову с титрами, звуком и обложкой» | `cadence-cut` | [`effortless-cuts`](../../modules/effortless-cuts/MODULE.md) |
 | «сделай вертикальную и квадратную версию из одного монтажа» | `cadence-cut` | [`effortless-cuts`](../../modules/effortless-cuts/MODULE.md) |
@@ -155,11 +153,6 @@
 | «iPhone-видео в HDR выглядит блёклым, исправь» | `cadence-cut` | [`ffmpeg-toolkit`](../../modules/ffmpeg-toolkit/MODULE.md) |
 | «положи логотип в угол и вшей готовый SRT» | `cadence-cut` | [`ffmpeg-toolkit`](../../modules/ffmpeg-toolkit/MODULE.md) |
 | «приведи громкость к -14 LUFS» | `cadence-cut` | [`ffmpeg-toolkit`](../../modules/ffmpeg-toolkit/MODULE.md) |
-| «посмотри мой таймлайн в Резолве и скажи, что в клипах» | `cadence-resolve` | [`frame-inspector-plugin`](../../modules/frame-inspector-plugin/MODULE.md) |
-| «собери монтаж из моих исходников по смыслу, а не по порядку файлов» | `cadence-resolve` | [`frame-inspector-plugin`](../../modules/frame-inspector-plugin/MODULE.md) |
-| «переделай горизонтальный монтаж в вертикальный 9:16, чтобы герой оставался в кадре» | `cadence-resolve` | [`frame-inspector-plugin`](../../modules/frame-inspector-plugin/MODULE.md) |
-| «расставь в Резолве маркеры по главам и сильным моментам» | `cadence-resolve` | [`frame-inspector-plugin`](../../modules/frame-inspector-plugin/MODULE.md) |
-| «найди в моей библиотеке кадры, где закат и люди, и положи на таймлайн» | `cadence-resolve` | [`frame-inspector-plugin`](../../modules/frame-inspector-plugin/MODULE.md) |
 | «нарисуй логотип для моего проекта» | `cadence-identity-system` | [`logo-craft-skill`](../../modules/logo-craft-skill/MODULE.md) |
 | «сделай знак и монограмму, чтобы читались на 16 пикселей» | `cadence-identity-system` | [`logo-craft-skill`](../../modules/logo-craft-skill/MODULE.md) |
 | «проверь мой логотип и скажи, что в нём не так» | `cadence-identity-system` | [`logo-craft-skill`](../../modules/logo-craft-skill/MODULE.md) |
@@ -207,11 +200,6 @@
 | «сделай обложку и подпись к рилсу» | `cadence-cut` | [`reels-crafter`](../../modules/reels-crafter/MODULE.md) |
 | «смонтируй мне говорящую голову: субтитры на каждое слово, смена раскладок» | `cadence-cut` | [`reels-crafter`](../../modules/reels-crafter/MODULE.md) |
 | «посмотри мой рилс как режиссёр и критик и скажи, что поправить» | `cadence-cut` | [`reels-crafter`](../../modules/reels-crafter/MODULE.md) |
-| «разбери мои исходники: что в каждом клипе и где лучшие моменты» | `cadence-resolve` | [`resolve-frame-pipeline`](../../modules/resolve-frame-pipeline/MODULE.md) |
-| «найди в моей библиотеке кадры, где человек говорит на фоне заката» | `cadence-resolve` | [`resolve-frame-pipeline`](../../modules/resolve-frame-pipeline/MODULE.md) |
-| «посмотри мой таймлайн в Резолве и скажи, какие клипы слабые» | `cadence-resolve` | [`resolve-frame-pipeline`](../../modules/resolve-frame-pipeline/MODULE.md) |
-| «где в этом видео безопасно резать, чтобы не обрывать слово» | `cadence-resolve` | [`resolve-frame-pipeline`](../../modules/resolve-frame-pipeline/MODULE.md) |
-| «подготовь клипы так, чтобы агент мог по ним собирать монтаж» | `cadence-resolve` | [`resolve-frame-pipeline`](../../modules/resolve-frame-pipeline/MODULE.md) |
 | «нарежь из этого длинного видео шортсы» | `cadence-cut` | [`shorts-studio`](../../modules/shorts-studio/MODULE.md) |
 | «вытащи из подкаста самые сильные куски в вертикальные клипы» | `cadence-cut` | [`shorts-studio`](../../modules/shorts-studio/MODULE.md) |
 | «сделай из часовой записи несколько рилсов с субтитрами» | `cadence-cut` | [`shorts-studio`](../../modules/shorts-studio/MODULE.md) |

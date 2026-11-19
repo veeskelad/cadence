@@ -1326,7 +1326,7 @@ def _drawtext_probe() -> Dict[str, Any]:
         if bare["status"] == "missing":
             result["note"] = ("drawtext renders with fontfile= (what every drawtext tool passes by default) but crashes "
                               "when it has to resolve a font through fontconfig: pass --font-file, not a bare --font "
-                              "<family>, on this machine (#local-ffmpeg-skill/issues/100)")
+                              "<family>, on this machine (https://github.com/kajisho5/ffmpeg-skill/issues/100)")
     return result
 
 
@@ -1347,7 +1347,7 @@ def _drawtext_render(exe: str, vf: str) -> Dict[str, Any]:
         return {"status": "missing",
                 "detail": f"drawtext render crashed (exit {proc.returncode}) instead of failing cleanly -- "
                            "the filter is present in this build but cannot render even with the fontfile= the "
-                           "tools pass (see #local-ffmpeg-skill/issues/100)"}
+                           "tools pass (see https://github.com/kajisho5/ffmpeg-skill/issues/100)"}
     tail = " ".join(proc.stderr.strip().splitlines()[-2:])
     return {"status": "unknown", "detail": f"drawtext probe exited {proc.returncode}: {tail}"}
 

@@ -1,55 +1,6 @@
 {
   "modules": [
     {
-      "id": "animation-scaffold",
-      "family": "cadence-motion",
-      "title": "Рисованный мультик с героем: позы, эмоции, сцены",
-      "what": "Короткий мультик кистью, как нарисованный от руки: герой с 31 эмоцией, пятью ракурсами, шляпами и жестами, сцены по таймлайну, листы проверки кадров и MP4.",
-      "when": [
-        "нарисуй мультик про моего героя, чтобы он выглядел нарисованным от руки",
-        "сделай короткую анимацию с персонажем, который переживает: удивляется, грустит, радуется",
-        "мне нужен милый ролик с талисманом без текста в кадре, только действие и эмоции",
-        "посмотри, как герой поворачивается и идёт, и покажи раскадровку листом"
-      ],
-      "not_for": "Живое видео, нарезка и субтитры: `cadence-cut`. Ролик в бит под трек, титры и графика с текстом: движок `engine/` и навык `cadence-motion` без этого модуля. Лёгкая схематичная анимация без кисти: остальные модули семейства. Здесь нет текста в кадре, 3D и фотографий.",
-      "capabilities": [
-        "character-animation"
-      ],
-      "inputs": [
-        "идея ролика и раскадровка по шотам",
-        "темп музыки (bpm) и время первой доли, если есть трек",
-        "по желанию свой звуковой файл"
-      ],
-      "outputs": [
-        "MP4 с мультиком",
-        "контактные листы и полосы кадров для проверки",
-        "PNG-кадры и циклы",
-        "$WORK/<проект>/out/"
-      ],
-      "run": "python3 modules/animation-scaffold/run.py <проект> --clip --out=out/video.mp4",
-      "engine": "node",
-      "deps": {
-        "node": ".",
-        "system": [
-          "node",
-          "ffmpeg"
-        ]
-      },
-      "install_mb": 45,
-      "platform": [
-        "macos",
-        "linux",
-        "windows"
-      ],
-      "network": "install",
-      "keys": [],
-      "status": "beta",
-      "primary_for": [
-        "character-animation"
-      ],
-      "fallback_for": []
-    },
-    {
       "id": "b-roll-toolkit",
       "family": "cadence-cut",
       "title": "Перебивки под речь",
@@ -467,7 +418,9 @@
         "нужен короткий фильм в стиле гравюры, акварели или бумажной аппликации",
         "анимированный логотип или зацикленный стикер",
         "объясни тему рисованной инфографикой",
-        "научи рисовать вот это пошагово"
+        "научи рисовать вот это пошагово",
+        "нарисуй мультик про моего героя, чтобы он радовался и удивлялся",
+        "короткая анимация с талисманом без текста в кадре"
       ],
       "not_for": [
         "рисованная история по готовым страницам или тексту с подписями: модуль story-to-sketch-animation",
@@ -476,7 +429,8 @@
         "ролик в бит под свой трек, шоурил, заставка: навык cadence-motion (движок Cadence)"
       ],
       "capabilities": [
-        "doodle-motion"
+        "doodle-motion",
+        "character-animation"
       ],
       "inputs": [
         "идея и короткая заметка-бриф (стиль, формат, длина, звук)",
@@ -523,7 +477,8 @@
         "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/doodle-animator-73717c26bfef.zip"
       },
       "primary_for": [
-        "doodle-motion"
+        "doodle-motion",
+        "character-animation"
       ],
       "fallback_for": []
     },
@@ -746,70 +701,6 @@
       "status": "ready",
       "primary_for": [
         "ffmpeg-ops"
-      ],
-      "fallback_for": []
-    },
-    {
-      "id": "frame-inspector-plugin",
-      "family": "cadence-resolve",
-      "title": "Монтаж в Resolve по анализу кадров",
-      "what": "Собирает или перемонтирует таймлайн DaVinci Resolve по анализу клипов (что в кадре, лучшие дубли, безопасные точки реза), делает вертикальный кадр 9:16 с наводкой на героя и ставит маркеры.",
-      "when": [
-        "посмотри мой таймлайн в Резолве и скажи, что в клипах",
-        "собери монтаж из моих исходников по смыслу, а не по порядку файлов",
-        "переделай горизонтальный монтаж в вертикальный 9:16, чтобы герой оставался в кадре",
-        "расставь в Резолве маркеры по главам и сильным моментам",
-        "найди в моей библиотеке кадры, где закат и люди, и положи на таймлайн"
-      ],
-      "not_for": [
-        "Безопасная работа с проектом Resolve, импорт EDL, переходы и эффекты без анализа кадров: навык cadence-resolve",
-        "Сам анализ видео и поиск по библиотеке: модуль resolve-frame-pipeline (приложение, без него этот модуль не работает)",
-        "Нарезка пауз и дублей без Resolve: навык cadence-cut"
-      ],
-      "capabilities": [
-        "resolve-reframe"
-      ],
-      "inputs": [
-        "открытый проект DaVinci Resolve Studio",
-        "запущенное приложение анализа кадров (модуль resolve-frame-pipeline) с проанализированными клипами",
-        "список монтажа (edit list) для вертикального кадра"
-      ],
-      "outputs": [
-        "новый таймлайн в Resolve (исходный не трогается)",
-        "план вертикального кадра plan.json и скрипты b2_*.py",
-        "листы проверки кадров (контактные листы с рамкой кропа)"
-      ],
-      "run": "python3 modules/frame-inspector-plugin/tools/reframe.py <edit-list.json> <папка-результата> --width 1080 --height 1920 --subject mammal",
-      "engine": "python",
-      "deps": {
-        "system": [
-          "python3"
-        ]
-      },
-      "install_mb": 0,
-      "platform": [
-        "macos",
-        "linux",
-        "windows"
-      ],
-      "network": "runtime",
-      "keys": [],
-      "status": "beta",
-      "payload": {
-        "paths": [
-          "SECURITY.md",
-          "mcp.example.json",
-          "reference",
-          "tools"
-        ],
-        "file": "frame-inspector-plugin-968846944697.zip",
-        "sha256": "968846944697f01ccd63ea9fa12465b712aeace2ca7d70bfc47eeff02a52c5a0",
-        "bytes": 30918,
-        "expanded_bytes": 78512,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/frame-inspector-plugin-968846944697.zip"
-      },
-      "primary_for": [
-        "resolve-reframe"
       ],
       "fallback_for": []
     },
@@ -1051,7 +942,7 @@
         "нужна заставка в стиле пиксельной игры или бумажного коллажа",
         "сделай интерфейс как в кино про хакеров с наведением на цель"
       ],
-      "not_for": "Ролик в бит под свой трек, шоурил, анонс продукта по шаблонам Cadence: движок `engine/` и навык `cadence-motion` без этого модуля. Цвета и шрифты бренда: `cadence-style`. Эффекты на живом видео: `cadence-cut` и `cadence-resolve`. Рисованный мультик с героем: модуль `animation-scaffold`. Звук к чужому ролику: `cadence-sound`.",
+      "not_for": "Ролик в бит под свой трек, шоурил, анонс продукта по шаблонам Cadence: движок `engine/` и навык `cadence-motion` без этого модуля. Цвета и шрифты бренда: `cadence-style`. Эффекты на живом видео: `cadence-cut` и `cadence-resolve`. Рисованный мультик с героем: модуль `doodle-animator`. Звук к чужому ролику: `cadence-sound`.",
       "capabilities": [
         "style-film"
       ],
@@ -1452,81 +1343,6 @@
       "status": "beta",
       "primary_for": [
         "reel-from-clips"
-      ],
-      "fallback_for": []
-    },
-    {
-      "id": "resolve-frame-pipeline",
-      "family": "cadence-resolve",
-      "title": "Анализ кадров своей библиотеки и связь с Resolve",
-      "what": "Локально разбирает видео (планы, речь, кто и что в кадре, лучшие моменты, безопасные точки реза), ищет по библиотеке и отдаёт всё агенту и DaVinci Resolve через MCP.",
-      "when": [
-        "разбери мои исходники: что в каждом клипе и где лучшие моменты",
-        "найди в моей библиотеке кадры, где человек говорит на фоне заката",
-        "посмотри мой таймлайн в Резолве и скажи, какие клипы слабые",
-        "где в этом видео безопасно резать, чтобы не обрывать слово",
-        "подготовь клипы так, чтобы агент мог по ним собирать монтаж"
-      ],
-      "not_for": [
-        "Сама сборка и перемонтаж таймлайна, вертикальный кадр: модуль frame-inspector-plugin",
-        "Технический паспорт одного файла (длительность, кодек, громкость): scripts/inspect_video.py",
-        "Субтитры и расшифровка для готового ролика: scripts/captions_whisper.py",
-        "Работа с проектом Resolve без анализа кадров: навык cadence-resolve"
-      ],
-      "capabilities": [
-        "footage-analysis"
-      ],
-      "inputs": [
-        "папка с видео человека",
-        "по желанию открытый проект DaVinci Resolve Studio",
-        "модель зрения в LM Studio или совместимом сервере"
-      ],
-      "outputs": [
-        "локальная база анализа (планы, речь, объекты, главы, моменты)",
-        "веб-интерфейс на 127.0.0.1:8765 и MCP-сервер на /mcp",
-        "маркеры и метаданные в клипах Resolve по команде"
-      ],
-      "run": "sh modules/resolve-frame-pipeline/run.command",
-      "engine": "python",
-      "deps": {
-        "system": [
-          "python3",
-          "uv",
-          "node",
-          "ffmpeg",
-          "exiftool"
-        ]
-      },
-      "install_mb": 8000,
-      "platform": [
-        "macos",
-        "windows"
-      ],
-      "network": "install",
-      "keys": [],
-      "status": "beta",
-      "payload": {
-        "paths": [
-          "SECURITY.md",
-          "backend",
-          "docs",
-          "frontend",
-          "install.bat",
-          "install.command",
-          "install.sh",
-          "justfile",
-          "run.bat",
-          "run.command",
-          "scripts"
-        ],
-        "file": "resolve-frame-pipeline-a0d57c6353b7.zip",
-        "sha256": "a0d57c6353b7740840f176a5b905419842069e38cfb2ffb07354c48b5b59ea40",
-        "bytes": 1483632,
-        "expanded_bytes": 4497353,
-        "url": "https://github.com/veeskelad/cadence/releases/download/modules-2.0/resolve-frame-pipeline-a0d57c6353b7.zip"
-      },
-      "primary_for": [
-        "footage-analysis"
       ],
       "fallback_for": []
     },
@@ -2143,7 +1959,7 @@
     },
     "resolve-handoff": {
       "skill": "cadence-resolve",
-      "title": "передать монтаж в DaVinci Resolve",
+      "title": "передать монтаж в DaVinci Resolve (ручная передача — бесплатно; работа агента в проекте — Cadence Pro)",
       "primary": "skill:cadence-resolve",
       "fallback": []
     },
@@ -2176,14 +1992,14 @@
     },
     "resolve-reframe": {
       "skill": "cadence-resolve",
-      "title": "вертикальный кадр и сборка таймлайна в Resolve по анализу кадров",
-      "primary": "module:frame-inspector-plugin",
+      "title": "вертикальный кадр и сборка таймлайна в Resolve по анализу кадров (Cadence Pro)",
+      "primary": "skill:cadence-resolve",
       "fallback": []
     },
     "footage-analysis": {
       "skill": "cadence-resolve",
-      "title": "разбор своих исходников: что в клипах, лучшие моменты, поиск",
-      "primary": "module:resolve-frame-pipeline",
+      "title": "разбор своих исходников для Resolve: что в клипах, лучшие моменты, поиск (Cadence Pro)",
+      "primary": "skill:cadence-resolve",
       "fallback": []
     },
     "transcribe": {
@@ -2278,8 +2094,7 @@
     "character-animation": {
       "skill": "cadence-motion",
       "title": "рисованный герой: позы и эмоции",
-      "primary": "module:animation-scaffold",
-      "fallback": []
+      "primary": "module:doodle-animator"
     },
     "style-film": {
       "skill": "cadence-motion",

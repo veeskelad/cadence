@@ -51,7 +51,7 @@
   },
   "resolve-handoff": {
     "skill": "cadence-resolve",
-    "title": "передать монтаж в DaVinci Resolve",
+    "title": "передать монтаж в DaVinci Resolve (ручная передача — бесплатно; работа агента в проекте — Cadence Pro)",
     "primary": "skill:cadence-resolve",
     "fallback": []
   },
@@ -84,14 +84,14 @@
   },
   "resolve-reframe": {
     "skill": "cadence-resolve",
-    "title": "вертикальный кадр и сборка таймлайна в Resolve по анализу кадров",
-    "primary": "module:frame-inspector-plugin",
+    "title": "вертикальный кадр и сборка таймлайна в Resolve по анализу кадров (Cadence Pro)",
+    "primary": "skill:cadence-resolve",
     "fallback": []
   },
   "footage-analysis": {
     "skill": "cadence-resolve",
-    "title": "разбор своих исходников: что в клипах, лучшие моменты, поиск",
-    "primary": "module:resolve-frame-pipeline",
+    "title": "разбор своих исходников для Resolve: что в клипах, лучшие моменты, поиск (Cadence Pro)",
+    "primary": "skill:cadence-resolve",
     "fallback": []
   },
   "transcribe": {
@@ -186,8 +186,7 @@
   "character-animation": {
     "skill": "cadence-motion",
     "title": "рисованный герой: позы и эмоции",
-    "primary": "module:animation-scaffold",
-    "fallback": []
+    "primary": "module:doodle-animator"
   },
   "style-film": {
     "skill": "cadence-motion",
