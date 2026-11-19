@@ -11,7 +11,8 @@
     "render": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes render",
     "preview": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes preview",
     "measure": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes measure",
-    "doctor": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes doctor --json"
+    "doctor": "HYPERFRAMES_NO_UPDATE_CHECK=1 HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 hyperframes doctor --json",
+    "board-check": "node board-check.mjs"
   },
   "dependencies": {
     "hyperframes": "0.9.70"

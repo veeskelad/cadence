@@ -38,6 +38,9 @@
       #grain { position: absolute; inset: 0; opacity: 0.16; mix-blend-mode: overlay; }
       #board { position: absolute; inset: 0; }
       #root[data-material="glass"] #grain, #root[data-material="flat"] #grain { display: none; }
+      /* поверх записи (film.over): прозрачный фон — без подложки, зерна и затемнения старой сцены; рендер --format mov даёт альфу */
+      html[data-over], html[data-over] body { background: transparent; }
+      #root[data-over] #bg, #root[data-over] #grain, #root[data-over] .bd-scene::after { display: none; }
 
       .bd-scene { position: absolute; inset: 0; transform-origin: 50% 50%; }
       .bd-scene::after { content: ""; position: absolute; inset: 0; background: var(--canvas); opacity: calc(var(--dim, 0) * 0.85); pointer-events: none; }
@@ -71,8 +74,9 @@
       .bd-word .bd-face { padding: 0 calc(14px * var(--u)); }
       .bd-tile .bd-text, .bd-word .bd-text { white-space: nowrap; }
 
-      .bd-stamp { padding: calc(10px * var(--u)) calc(22px * var(--u)); border: calc(5px * var(--u)) solid var(--bad); color: var(--bad); border-radius: calc(8px * var(--u)); box-shadow: inset 0 0 0 calc(3px * var(--u)) transparent, inset 0 0 0 calc(7px * var(--u)) color-mix(in srgb, var(--bad) 0%, transparent); background: color-mix(in srgb, var(--bad) 8%, transparent); white-space: nowrap; mix-blend-mode: normal; }
-      .bd-stamp.bd-good { border-color: var(--good); color: var(--good); background: color-mix(in srgb, var(--good) 10%, transparent); }
+      .bd-stamp { padding: calc(10px * var(--u)) calc(22px * var(--u)); border: calc(5px * var(--u)) solid var(--bad); color: var(--bad); border-radius: calc(8px * var(--u)); box-shadow: inset 0 0 0 calc(3px * var(--u)) transparent, inset 0 0 0 calc(7px * var(--u)) color-mix(in srgb, var(--bad) 0%, transparent); background: color-mix(in srgb, #fbf8f1 90%, var(--bad)); white-space: nowrap; mix-blend-mode: normal; }
+      .bd-stamp-under { position: absolute; right: 4%; bottom: calc(-88px * var(--u)); transform-origin: 50% 50%; z-index: 3; }
+      .bd-stamp.bd-good { border-color: var(--good); color: var(--good); background: color-mix(in srgb, #fbf8f1 90%, var(--good)); }
       .bd-stamp.bd-small { border-width: calc(3px * var(--u)); padding: calc(4px * var(--u)) calc(12px * var(--u)); }
       .bd-label { background: var(--paper); color: var(--paper-ink); padding: calc(8px * var(--u)) calc(16px * var(--u)); box-shadow: 0 4px 10px rgba(0,0,0,.35); white-space: nowrap; }
       [data-material="glass"] .bd-label { background: rgba(255,255,255,.12); color: var(--ink); backdrop-filter: blur(12px); border-radius: 999px; }
@@ -216,6 +220,7 @@
       if (film.font?.display) { root.style.setProperty('--font-display', `${film.font.display}, Onest, sans-serif`); root.style.setProperty('--w-display', film.font.weight ?? 800); }
       if (film.paper) root.style.setProperty('--paper', film.paper);
       root.dataset.material = film.material ?? 'paper';
+      if (film.over) { root.dataset.over = ''; document.documentElement.dataset.over = ''; }
       await document.fonts.ready;
       const display = getComputedStyle(root).getPropertyValue('--font-display');
       await document.fonts.load(`800 80px ${display}`, 'АБВГабвгABCabc0123$');

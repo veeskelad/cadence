@@ -45,6 +45,12 @@ ok(seam[0].visible && seam[1].visible && seam[0].y < 0 && seam[1].y > 0, 'pan-up
 // Детерминизм: тот же t — те же числа.
 ok(JSON.stringify(cameraAt(2.13, tl, {kinds})) === JSON.stringify(cameraAt(2.13, tl, {kinds})), 'перемотка');
 ok(cameraAt(0, timeline([{word: 'шаг', at: 0.2, dur: 2}]))[0].visible, 'первая сцена на якоре 0,2 с видна с кадра 0');
+{ const one = timeline([{word: 'шаг', at: 0, dur: 3}]);
+  ok(cameraAt(2.0, one, {exit: 'push'})[0].o === 1, 'exit: до ухода сцена стоит');
+  const late = cameraAt(2.97, one, {exit: 'push'})[0];
+  ok(late.visible && late.o < 0.2 && late.scale > 1.5, 'exit push: к концу сцена улетает в камеру');
+  ok(cameraAt(2.97, one)[0].o === 1, 'без exit последняя сцена стоит до конца');
+  ok(validateFilm({exit: 'wobble', words: [{word: 'шаг'}]}).some((e) => /exit/.test(e)), 'exit проверяется'); }
 ok(tearAt(1, tl, {kinds: ['cut', 'tear']}) === null && tearAt(2, tl, {kinds: ['cut', 'tear']}).i === 1, 'tear на стыке');
 
 // Вход: до начала невидим, после входа — на месте без сдвига; smooth без перелёта.
@@ -82,6 +88,8 @@ ok(zs.length === 3 && zs[0].w > zs[1].w && zs.every((z, i) => i === 0 || z.x >= 
 ok(splitZone({x: 0, y: 0, w: 10, h: 10}, 1, false)[0].w === 10, 'одно слово — вся зона');
 ok(validateFilm({words: [{word: 'весы', with: [{word: 'кот'}]}]}).some((e) => /with/.test(e)), 'with проверяется');
 ok(validateFilm({words: [{word: 'весы', with: [{word: 'шаг'}, {word: 'шаг'}, {word: 'шаг'}]}]}).some((e) => /не больше двух/.test(e)), 'with до двух');
+ok(validateFilm({words: [{word: 'весы', safe: [0.06, 0.5, 0.76, 0.25]}]}).length === 0, 'safe сцены принимается');
+ok(validateFilm({words: [{word: 'весы', safe: [0.5, 0.5, 0.76, 0.25]}]}).some((e) => /safe/.test(e)), 'safe за краем кадра — ошибка');
 
 // Проверка сценария.
 ok(validateFilm({}).length === 1, 'пустой сценарий');
