@@ -4,7 +4,8 @@
 //
 //   npm --prefix engine run board-check -- <папка сборки> [--heroes heroes.json] [--safe 65,288,886,1440]
 //
-// Без --heroes проверяет саму графику: штамп на тексте, штамп на соседнем предмете, надпись на надписи, выход за рабочую зону.
+// Без --heroes проверяет саму графику: штамп на тексте, штамп на соседнем предмете, надпись на надписи, выход за рабочую зону,
+// буквы за краем своей карточки или поля (в том числе пока бежит счёт), кадр 0 не стоит собранным, последний кадр пуст.
 // С --heroes (доска поверх записи) ещё и графику против людей, лиц и главного предмета под ней:
 //   {"0.25": [[x, y, w, h, "face" | "person" | "object"], …], "0.5": […], …}   секунды от начала доски, пиксели кадра.
 // Рамки героев даёт любой детектор (лица, силуэт человека, главный предмет); предмет-герой — компактный и в середине кадра.
@@ -59,6 +60,13 @@ try {
   await page.waitForFunction(() => typeof window.__boardLayout === 'function', { timeout: 20000 });
   const lay = (t) => page.evaluate((x) => { window.dispatchEvent(new CustomEvent('hf-seek', { detail: { time: x } })); return window.__boardLayout(); }, t);
   const words = film.words;
+  const vis = (t) => page.evaluate((x) => { window.dispatchEvent(new CustomEvent('hf-seek', { detail: { time: x } })); return window.__boardOpacity ? window.__boardOpacity() : null; }, t);
+  // хук входит движением: на кадре 0 первая сцена ещё собирается (Дима 20.11: «в начале у тебя текста уже есть»)
+  const v0 = await vis(0);
+  if (v0 && film.hookAtZero !== false && v0[0] && v0[0].length > 1 && v0[0].every((o) => o > 0.98)) issues.push('кадр 0: первая сцена стоит собранной — хук должен входить движением');
+  // конец ролика: всё ушло (элементы ушли сами или их унесла камера), кроме явного exit: cut
+  const vEnd = await vis(Math.max(0, D - 0.02));
+  if (vEnd && film.exit !== 'cut') { const left = vEnd.flat().filter((o) => o !== null && o > 0.05).length; if (left) issues.push(`последний кадр: на экране осталось ${left} эл. — у последней сцены нет ухода`); }
   let t0 = 0;
   for (const [j, w] of words.entries()) {
     const a0 = Number.isFinite(w.at) ? w.at : t0;
@@ -74,6 +82,13 @@ try {
       for (const b of others.slice(1)) if (inter(s, b) > 0.03 * s.w * s.h) issues.push(`${tag}: штамп «${s.text}» заходит на соседний предмет «${b.text}»`);
     }
     for (const [k, x] of texts.entries()) for (const y of texts.slice(k + 1)) if (x.item !== y.item && inter(x, y) > 0.05 * Math.min(x.w * x.h, y.w * y.h)) issues.push(`${tag}: надпись «${x.text}» на надписи «${y.text}»`);
+    // буквы не вылезают за край своей рамки (поле суммы, карточка, штамп): смотреть и пока бежит счёт, промежуточное число бывает шире
+    for (const tt of [...new Set([a0 + 0.8, a0 + 1.3, a0 + 1.8, t].map(r3))].filter((x) => x < Math.min(a1, D))) {
+      for (const x of (await lay(tt)).filter((r) => r.scene === j && r.part === 'ink' && r.w > 2)) {
+        const b = x.host, out = Math.max(b.x - x.x, x.x + x.w - (b.x + b.w));
+        if (out > 4) issues.push(`сцена ${j + 1} «${w.word}» — ${tt} с: «${x.text}» вылезает за рамку на ${Math.round(out)} px`);
+      }
+    }
     // рабочая зона — для вертикали (интерфейс площадки); в 16:9 — только с явным --safe
     if (portrait || opt('--safe')) for (const b of boxes.filter((r) => r.w * r.h > 60 * 60)) if (b.x < safe[0] - 25 || b.x + b.w > safe[2] + 25 || b.y < safe[1] - 30 || b.y + b.h > safe[3] + 30) issues.push(`${tag}: «${b.text}» за рабочей зоной (${Math.round(b.x)}, ${Math.round(b.y)}, ${Math.round(b.w)}×${Math.round(b.h)})`);
     if (!heroes) continue;
