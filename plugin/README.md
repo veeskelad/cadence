@@ -55,7 +55,7 @@
 [guides/FIRST-CUT.md](guides/FIRST-CUT.md). Перед публикацией —
 [guides/BEFORE-POSTING.md](guides/BEFORE-POSTING.md).
 
-В версии 2.3.1 — 26 навыков (`cadence-resolve` — клиент Cadence Pro), 18 карточек элементов с входами, слоями, формулами и проверкой и 33 модуля под отдельные задачи ([карта модулей](MODULE-MAP.md)). Выбор дополнительных модулей — [маршрутизация](knowledge/system/ROUTING.md); согласование правил — [совместимость](knowledge/system/compatibility.md).
+В версии 2.3.2 — 26 навыков (`cadence-resolve` — клиент Cadence Pro), 18 карточек элементов с входами, слоями, формулами и проверкой и 33 модуля под отдельные задачи ([карта модулей](MODULE-MAP.md)). Выбор дополнительных модулей — [маршрутизация](knowledge/system/ROUTING.md); согласование правил — [совместимость](knowledge/system/compatibility.md).
 
 ## Как устроен набор
 

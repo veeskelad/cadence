@@ -5,7 +5,8 @@
 //   npm --prefix engine run board-check -- <папка сборки> [--heroes heroes.json] [--safe 65,288,886,1440]
 //
 // Без --heroes проверяет саму графику: штамп на тексте, штамп на соседнем предмете, надпись на надписи, выход за рабочую зону,
-// буквы за краем своей карточки или поля (в том числе пока бежит счёт), кадр 0 не стоит собранным, последний кадр пуст.
+// буквы за краем своей карточки или поля (в том числе пока бежит счёт), кадр 0 не стоит собранным, последний кадр пуст,
+// пустой экран между сценами дольше 0,2 с, мигание элемента (тает и снова проявляется), сцена не по центру кадра.
 // С --heroes (доска поверх записи) ещё и графику против людей, лиц и главного предмета под ней:
 //   {"0.25": [[x, y, w, h, "face" | "person" | "object"], …], "0.5": […], …}   секунды от начала доски, пиксели кадра.
 // Рамки героев даёт любой детектор (лица, силуэт человека, главный предмет); предмет-герой — компактный и в середине кадра.
@@ -67,6 +68,36 @@ try {
   // конец ролика: всё ушло (элементы ушли сами или их унесла камера), кроме явного exit: cut
   const vEnd = await vis(Math.max(0, D - 0.02));
   if (vEnd && film.exit !== 'cut') { const left = vEnd.flat().filter((o) => o !== null && o > 0.05).length; if (left) issues.push(`последний кадр: на экране осталось ${left} эл. — у последней сцены нет ухода`); }
+  // Пустой экран и мигание: каждые 1/30 с по всему ролику. Пусто — ни один элемент не виден хотя бы на четверть.
+  // Мигание — элемент заметно тает и снова проявляется за полсекунды (Дима 20.11: «моргает», «экран пустой остаётся»).
+  { const step = 1 / 30, track = new Map();
+    let emptyFrom = null;
+    for (let t = 0; t < D - 0.1; t += step) {
+      const v = await vis(r3(t));
+      if (!v) break;
+      const filled = v.some((sc) => sc && sc.some((o) => o > 0.25));
+      // две сцены видны разом и их надписи стоят друг на друге (Дима 20.11: «сначала одно исчезает, потом другое появляется»)
+      const shown = v.map((sc, si) => (sc && sc.some((o) => o > 0.3) ? si : -1)).filter((si) => si >= 0);
+      if (shown.length > 1) {
+        const L = (await lay(r3(t))).filter((r) => shown.includes(r.scene) && (r.part === 'text' || r.part === 'box') && r.w > 4);
+        const hit = L.find((a) => L.some((b) => b.scene !== a.scene && inter(a, b) > 0.05 * Math.min(a.w * a.h, b.w * b.h)));
+        const pair = shown.join('+');
+        if (hit && !track.has('pair:' + pair)) { track.set('pair:' + pair, {}); issues.push(`${r3(t)} с: сцены ${shown.map((x) => x + 1).join(' и ')} видны разом друг на друге («${hit.text}»)`); }
+      }
+      if (!filled && emptyFrom === null) emptyFrom = t;
+      if (filled && emptyFrom !== null) { if (t - emptyFrom > 0.2) issues.push(`пустой экран ${r3(emptyFrom)}–${r3(t)} с: между сценами нет ни одного элемента`); emptyFrom = null; }
+      v.forEach((sc, si) => (sc ?? []).forEach((o, k) => {
+        const key = `${si}:${k}`, m = track.get(key) ?? { peak: 0, low: null, lowT: 0, done: false };
+        if (m.low === null) { m.peak = Math.max(m.peak, o); if (m.peak > 0.6 && o < m.peak - 0.25) { m.low = o; m.lowT = t; } }
+        else {
+          m.low = Math.min(m.low, o);
+          if (o > m.low + 0.25 && t - m.lowT < 0.5 && !m.done) { issues.push(`мигание ${r3(m.lowT)} с: сцена ${si + 1}, элемент ${k + 1} тает и снова проявляется`); m.done = true; }
+          if (t - m.lowT >= 0.5) { m.low = null; m.peak = o; }
+        }
+        track.set(key, m);
+      }));
+    }
+    if (emptyFrom !== null && D - 0.1 - emptyFrom > 0.2 && film.exit === 'cut') issues.push(`пустой экран с ${r3(emptyFrom)} с до конца`); }
   let t0 = 0;
   for (const [j, w] of words.entries()) {
     const a0 = Number.isFinite(w.at) ? w.at : t0;
@@ -87,6 +118,15 @@ try {
       for (const x of (await lay(tt)).filter((r) => r.scene === j && r.part === 'ink' && r.w > 2)) {
         const b = x.host, out = Math.max(b.x - x.x, x.x + x.w - (b.x + b.w));
         if (out > 4) issues.push(`сцена ${j + 1} «${w.word}» — ${tt} с: «${x.text}» вылезает за рамку на ${Math.round(out)} px`);
+      }
+    }
+    // сцена по центру кадра по ширине; сдвиг допустим, только если блок упёрся в край рабочей зоны (Дима 20.11: «не по центру»)
+    if (!w.safe && w.layout !== 'free') {
+      const bb = boxes.filter((r) => r.w > 4);
+      if (bb.length) {
+        const x0 = Math.min(...bb.map((r) => r.x)), x1 = Math.max(...bb.map((r) => r.x + r.w)), c = (x0 + x1) / 2;
+        const zl = portrait ? safe[0] : 0.06 * W, zr = portrait ? safe[2] : 0.94 * W;
+        if (Math.abs(c - W / 2) > 0.03 * W && x0 > zl + 12 && x1 < zr - 12) issues.push(`${tag}: не по центру кадра — центр блока x ${Math.round(c)}, кадра ${W / 2}`);
       }
     }
     // рабочая зона — для вертикали (интерфейс площадки); в 16:9 — только с явным --safe

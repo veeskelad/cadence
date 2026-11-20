@@ -4,17 +4,17 @@ This is a **reference execution of the prose installation contract**, not a ship
 
 ## Run offline
 
-Requirements: Python 3.10+ and an explicitly supplied ordinary copy of the official public 2.3.1 ZIP. No third-party Python packages are required.
+Requirements: Python 3.10+ and an explicitly supplied ordinary copy of the official public 2.3.2 ZIP. No third-party Python packages are required.
 
 ```sh
-python3 tests/install-prompt-smoke/test_install_prompt.py --archive releases/2.3.1/cadence-2.3.1.zip
+python3 tests/install-prompt-smoke/test_install_prompt.py --archive releases/2.3.2/cadence-2.3.2.zip
 ```
 
 The archive can be obtained separately from:
-https://veeskelad.github.io/cadence/releases/2.3.1/cadence-2.3.1.zip
+https://veeskelad.github.io/cadence/releases/2.3.2/cadence-2.3.2.zip
 
 Required archive SHA-256:
-`df6a1a6150060a00ba0d96586a79cde5dde48a14e4f898db37955221728a6754`
+`8df997598d81e53d42885d769e7ba4468f29d58a414528d53a6f985a4db861c4`
 
 The runner checks its size and hash before using it. It reads `index.html` relative to its own repository location, not the current working directory. `--html` can explicitly select an HTML fixture.
 
@@ -43,7 +43,7 @@ The old-version fixtures deliberately change only synthetic metadata. They test 
 
 ## Limits
 
-The fixture pins public release 2.3.1 and the reviewed prompt SHA-256:
+The fixture pins public release 2.3.2 and the reviewed prompt SHA-256:
 `7fc0902234680f1a1f4cd1c14806387612997095a3f9f24a7f5355b1085f2ba5`
 
 Windows junctions/reparse points, macOS filesystem behavior, concurrent filesystem races, hostile ZIP/HTTP corpora, real historical upgrades, attachment-only installs, and interrupted-activation recovery are not covered. The phrase “признаки полной версии” still has no concrete marker definition, so the helper does not invent or claim one. This helper is test infrastructure and must not be presented as a production installer.
