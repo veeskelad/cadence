@@ -33,10 +33,11 @@ export function rng(seed = 1) {
 
 // Характер движения. smooth — правило по умолчанию: вход 0,45 с с замедлением, без перелёта и удара.
 // snappy — короткий «щелчок» с маленьким перелётом, как у вырезок, которые хлопают на доску.
-// transition — длина смены сцены камерой: на 0,6 с доска пролетает весь кадр рывком (Дима 20.11: «как-то резко»).
+// transition — длина смены сцены камерой. Резкость убирает не длина, а то, что следующая сцена приезжает уже
+// с текстом (PREROLL): длинный переход с пустой доской Дима назвал «экран пустой остаётся» (20.11).
 export const MOTION = {
-  smooth: {enter: 0.45, overshoot: 0, stagger: 0.12, transition: 0.9},
-  snappy: {enter: 0.28, overshoot: 1.5, stagger: 0.08, transition: 0.65},
+  smooth: {enter: 0.45, overshoot: 0, stagger: 0.12, transition: 0.7},
+  snappy: {enter: 0.28, overshoot: 1.5, stagger: 0.08, transition: 0.55},
 };
 
 // Подписи внутри сцен по языку ролика: по-русски «ИТОГО», а не TOTAL (Дима 20.11).
@@ -130,6 +131,22 @@ export const HOOK_LEAD = 0.3;
 // Уход элемента: 0,4 с, всплывает вверх, тает и размывается (правило движения — вход 0,45 с, уход 0,4 с).
 export const LEAVE = 0.4;
 export const FPS = [24, 25, 30, 50, 60];
+// Насколько раньше своего начала сцена начинает собираться, если её приносит камера: пока доска приезжает,
+// первые элементы уже входят — кадр между сценами не бывает пустым. Доля половины перехода.
+export const PREROLL = 1;
+// push — одно движение камеры вперёд, по очереди: старая сцена растёт и исчезает в первой половине окна, новая
+// подрастает из глубины и проявляется во второй. Две сцены не стоят друг на друге (Дима 20.11: текст поверх текста —
+// «плохой паттерн, сначала одно исчезает, потом другое появляется»). Рост идёт всё окно одной кривой, без затемнения
+// кадра и без второй фазы («моргает, потом блюр, потом снова увеличиваясь исчезает»). u — уже сглаженная доля окна.
+const PUSH_OUT = [0, 0.5], PUSH_IN = [0.45, 0.95];
+const pushOut = (st, u, solo = false) => {
+  const k = solo ? u : invLerp(PUSH_OUT[0], PUSH_OUT[1], u);
+  st.scale = lerp(1, 1.3, u); st.o = 1 - k; st.blur = 6 * k;
+};
+const pushIn = (st, u) => {
+  const k = invLerp(PUSH_IN[0], PUSH_IN[1], u);
+  st.scale = lerp(0.86, 1, u); st.o = k; st.blur = 6 * (1 - k);
+};
 
 export const TRANSITIONS = ['pan-up', 'pan-left', 'push', 'tear', 'cut'];
 // exit — уход последней сцены к концу ролика тем же движением (доска поверх записи не должна пропадать на склейке);
@@ -148,32 +165,35 @@ export function cameraAt(t, tl, {W = 1920, H = 1080, transition = 0.6, kinds = [
       const u = power2InOut(invLerp(s.start - half, s.start + half, t));
       if (kindIn === 'pan-up') st.y = (1 - u) * H;
       else if (kindIn === 'pan-left') st.x = (1 - u) * W;
-      else if (kindIn === 'push') { st.scale = lerp(0.92, 1, u); st.dim = 1 - u; }
-      else if (kindIn === 'tear') st.visible = u >= 0.5;
+      else if (kindIn === 'push') pushIn(st, u);
+      else if (kindIn === 'tear') st.tear = 'in';
     }
     if (next && kindOut !== 'cut' && t > s.end - half) {
       const u = power2InOut(invLerp(s.end - half, s.end + half, t));
       if (kindOut === 'pan-up') st.y = -u * H;
       else if (kindOut === 'pan-left') st.x = -u * W;
-      else if (kindOut === 'push') { st.scale = lerp(1, 1.7, u); st.blur = u * 18; st.o = 1 - invLerp(0.55, 1, u); }
-      else if (kindOut === 'tear') st.visible = u < 0.5;
+      else if (kindOut === 'push') pushOut(st, u);
+      else if (kindOut === 'tear') st.tear = 'out';
     }
     if (!next && exit && exit !== 'cut' && t > s.end - transition) {
       const u = power2InOut(invLerp(s.end - transition, s.end, t));
       if (exit === 'pan-up') st.y = -u * H;
       else if (exit === 'pan-left') st.x = -u * W;
-      else if (exit === 'push') { st.scale = lerp(1, 1.7, u); st.blur = u * 18; st.o = 1 - invLerp(0.55, 1, u); }
+      else if (exit === 'push') pushOut(st, u, true);
       else if (exit === 'fade') st.o = 1 - u;
     }
     return st;
   });
 }
-// Полоса рваной бумаги для перехода tear: x левого края в долях кадра (от 1.1 до -1.1).
+// Полоса рваной бумаги для перехода tear: узкая (TEAR_W кадра), едет справа налево; под её серединой шов —
+// слева ещё старая сцена, справа уже новая. Кадр целиком цветом не заливается (Дима 20.11: «вспышка»).
+// x — левый край полосы, seam — шов, оба в долях кадра.
+export const TEAR_W = 0.36;
 export function tearAt(t, tl, {transition = 0.6, kinds = []} = {}) {
   for (let i = 1; i < tl.length; i++) {
     if ((kinds[i] ?? 'pan-up') !== 'tear') continue;
     const u = invLerp(tl[i].start - transition / 2, tl[i].start + transition / 2, t);
-    if (u > 0 && u < 1) return {i, x: lerp(1.05, -1.25, power2InOut(u))};
+    if (u > 0 && u < 1) { const x = lerp(1.02, -TEAR_W - 0.02, power2InOut(u)); return {i, x, seam: x + TEAR_W / 2}; }
   }
   return null;
 }
@@ -363,7 +383,16 @@ export async function mountBoard({box, film, W, H, readVar}) {
     const stampEnd = items.length;
     if (w.label && !['icon', 'tag', 'pipeline'].includes(s.key)) ctx.footLabel(w.label);
     if (parts.length === 1 && COLUMN.has(s.key) && w.layout !== 'free') column({items, groups: [[0, headEnd], [headEnd, mainEnd], [mainEnd, stampEnd], [stampEnd, items.length]], zone, W, U, stampAt: mainEnd < stampEnd ? mainEnd : -1});
-    return {el, items, tl: s};
+    // вся сцена — по центру кадра по ширине, не выходя из рабочей зоны (у 9:16 зона смещена влево от кнопок справа).
+    // Своя зона сцены (safe у слова — обход лиц на записи) и layout: "free" остаются как есть.
+    // меряется раскладка собранной сцены: элементы, которые едут по ходу (веер раскрывается), ставятся в конец движения
+    let dx = 0;
+    if (!w.safe && w.layout !== 'free') {
+      const settled = s.dur * 0.8;
+      for (const it of items) if (it.tick) it.tick(settled - it.t0, settled);
+      dx = centerShift(items.map(itemBox).filter(Boolean), zone, W);
+    }
+    return {el, items, tl: s, dx};
   });
 
   const tear = make('div', 'bd-tear', box);
@@ -375,10 +404,18 @@ export async function mountBoard({box, film, W, H, readVar}) {
   if (typeof window !== 'undefined') window.__boardLayout = () => {
     const rootEl = box.closest('#root') ?? box;
     const rr = rootEl.getBoundingClientRect(), k = W / (rr.width || W);
-    const rect = (n) => { const b = n.getBoundingClientRect(); return {x: (b.left - rr.left) * k, y: (b.top - rr.top) * k, w: b.width * k, h: b.height * k}; };
+    let clip = null;
+    // видимая часть: сцену под шторкой tear обрезает шов
+    const rect = (n) => {
+      const b = n.getBoundingClientRect();
+      let x0 = (b.left - rr.left) * k, x1 = x0 + b.width * k;
+      if (clip) { x0 = Math.max(x0, clip[0]); x1 = Math.min(x1, clip[1]); }
+      return {x: x0, y: (b.top - rr.top) * k, w: Math.max(0, x1 - x0), h: b.height * k};
+    };
     const out = [];
     scenes.forEach((sc, si) => {
       if (sc.el.style.display === 'none') return;
+      clip = sc.clip ?? null;
       sc.items.forEach((it, ii) => {
         const n = it.node;
         if (Number(n.style.opacity || 1) < 0.5) return;
@@ -401,20 +438,36 @@ export async function mountBoard({box, film, W, H, readVar}) {
   };
 
   // Видимость элементов (прозрачность элемента × сцены) — для проверки входа на кадре 0 и пустого последнего кадра.
-  if (typeof window !== 'undefined') window.__boardOpacity = () => scenes.map((sc) => (sc.el.style.display === 'none' ? null : sc.items.map((it) => Number(it.node.style.opacity || 1) * Number(sc.el.style.opacity || 1))));
+  // Доля элемента в кадре тоже умножается: элемент, который камера увезла за край, на экране не виден.
+  if (typeof window !== 'undefined') window.__boardOpacity = () => {
+    const rootEl = box.closest('#root') ?? box, rr = rootEl.getBoundingClientRect();
+    const onScreen = (n) => {
+      const b = n.getBoundingClientRect(), a = b.width * b.height;
+      if (!(a > 0)) return 0;
+      const w = Math.max(0, Math.min(b.right, rr.right) - Math.max(b.left, rr.left)), h = Math.max(0, Math.min(b.bottom, rr.bottom) - Math.max(b.top, rr.top));
+      return (w * h) / a;
+    };
+    return scenes.map((sc) => (sc.el.style.display === 'none' ? null : sc.items.map((it) => Number(it.node.style.opacity || 1) * Number(sc.el.style.opacity || 1) * onScreen(it.node))));
+  };
 
   return function render(t) {
     const cams = cameraAt(t, tl, {W, H, transition: motion.transition, kinds, exit: film.exit});
+    const tr = tearAt(t, tl, {transition: motion.transition, kinds});
     scenes.forEach((sc, i) => {
       const cam = cams[i];
       sc.el.style.display = cam.visible ? 'block' : 'none';
       if (!cam.visible) return;
-      sc.el.style.transform = `translate(${cam.x}px, ${cam.y}px) scale(${cam.scale})`;
+      sc.el.style.transform = `translate(${cam.x + sc.dx}px, ${cam.y}px) scale(${cam.scale})`;
       sc.el.style.filter = cam.blur > 0.1 ? `blur(${cam.blur}px)` : '';
+      // tear: старая сцена видна слева от шва, новая — справа
+      // шов один для обеих сцен в координатах кадра: обрезка задаётся в координатах сцены, а сцена сдвинута к центру на dx
+      sc.el.style.clipPath = cam.tear && tr ? (cam.tear === 'in' ? `inset(0 0 0 ${(tr.seam * W - sc.dx).toFixed(1)}px)` : `inset(0 ${((1 - tr.seam) * W + sc.dx).toFixed(1)}px 0 0)`) : '';
+      sc.clip = cam.tear && tr ? (cam.tear === 'in' ? [tr.seam * W, Infinity] : [-Infinity, tr.seam * W]) : null;
       sc.el.style.opacity = cam.o;
       sc.el.style.setProperty('--dim', cam.dim);
-      // первая сцена промотана на HOOK_LEAD: на кадре 0 первый элемент уже входит, дальше живёт как обычно
-      const lead = i === 0 && film.hookAtZero !== false ? HOOK_LEAD : 0;
+      // первая сцена промотана на HOOK_LEAD: на кадре 0 первый элемент уже входит, дальше живёт как обычно;
+      // сцена, которую приносит камера, начинает собираться с началом перехода (PREROLL)
+      const lead = sceneLead(i, kinds, motion, film);
       const u = t - sc.tl.start + lead;
       // уход элементов — когда сцену не уносит камера: склейка cut к следующей или конец ролика с exit: leave
       const leaving = tl[i + 1] ? kinds[i + 1] === 'cut' : exitKind === 'leave';
@@ -430,7 +483,6 @@ export async function mountBoard({box, film, W, H, readVar}) {
         if (a.lift) n.style.setProperty('--lift', a.lift.toFixed(3)); else n.style.removeProperty('--lift');
       });
     });
-    const tr = tearAt(t, tl, {transition: motion.transition, kinds});
     tear.style.display = tr ? 'block' : 'none';
     if (tr) tear.style.transform = `translateX(${tr.x * W}px)`;
   };
@@ -597,9 +649,44 @@ function makeCtx(base) {
 
 const num = (v, d = 0) => (Number.isFinite(+v) ? +v : d);
 const money = (w, v) => `${w.prefix ?? ''}${formatNumber(v, {decimals: w.decimals ?? 0, sep: w.sep ?? ','})}${w.suffix ?? ''}`;
+// Сдвиг сцены по ширине: центр блока — в центр кадра; не помещается там в рабочую зону — ближе к зоне ровно настолько,
+// чтобы не выйти за неё; шире зоны — по центру зоны. boxes — {x0, x1} элементов в пикселях кадра.
+export function centerShift(boxes, zone, W) {
+  if (!boxes.length) return 0;
+  const x0 = Math.min(...boxes.map((b) => b.x0)), x1 = Math.max(...boxes.map((b) => b.x1));
+  if (!(x1 > x0)) return 0;
+  const zl = zone.x, zr = zone.x + zone.w, w = x1 - x0;
+  if (w > zr - zl) return zl + (zr - zl) / 2 - (x0 + x1) / 2;
+  const left = clamp(W / 2 - w / 2, zl, zr - w);
+  return left - x0;
+}
+// Рамка элемента до движения (центр it.x, it.y), со штампом под карточкой. Без размеров (сборка без раскладки) — null.
+function itemBox(it) {
+  const n = it.node, w = n.offsetWidth, h = n.offsetHeight;
+  if (!(w > 0 && h > 0)) return null;
+  let below = 0;
+  for (const st of n.querySelectorAll(':scope > .bd-stamp-under')) below = Math.max(below, st.offsetTop + st.offsetHeight - h);
+  // повёрнутый элемент (веер, вырезки) занимает в кадре шире своей ширины
+  const r = Math.abs((it.rot ?? 0) * Math.PI / 180), hw = (w * Math.cos(r) + h * Math.sin(r)) / 2, hh = (w * Math.sin(r) + h * Math.cos(r)) / 2;
+  return {x0: it.x - hw, x1: it.x + hw, y0: it.y - hh, y1: it.y + hh + below};
+}
+// Насколько вперёд промотана сцена i: хук — HOOK_LEAD, сцена, которую приносит камера, — половина перехода.
+export function sceneLead(i, kinds, motion = MOTION.smooth, film = {}) {
+  if (i === 0) return film.hookAtZero !== false ? HOOK_LEAD : 0;
+  return (kinds[i] ?? 'pan-up') === 'cut' ? 0 : PREROLL * motion.transition / 2;
+}
+
 // Самая широкая строка счёта: все остановки, цифры как «0» (цифры моноширинные, tabular-nums), с валютой.
 // По ней ставится ширина поля — число бежит внутри и не вылезает за рамку на промежуточных значениях.
 const widestMoney = (c, w, stops, size) => Math.max(...stops.map((v) => c.measure(money(w, v).replace(/\d/g, '0'), size, 'display', false))) * 1.04;
+// Место под печатаемый текст — сразу на весь текст: иначе на переносе строки карточка вырастает и вся прыгает
+// на полстроки за один кадр (рывок нашла video-check 20.11 в терминале).
+function reserve(el, html) {
+  el.innerHTML = html;
+  const h = el.offsetHeight;
+  if (h > 0) el.style.minHeight = `${h}px`;
+  el.innerHTML = '';
+}
 // Строка внутри карточки въезжает снизу и проявляется за 0,35 с, а не мигает за кадр-два.
 function reveal(el, u, a, d = 0.35) {
   const k = invLerp(a, a + d, u);
@@ -997,6 +1084,7 @@ const BUILD = {
     const text = String(w.prompt ?? '');
     // печать ускоряется, если иначе строки плана не успеют постоять до конца сцены
     const cps = Math.max(w.cps ?? 30, text.length / Math.max(1, c.dur - 2.4 - lines.length * 0.3));
+    reserve(prompt, `<span class="bd-gt">&gt;</span> ${esc(text)}${caret}`);
     c.item(win, c.cx, c.cy, {enter: 'pop', tick: (u) => {
       const shown = typeAt(text, u - 0.5, cps);
       prompt.innerHTML = `<span class="bd-gt">&gt;</span> ${esc(shown)}${caret}`;
@@ -1288,6 +1376,7 @@ const BUILD = {
     const q = make('div', 'bd-query', bar);
     q.style.fontSize = `${52 * c.U}px`;
     const text = String(w.query ?? '');
+    reserve(q, `${esc(text)}<b class="bd-caret"></b>`);
     c.item(bar, c.cx, c.cy, {enter: 'pop', tick: (u) => { q.innerHTML = `${esc(typeAt(text, u - 0.4, w.cps ?? 16))}<b class="bd-caret"></b>`; }});
   },
   orbit(c, w) {
@@ -1309,6 +1398,7 @@ const BUILD = {
     q.style.fontSize = `${46 * c.U}px`;
     const text = String(w.question ?? '');
     const cps = Math.max(w.cps ?? 22, text.length / Math.max(1, c.dur - 3.4));   // кнопка стоит не меньше 2 с
+    reserve(q, esc(text));
     c.item(outer, c.cx, c.cy - 80 * c.U, {enter: 'pop', tick: (u) => { q.innerHTML = `${esc(typeAt(text, u - 0.4, cps))}`; }});
     const t0 = 0.6 + text.length / cps;
     if (w.hint) c.label(w.hint, c.cx, c.cy + 50 * c.U, {t0});

@@ -1,7 +1,8 @@
 // Проверка словаря инфографики без браузера: node engine/lib/board.test.mjs
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {HOOK_LEAD, LEAVE, leave, leaveStarts, LABELS, filmLang, COLUMN, columnAxis, PRESETS, withPreset, splitZone, WORDS, resolveWord, timeline, totalDuration, cameraAt, tearAt, appear, MOTION, countAt, formatNumber, typeAt,
+import {findJumps} from '../video-check.mjs';
+import {TEAR_W, HOOK_LEAD, PREROLL, sceneLead, centerShift, LEAVE, leave, leaveStarts, LABELS, filmLang, COLUMN, columnAxis, PRESETS, withPreset, splitZone, WORDS, resolveWord, timeline, totalDuration, cameraAt, tearAt, appear, MOTION, countAt, formatNumber, typeAt,
   tornPolygon, onColor, safeRect, validateFilm} from './board.js';
 
 let n = 0;
@@ -36,7 +37,7 @@ ok(anchored[0].dur === 3.5 && anchored[1].end === 6, 'без dur — до сле
 const kinds = ['cut', 'pan-up', 'push'];
 for (let t = 0; t < 8; t += 0.05) {
   const cams = cameraAt(t, tl, {transition: 0.6, kinds});
-  ok(cams.some((c) => c.visible) || (t >= 5 && t < 5.7), `кадр не пустой в ${t.toFixed(2)}`);
+  ok(cams.some((c) => c.visible && c.o > 0.45) || (t >= 4.85 && t < 6.05), `кадр не пустой в ${t.toFixed(2)}`);   // 5–6 с: дыра в сценарии (at: 6)
 }
 const mid = cameraAt(3.5, tl, {kinds});
 ok(mid[1].visible && !mid[0].visible && mid[1].y === 0, 'середина сцены');
@@ -48,10 +49,19 @@ ok(cameraAt(0, timeline([{word: 'шаг', at: 0.2, dur: 2}]))[0].visible, 'пе�
 { const one = timeline([{word: 'шаг', at: 0, dur: 3}]);
   ok(cameraAt(2.0, one, {exit: 'push'})[0].o === 1, 'exit: до ухода сцена стоит');
   const late = cameraAt(2.97, one, {exit: 'push'})[0];
-  ok(late.visible && late.o < 0.2 && late.scale > 1.5, 'exit push: к концу сцена улетает в камеру');
+  ok(late.visible && late.o < 0.2 && late.scale > 1.2, 'exit push: к концу сцена улетает в камеру');
   ok(cameraAt(2.97, one)[0].o === 1, 'без exit последняя сцена стоит до конца');
   ok(validateFilm({exit: 'wobble', words: [{word: 'шаг'}]}).some((e) => /exit/.test(e)), 'exit проверяется'); }
 ok(tearAt(1, tl, {kinds: ['cut', 'tear']}) === null && tearAt(2, tl, {kinds: ['cut', 'tear']}).i === 1, 'tear на стыке');
+// tear — узкая полоса-шторка: кадр целиком цветом не заливается, обе сцены видны по разные стороны шва под полосой
+ok(TEAR_W <= 0.4, 'tear: полоса уже половины кадра');
+for (let t = 1.71; t < 2.3; t += 1 / 60) {
+  const tr = tearAt(t, tl, {transition: 0.6, kinds: ['cut', 'tear']});
+  if (!tr) continue;
+  ok(tr.seam > tr.x && tr.seam < tr.x + TEAR_W, 'tear: шов под полосой');
+  const c = cameraAt(t, tl, {transition: 0.6, kinds: ['cut', 'tear']});
+  ok(c[0].visible && c[1].visible && c[0].tear === 'out' && c[1].tear === 'in', 'tear: обе сцены видны у шва');
+}
 
 // Вход: до начала невидим, после входа — на месте без сдвига; smooth без перелёта.
 for (const kind of ['pop', 'drop', 'slide', 'slide-r', 'rise', 'stamp', 'fade']) {
@@ -79,7 +89,46 @@ ok(LEAVE === 0.4 && leave(-0.1).o === 1 && leave(0).o === 1 && leave(LEAVE).o ==
   ok(3 - st[3] <= LEAVE + 0.3 + 1e-9, 'уход всей сцены не дольше 0,7 с');
   const many = leaveStarts(Array.from({length: 24}, (_, i) => i * 0.05), 4);
   ok(Math.min(...many) >= 4 - LEAVE - 0.3 - 1e-9, 'много элементов — тот же предел'); }
-ok(MOTION.smooth.transition >= 0.8 && MOTION.snappy.transition >= 0.6, 'смена сцены без рывка');
+// Смена сцены короткая (Дима 20.11: «экран пустой остаётся»), а новая сцена приезжает уже с текстом.
+ok(MOTION.smooth.transition >= 0.6 && MOTION.smooth.transition <= 0.75 && MOTION.snappy.transition <= MOTION.smooth.transition, 'смена сцены быстрая');
+{ const k3 = ['cut', 'pan-up', 'cut'];
+  ok(sceneLead(0, k3) === HOOK_LEAD && sceneLead(2, k3) === 0, 'промотка: хук и склейка');
+  const lead = sceneLead(1, k3), half = MOTION.smooth.transition / 2;
+  ok(PREROLL > 0 && Math.abs(lead - PREROLL * half) < 1e-9, 'промотка сцены, которую приносит камера');
+  // к середине перехода первый элемент новой сцены (t0 0,15) уже виден
+  ok(appear(lead - 0.15, 'pop').o > 0.5, 'на середине перехода новая сцена уже не пустая'); }
+// push — одно движение по очереди: старая только растёт и тает, потом новая подрастает и проявляется; две сцены не видны
+// разом (текст на тексте), тёмная пауза между ними короткая, без затемнения во весь кадр и без скачков между кадрами 60 fps
+// (Дима 20.11: «моргает, потом блюр, потом снова увеличиваясь исчезает»; «сначала одно исчезает, потом другое появляется»).
+for (const motion of Object.values(MOTION)) {
+  const tr = motion.transition, pk = ['cut', 'push'], two = timeline([{word: 'шаг', dur: 3}, {word: 'шаг', dur: 3}]);
+  let prev = null, worst = 0, dark = 0;
+  for (let t = 3 - tr / 2 - 0.05; t <= 3 + tr / 2 + 0.05; t += 1 / 60) {
+    const [a, b] = cameraAt(t, two, {transition: tr, kinds: pk});
+    ok(a.dim === 0 && b.dim === 0, 'push без затемнения');
+    const oa = a.visible ? a.o : 0, ob = b.visible ? b.o : 0, sa = a.scale, sb = b.scale;
+    ok(Math.min(oa, ob) < 0.2, `push: две сцены не стоят друг на друге (${t.toFixed(3)})`);
+    if (Math.max(oa, ob) < 0.15) dark += 1 / 60;
+    if (prev) {
+      ok(oa <= prev.oa + 1e-9 && ob >= prev.ob - 1e-9, 'push: прозрачность меняется в одну сторону');
+      if (a.visible && prev.av) ok(sa >= prev.sa - 1e-9, 'push: старая сцена только растёт');
+      if (b.visible && prev.bv) ok(sb >= prev.sb - 1e-9, 'push: новая сцена только подрастает');
+      worst = Math.max(worst, Math.abs(oa - prev.oa), Math.abs(ob - prev.ob));
+    }
+    prev = {oa, ob, sa, sb, av: a.visible, bv: b.visible};
+  }
+  ok(worst < 0.15, `push плавный (${worst.toFixed(3)} за кадр)`);
+  ok(dark <= 0.15, `push: пустая пауза между сценами ${dark.toFixed(2)} с`);
+}
+// Сцена по центру кадра по ширине, не выходя из рабочей зоны (9:16: зона x 65–886, центр кадра 540).
+{ const z = safeRect(1080, 1920), mid = (b, d) => (b.x0 + b.x1) / 2 + d;
+  const small = {x0: 100, x1: 500}; ok(Math.abs(mid(small, centerShift([small], z, 1080)) - 540) < 1e-9, 'узкая сцена — по центру кадра');
+  const wide = {x0: 0, x1: 800}, dw = centerShift([wide], z, 1080);
+  ok(Math.abs(wide.x1 + dw - (z.x + z.w)) < 1e-9 && wide.x0 + dw >= z.x, 'широкая — у правого края зоны, не за ним');
+  const huge = {x0: 0, x1: 900}; ok(Math.abs(mid(huge, centerShift([huge], z, 1080)) - (z.x + z.w / 2)) < 1e-9, 'шире зоны — по центру зоны');
+  const z16 = safeRect(1920, 1080), b16 = [{x0: 200, x1: 900}, {x0: 950, x1: 1100}];
+  ok(Math.abs((200 + 1100) / 2 + centerShift(b16, z16, 1920) - 960) < 1e-9, '16:9 — блок из нескольких элементов по центру');
+  ok(centerShift([], z, 1080) === 0, 'без размеров — без сдвига'); }
 // Подписи по языку: у каждого языка все ключи; русский ролик — «ИТОГО», не TOTAL.
 const keys = Object.keys(LABELS.en).sort().join();
 for (const [lang, l] of Object.entries(LABELS)) ok(Object.keys(l).sort().join() === keys && l.days.length === 7, `подписи ${lang}: все ключи`);
@@ -125,4 +174,13 @@ ok(validateFilm(example).length === 0, 'пример проходит прове
 const used = new Set(example.words.map((w) => resolveWord(w.word)));
 ok(Object.keys(WORDS).every((k) => used.has(k)), `пример показывает все слова (нет: ${Object.keys(WORDS).filter((k) => !used.has(k)).join(', ')})`);
 
+// video-check: затемнение во весь кадр за кадр и моргание находятся, плавный переход и задуманная склейка — нет.
+{ const fps = 60, frames = (fn) => Array.from({length: 240}, (_, k) => ({t: k / fps, ...fn(k)}));
+  const smooth = frames((k) => ({YAVG: 40 + 10 * Math.sin(k / 40), YDIF: 0.6}));
+  ok(findJumps(smooth).length === 0, 'video-check: плавное видео чисто');
+  const blink = frames((k) => ({YAVG: k >= 100 && k < 110 ? 26 : 38, YDIF: k === 100 || k === 110 ? 12 : 0.3}));
+  const found = findJumps(blink).map((x) => x.kind);
+  ok(found.includes('моргание') && found.includes('скачок'), 'video-check: затемнение кадра и возврат найдены');
+  const cut = frames((k) => ({YAVG: k < 120 ? 38 : 50, YDIF: k === 120 ? 20 : 0.3}));
+  ok(findJumps(cut).length === 1 && findJumps(cut, {cuts: [2]}).length === 0, 'video-check: склейка встык из --cuts не ошибка'); }
 console.log(`ok ${n}`);
