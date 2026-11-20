@@ -1,7 +1,7 @@
 // Проверка словаря инфографики без браузера: node engine/lib/board.test.mjs
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {HOOK_LEAD, PRESETS, withPreset, splitZone, WORDS, resolveWord, timeline, totalDuration, cameraAt, tearAt, appear, MOTION, countAt, formatNumber, typeAt,
+import {HOOK_LEAD, LEAVE, leave, leaveStarts, LABELS, filmLang, COLUMN, columnAxis, PRESETS, withPreset, splitZone, WORDS, resolveWord, timeline, totalDuration, cameraAt, tearAt, appear, MOTION, countAt, formatNumber, typeAt,
   tornPolygon, onColor, safeRect, validateFilm} from './board.js';
 
 let n = 0;
@@ -66,7 +66,31 @@ let over = 0;
 for (let u = 0; u < 1; u += 0.01) over = Math.max(over, appear(u, 'pop', MOTION.snappy).s);
 ok(over > 1.01, 'snappy с перелётом');
 ok(MOTION.smooth.enter === 0.45, 'вход 0,45 с по умолчанию');
-ok(appear(HOOK_LEAD - 0.15, 'pop').o === 1, 'первая сцена собрана на кадре 0');
+// Хук с кадра 0 входит движением: первый элемент (t0 0,1–0,15 с) уже виден и ещё движется, а не стоит готовым.
+for (const t0 of [0.1, 0.15]) { const a = appear(HOOK_LEAD - t0, 'pop'); ok(a.o > 0.3 && a.o < 1 && a.s < 0.99, `кадр 0: первый элемент входит (t0 ${t0})`); }
+ok(appear(HOOK_LEAD - 0.15 - 2 * MOTION.smooth.stagger, 'pop').o === 0, 'кадр 0: третий элемент ещё не вошёл');
+// Уход: 0,4 с, до начала стоит, к концу невидим, без скачка прозрачности за кадр 60 fps.
+ok(LEAVE === 0.4 && leave(-0.1).o === 1 && leave(0).o === 1 && leave(LEAVE).o === 0 && leave(LEAVE + 1).o === 0, 'уход: края');
+{ let worst = 0; for (let v = 0; v < LEAVE; v += 1 / 60) worst = Math.max(worst, leave(v).o - leave(v + 1 / 60).o); ok(worst < 0.12, `уход плавный (${worst.toFixed(3)} за кадр)`); }
+{ let worst = 0; for (let u = 0; u < 1; u += 1 / 60) worst = Math.max(worst, appear(u + 1 / 60, 'pop').o - appear(u, 'pop').o); ok(worst < 0.12, `вход плавный (${worst.toFixed(3)} за кадр)`); }
+{ const st = leaveStarts([0.1, 0.18, 0.26, 1.6], 3);
+  ok(Math.abs(st[0] + LEAVE - 3) < 1e-9, 'заголовок уходит последним, ровно к концу');
+  ok(st[3] < st[2] && st[2] < st[1] && st[1] < st[0], 'последний вошедший уходит первым');
+  ok(3 - st[3] <= LEAVE + 0.3 + 1e-9, 'уход всей сцены не дольше 0,7 с');
+  const many = leaveStarts(Array.from({length: 24}, (_, i) => i * 0.05), 4);
+  ok(Math.min(...many) >= 4 - LEAVE - 0.3 - 1e-9, 'много элементов — тот же предел'); }
+ok(MOTION.smooth.transition >= 0.8 && MOTION.snappy.transition >= 0.6, 'смена сцены без рывка');
+// Подписи по языку: у каждого языка все ключи; русский ролик — «ИТОГО», не TOTAL.
+const keys = Object.keys(LABELS.en).sort().join();
+for (const [lang, l] of Object.entries(LABELS)) ok(Object.keys(l).sort().join() === keys && l.days.length === 7, `подписи ${lang}: все ключи`);
+ok(LABELS[filmLang({words: [{word: 'квитанция', title: 'Одна чашка'}]})].total === 'ИТОГО', 'кириллица → русские подписи');
+ok(filmLang({words: [{word: 'receipt', title: 'One cup'}]}) === 'en' && filmLang({lang: 'en', words: [{word: 'чек'}]}) === 'en', 'английский и явный lang');
+ok(validateFilm({lang: 'fr', words: [{word: 'шаг'}]}).some((e) => /lang/.test(e)), 'lang проверяется');
+ok(validateFilm({fps: 60, exit: 'leave', words: [{word: 'шаг'}]}).length === 0 && validateFilm({fps: 45, words: [{word: 'шаг'}]}).some((e) => /fps/.test(e)), 'fps и exit leave');
+// Столбик по оси: по центру кадра, если блок помещается в рабочую зону; иначе по центру зоны.
+ok(COLUMN.has('receipt') && COLUMN.has('cheque'), 'квитанция и чек — столбиком');
+ok(columnAxis(575, safeRect(1080, 1920), 1080) === 540 && Math.round(columnAxis(755, safeRect(1080, 1920), 1080)) === 475, 'ось 9:16');
+ok(columnAxis(1200, safeRect(1920, 1080), 1920) === 960, 'ось 16:9');
 
 // Счётчик: начало, конец, монотонно по остановкам, без отката.
 ok(countAt(-1, 2, [0, 100]) === 0 && countAt(5, 2, [0, 100]) === 100, 'края');

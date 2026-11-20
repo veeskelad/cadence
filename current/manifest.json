@@ -3,15 +3,15 @@
   "installer_contract": "cadence.install-prompt.v1",
   "product": "Cadence",
   "channel": "public",
-  "version": "2.3",
-  "release_id": "cadence-2.3",
-  "archive_url": "https://veeskelad.github.io/cadence/releases/2.3/cadence-2.3.zip",
-  "archive_filename": "cadence-2.3.zip",
-  "sha256": "63e56c301de5df486f5fbc1244597a374934a1e2c5230b983de6a8e0a2e61fe6",
-  "archive_size_bytes": 12123375,
+  "version": "2.3.1",
+  "release_id": "cadence-2.3.1",
+  "archive_url": "https://veeskelad.github.io/cadence/releases/2.3.1/cadence-2.3.1.zip",
+  "archive_filename": "cadence-2.3.1.zip",
+  "sha256": "9fc4e4cb573135dbfae3a110f022289527e063261c2a9af1685dc73c1062cca0",
+  "archive_size_bytes": 12136583,
   "max_expanded_bytes": 33554432,
   "verified_files": 1613,
-  "published_at": "2026-11-19",
+  "published_at": "2026-11-20",
   "fresh_install_tested": true,
   "tested_update_from": [
     "cadence-1.4",
@@ -31,6 +31,7 @@
     "cadence-2.1",
     "cadence-2.1.1",
     "cadence-2.1.2",
-    "cadence-2.2"
+    "cadence-2.2",
+    "cadence-2.3"
   ]
 }

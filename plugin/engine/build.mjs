@@ -3,7 +3,7 @@
 // Рендер не пускает пути выше корня проекта ("../"), поэтому общий код, three.js, шрифты,
 // звуки и файлы сценария копируются внутрь, а цвета пака и формат подставляются в копию.
 //
-//   node engine/build.mjs <template> [--film film.json] [--pack <id>] [--format WxH]
+//   node engine/build.mjs <template> [--film film.json] [--pack <id>] [--format WxH] [--fps 60]
 //                         [--out <папка>] [--set key=value ...]
 //
 // Сценарий с музыкой (beat-reel): трек разбирается локально (scripts/track_structure.py) —
@@ -31,7 +31,7 @@ const list = async () => (await readdir(templates, {withFileTypes: true})).filte
 
 const id = args.find((a, i) => !a.startsWith('--') && !args[i - 1]?.startsWith('--'));
 if (!id || args.includes('--help')) {
-  console.error(`node engine/build.mjs <template> [--film film.json] [--pack id] [--format WxH] [--out dir] [--set key=value]
+  console.error(`node engine/build.mjs <template> [--film film.json] [--pack id] [--format WxH] [--fps 60] [--out dir] [--set key=value]
 Шаблоны: ${(await list()).join(', ')}`);
   process.exit(id ? 0 : 2);
 }
@@ -95,9 +95,11 @@ if (format) {
 const filmPath = option('--film');
 const filmAssets = [];
 let audioHtml = '';
+let filmFps;
 if (filmPath) {
   if (!html.includes('id="film"')) throw new Error(`У шаблона ${id} нет сценария #film`);
   const film = JSON.parse(await readFile(filmPath, 'utf8'));
+  filmFps = film.fps;
   // Снимок страницы для доказательства article (scripts/news_shot.py): рядом лежит <имя>.json со строками цитаты
   // и, если снята, шапка статьи. Описание встраивается в сценарий, шапка копируется как файл.
   for (const p of film.proofs ?? []) {
@@ -269,6 +271,14 @@ if (packId) {
   }
   const block = Object.entries(vars).map(([k, v]) => `        ${k}: ${v};`).join('\n');
   html = html.replace(/\/\* cadence:tokens[^*]*\*\/[\s\S]*?\/\* \/cadence:tokens \*\//, `/* cadence:tokens pack ${packId} */\n${block}\n        /* /cadence:tokens */`);
+}
+
+// Частота кадров: --fps или fps сценария → data-fps корня (рендер HyperFrames берёт её без своего --fps).
+// Движок считает время в секундах, поэтому 60 кадров — те же сцены, вдвое плавнее движение.
+const fps = Number(option('--fps') ?? filmFps ?? 0);
+if (fps) {
+  if (![24, 25, 30, 50, 60].includes(fps)) throw new Error(`--fps ${fps}: есть 24, 25, 30, 50, 60`);
+  html = html.replace(/(<div id="root"[^>]*?)( data-fps="[\d.]+")?(\s|>)/, (m, a, _old, end) => `${a} data-fps="${fps}"${end}`);
 }
 
 const fontCss = (await readFile(path.join(engine, 'fonts/fonts.css'), 'utf8')).replaceAll('url(./', 'url(fonts/');
